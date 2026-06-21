@@ -1,0 +1,317 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,700..900,70,1&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Newsreader", Georgia, serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", monospace;
+  --font-display: "Playfair Display", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Tailwind preflight drops the native pointer cursor on buttons — restore it
+   everywhere so every control feels clickable. */
+button:not(:disabled),
+[role="button"]:not(:disabled) {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+
+html,
+body {
+  background: #f4ead7;
+  color: #2a2018;
+}
+
+body {
+  font-feature-settings: "cv02", "cv03", "cv04", "ss01";
+}
+
+html.rabbit-dark,
+html.rabbit-dark body {
+  background: #15110d;
+  color: #f3e8d4;
+}
+
+html.rabbit-dark .rh-paper {
+  background:
+    radial-gradient(110% 90% at 50% 0%, rgba(66, 48, 30, 0.46), rgba(66, 48, 30, 0) 62%),
+    linear-gradient(180deg, #18140f 0%, #100d0a 100%) !important;
+}
+
+html.rabbit-dark .card-surface,
+html.rabbit-dark .bg-\[\#fbf6ec\] {
+  background-color: #211a14 !important;
+  color: #f3e8d4 !important;
+}
+
+html.rabbit-dark .bg-\[\#f6efe1\],
+html.rabbit-dark .bg-\[\#f2e9d6\],
+html.rabbit-dark .bg-\[\#e7dabf\],
+html.rabbit-dark .bg-\[\#eef5ea\] {
+  background-color: #2b231a !important;
+}
+
+html.rabbit-dark .text-\[\#2a2018\],
+html.rabbit-dark .text-\[\#3a2a18\],
+html.rabbit-dark .text-\[\#3a220e\],
+html.rabbit-dark .text-\[\#3a2f25\] {
+  color: #f3e8d4 !important;
+}
+
+html.rabbit-dark .text-\[\#5a4a38\],
+html.rabbit-dark .text-\[\#6a5a48\],
+html.rabbit-dark .text-\[\#6a5a48\],
+html.rabbit-dark .text-\[\#8a7860\],
+html.rabbit-dark .text-\[\#9c8b75\] {
+  color: #c8b89d !important;
+}
+
+html.rabbit-dark .text-\[\#a8967d\] {
+  color: #927f64 !important;
+}
+
+html.rabbit-dark .border-\[\#785a3224\],
+html.rabbit-dark .border-\[\#785a321f\],
+html.rabbit-dark .border-\[\#785a3221\],
+html.rabbit-dark .border-\[\#785a3229\] {
+  border-color: rgba(230, 211, 180, 0.16) !important;
+}
+
+html.rabbit-dark .rh-theme-toggle {
+  background: #211a14 !important;
+  border-color: rgba(230, 211, 180, 0.16) !important;
+  color: #f3e8d4 !important;
+}
+
+html.rabbit-dark .rh-theme-pill,
+html.rabbit-dark .bg-white {
+  background-color: #18140f !important;
+  color: #c8b89d !important;
+  border-color: rgba(230, 211, 180, 0.16) !important;
+}
+
+/* Inset surfaces (inputs, wells) */
+html.rabbit-dark .bg-\[\#fffaf1\] {
+  background-color: #18140f !important;
+  color: #f3e8d4 !important;
+}
+
+/* Green status accents read too dark on the night canvas — lift them */
+html.rabbit-dark .text-\[\#4d7049\],
+html.rabbit-dark .text-\[\#37502f\] {
+  color: #9ec79a !important;
+}
+
+/* Primary cream-on-ink buttons sit only a hair above the page in dark mode —
+   give them a defining edge so they still read as raised controls. */
+html.rabbit-dark .bg-\[\#2a2018\] {
+  border: 1px solid rgba(230, 211, 180, 0.14) !important;
+}
+
+/* Warm paper canvas: fiber grain + a soft vignette so it reads like a sheet */
+.paper {
+  background-color: #f4ead7;
+  background-image:
+    radial-gradient(100% 70% at 50% 40%, rgba(255, 253, 247, 0.92) 0%, rgba(255, 253, 247, 0.34) 48%, rgba(255, 253, 247, 0) 72%),
+    radial-gradient(130% 110% at 50% 115%, rgba(103, 78, 44, 0.14) 0%, rgba(103, 78, 44, 0) 62%),
+    linear-gradient(90deg, rgba(70, 52, 30, 0.035) 1px, transparent 1px),
+    linear-gradient(rgba(70, 52, 30, 0.027) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 38px 38px, 38px 38px;
+}
+.paper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.72;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.52' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.62  0 0 0 0 0.54  0 0 0 0 0.42  0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.paper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 160px rgba(82, 62, 34, 0.13);
+}
+
+.display-font {
+  font-family: var(--font-display);
+}
+
+/* soft live-pulse at the burrow */
+@keyframes plug-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.7);
+    opacity: 0.5;
+  }
+  70% {
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.8);
+    opacity: 0;
+  }
+}
+.pulse-ring {
+  border: 1px solid rgba(63, 210, 154, 0.6);
+  animation: plug-pulse 3.4s ease-out infinite;
+}
+
+::selection {
+  background: rgba(240, 100, 30, 0.22);
+}
+
+/* Thin elegant scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d7d7da;
+  border-radius: 999px;
+  border: 3px solid #ffffff;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c2c2c6;
+}
+
+/* clean white canvas — no grain */
+.grain::before {
+  content: none;
+}
+
+.hairline {
+  border-color: rgba(120, 90, 50, 0.14);
+}
+
+.card-surface {
+  background: #fbf6ec;
+  border: 1px solid rgba(120, 90, 50, 0.14);
+}
+
+.rh-display {
+  font-family: var(--font-display);
+}
+
+.rh-paper {
+  background:
+    radial-gradient(110% 90% at 50% 0%, rgba(255, 252, 244, 0.86), rgba(255, 252, 244, 0) 62%),
+    linear-gradient(180deg, #f6efe1 0%, #efe4d0 100%);
+}
+
+@keyframes dash-pulse {
+  0%, 100% { opacity: .55; transform: scale(.82); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes dash-ring {
+  0% { opacity: .5; transform: scale(.6); }
+  100% { opacity: 0; transform: scale(2.4); }
+}
+
+@keyframes map-float {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50% { transform: translate(-50%, -50%) translateY(-7px); }
+}
+
+@keyframes map-float-soft {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50% { transform: translate(-50%, -50%) translateY(-4px); }
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+}
+
+/* Clean gray buttons (primary action style) */
+.btn-gray {
+  background: #2c2c31;
+  color: #ffffff;
+  border: 1px solid #2c2c31;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.btn-gray:hover {
+  background: #3a3a40;
+}
+.btn-gray:active {
+  transform: scale(0.98);
+}
+.btn-soft {
+  background: #f1f1f3;
+  color: #2c2c31;
+  border: 1px solid rgba(17, 17, 20, 0.08);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.btn-soft:hover {
+  background: #e7e7ea;
+}
+.btn-soft:active {
+  transform: scale(0.98);
+}
+
+/* Painterly reed sway for RabbitScene */
+@keyframes reed-sway {
+  0%,
+  100% {
+    transform: rotate(-2.2deg);
+  }
+  50% {
+    transform: rotate(2.6deg);
+  }
+}
+.rh-reed {
+  animation: reed-sway 5.5s ease-in-out infinite;
+}
+
+@keyframes ear-twitch {
+  0%,
+  88%,
+  100% {
+    transform: rotate(0deg);
+  }
+  92% {
+    transform: rotate(-14deg);
+  }
+  96% {
+    transform: rotate(6deg);
+  }
+}
+.rh-ear {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  animation: ear-twitch 5s ease-in-out infinite;
+}
+
+/* React Flow theme overrides */
+.react-flow__attribution {
+  display: none;
+}
+.react-flow__edge-path {
+  stroke-width: 1.5;
+}
+.react-flow__handle {
+  opacity: 0;
+}
+html.rabbit-dark .react-flow__controls-button {
+  background: #211a14;
+  border-bottom: 1px solid rgba(230, 211, 180, 0.14);
+  color: #f3e8d4;
+  fill: #f3e8d4;
+}
+html.rabbit-dark .react-flow__controls-button:hover {
+  background: #2b231a;
+}

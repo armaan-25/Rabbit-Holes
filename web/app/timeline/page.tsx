@@ -1,0 +1,135 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { ACCENTS, KIND_META } from "@/lib/ui";
+import { clockTime, dayLabel } from "@/lib/format";
+import { useHoles } from "@/hooks/useHoles";
+import { CuriosityHeatmap } from "@/components/heatmaps/CuriosityHeatmap";
+
+interface Row {
+  id: string;
+  at: string;
+  title: string;
+  detail?: string;
+  kind: keyof typeof KIND_META;
+  holeId: string;
+  holeTitle: string;
+  accent: keyof typeof ACCENTS;
+}
+
+export default function TimelinePage() {
+  const [filter, setFilter] = useState<string | null>(null);
+  const holes = useHoles();
+
+  const groups = useMemo(() => {
+    const rows: Row[] = holes.flatMap((h) =>
+      h.timeline.map((ev) => ({
+        ...ev,
+        kind: ev.kind as keyof typeof KIND_META,
+        holeId: h.id,
+        holeTitle: h.title,
+        accent: h.accent,
+      }))
+    )
+      .filter((r) => !filter || r.holeId === filter)
+      .sort((a, b) => +new Date(b.at) - +new Date(a.at));
+
+    const byDay = new Map<string, Row[]>();
+    for (const r of rows) {
+      const key = dayLabel(r.at);
+      if (!byDay.has(key)) byDay.set(key, []);
+      byDay.get(key)!.push(r);
+    }
+    return [...byDay.entries()];
+  }, [filter, holes]);
+
+  return (
+    <div className="rh-paper min-h-screen px-5 py-8 sm:px-8 xl:px-12">
+      <div className="mx-auto w-full max-w-[1320px]">
+        <div className="flex flex-wrap items-end justify-between gap-5">
+          <div>
+            <div className="mb-2 text-[12px] font-semibold uppercase tracking-[0.22em] text-[#a8967d]">Timeline</div>
+            <h1 className="rh-display text-[42px] font-semibold leading-none text-[#2a2018]">Replay your curiosity</h1>
+            <p className="mt-3 max-w-2xl text-[16px] leading-relaxed text-[#6a5a48]">Every investigation, in the order it actually happened.</p>
+          </div>
+          <div className="flex max-w-full gap-1.5 overflow-x-auto rounded-xl border border-[#785a3224] bg-[#e7dabf] p-1">
+            <Chip on={!filter} onClick={() => setFilter(null)} label="All" />
+            {holes.map((h) => (
+              <Chip key={h.id} on={filter === h.id} onClick={() => setFilter(h.id)} label={h.title} color={ACCENTS[h.accent].hex} />
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-8">
+          <CuriosityHeatmap holes={holes} />
+        </div>
+
+        <div className="mt-8 grid gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
+          <aside className="hidden lg:block">
+            <div className="sticky top-8 rounded-[18px] border border-[#785a3224] bg-[#fbf6ec] p-5 shadow-[0_2px_16px_rgba(70,45,20,.06)]">
+              <div className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#a8967d]">Captured</div>
+              <div className="mt-4 space-y-4">
+                <SideStat n={groups.reduce((a, [, rows]) => a + rows.length, 0)} label="events" />
+                <SideStat n={holes.length} label="holes" />
+                <SideStat n={holes.reduce((a, h) => a + h.pages.length, 0)} label="pages" />
+              </div>
+            </div>
+          </aside>
+
+          <div className="space-y-8">
+            {groups.map(([day, rows]) => (
+              <section key={day}>
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#a8967d]">{day}</span>
+                  <span className="h-px flex-1 bg-[#785a3224]" />
+                  <span className="text-[12px] text-[#a8967d]">{rows.length} events</span>
+                </div>
+                <div className="relative rounded-[18px] border border-[#785a3224] bg-[#fbf6ec] px-5 py-4 shadow-[0_2px_16px_rgba(70,45,20,.06)]">
+                  <div className="absolute bottom-6 left-[31px] top-6 w-px bg-[#785a3229]" />
+                  {rows.map((r, i) => {
+                    const m = KIND_META[r.kind];
+                    const accent = ACCENTS[r.accent];
+                    return (
+                      <motion.div key={r.id} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }} className="relative grid grid-cols-[36px_64px_minmax(0,1fr)_auto] items-start gap-3 py-3">
+                        <span className="relative z-10 grid h-5 w-5 place-items-center rounded-full border bg-[#fbf6ec] text-[10px]" style={{ borderColor: `${m.color}66`, color: m.color }}>{m.glyph}</span>
+                        <span className="pt-0.5 font-mono text-[12px] tabular-nums text-[#a8967d]">{clockTime(r.at)}</span>
+                        <div className="min-w-0">
+                          <div className="text-[15.5px] leading-tight text-[#2a2018]">{r.title}</div>
+                          {r.detail && <div className="mt-1 text-[13px] text-[#9c8b75]">{r.detail}</div>}
+                        </div>
+                        <Link href={`/holes/${r.holeId}`} className="hidden shrink-0 items-center gap-1.5 rounded-full border border-[#785a3224] bg-white px-3 py-1 text-[12px] text-[#5a4a38] transition hover:text-[#2a2018] sm:flex">
+                          <span className="h-1.5 w-1.5 rounded-full" style={{ background: accent.hex }} />
+                          {r.holeTitle}
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Chip({ on, onClick, label, color }: { on: boolean; onClick: () => void; label: string; color?: string }) {
+  return (
+    <button onClick={onClick} className={`whitespace-nowrap rounded-[9px] px-4 py-2 text-[14px] transition ${on ? "bg-[#fbf6ec] font-semibold text-[#2a2018] shadow-[0_1px_3px_rgba(70,45,20,.1)]" : "text-[#6a5a48] hover:bg-[#fbf6ec]/55"}`}>
+      {color && <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full align-middle" style={{ background: color }} />}
+      {label}
+    </button>
+  );
+}
+
+function SideStat({ n, label }: { n: number; label: string }) {
+  return (
+    <div>
+      <div className="rh-display text-[34px] font-semibold leading-none text-[#2a2018]">{n}</div>
+      <div className="mt-1 text-[12px] uppercase tracking-[0.14em] text-[#a8967d]">{label}</div>
+    </div>
+  );
+}

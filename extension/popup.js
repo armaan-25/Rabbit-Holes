@@ -1,0 +1,145 @@
+import { BACKEND_URL } from "./config.js";
+
+const WEB_URL = "http://localhost:3000";
+
+let captureState = "recording";
+let captureStartedAt = null;
+let captureElapsedMs = 0;
+let signedIn = false;
+
+function setClusterLabel(text) {
+  document.getElementById("cluster").innerHTML = `<span><img src="assets/watercolor-burrow.png" alt="" />${text}</span>`;
+}
+
+function formatElapsed(ms) {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const mm = h ? String(m).padStart(2, "0") : String(m);
+  const ss = String(s).padStart(2, "0");
+  const hh = h ? `${h}:` : "";
+  return `${hh}${mm}:${ss}`;
+}
+
+function liveElapsedMs() {
+  const running = captureState === "recording" && captureStartedAt != null;
+  return captureElapsedMs + (running ? Date.now() - captureStartedAt : 0);
+}
+
+function renderTimer() {
+  document.getElementById("capture-timer").textContent = formatElapsed(liveElapsedMs());
+}
+
+function setCaptureUI(state) {
+  captureState = state;
+  const dot = document.getElementById("capture-dot");
+  const label = document.getElementById("capture-label");
+  const toggle = document.getElementById("record-toggle");
+  const stop = document.getElementById("record-stop");
+
+  dot.className = `dot ${state === "paused" ? "paused" : state === "stopped" ? "stopped" : ""}`;
+  label.textContent =
+    state === "recording"
+      ? "Capturing"
+      : state === "paused"
+        ? "Paused"
+        : "Stopped";
+
+  // One button toggles between pause and resume depending on the live state.
+  const recording = state === "recording";
+  toggle.textContent = recording ? "Ⅱ" : "▶";
+  toggle.title = recording ? "Pause recording" : "Resume recording";
+  toggle.classList.toggle("active", !recording && state !== "stopped");
+  stop.classList.toggle("active", state === "stopped");
+  renderTimer();
+}
+
+async function setCaptureState(state) {
+  try {
+    const res = await chrome.runtime.sendMessage({ type: "setCaptureState", state });
+    if (res?.ok) setCaptureUI(res.state);
+    await render();
+  } catch {
+    setCaptureUI(state);
+  }
+}
+
+async function render() {
+  const auth = await chrome.runtime.sendMessage({ type: "getAuthState" }).catch(() => ({ signedIn: false }));
+  signedIn = Boolean(auth?.signedIn);
+  document.getElementById("auth-panel").classList.toggle("signed-out", !signedIn);
+  document.getElementById("app-panel").classList.toggle("signed-out", !signedIn);
+  if (!signedIn) return;
+
+  const {
+    events = [],
+    captureState: storedState = "recording",
+    captureStartedAt: startedAt = null,
+    captureElapsedMs: elapsedMs = 0,
+  } = await chrome.storage.local.get(["events", "captureState", "captureStartedAt", "captureElapsedMs"]);
+  const visits = new Set(events.filter((e) => e.type === "visit").map((e) => e.url));
+  const searches = events.filter((e) => e.type === "search").length;
+  const opens = events.filter((e) => e.type === "tab_open").length;
+
+  document.getElementById("visits").textContent = visits.size;
+  document.getElementById("searches").textContent = searches;
+  document.getElementById("tabs").textContent = opens;
+  captureStartedAt = startedAt;
+  captureElapsedMs = elapsedMs;
+  setCaptureUI(storedState);
+}
+
+// Tick the clock once a second while a recording run is active.
+setInterval(() => {
+  if (captureState === "recording" && captureStartedAt != null) renderTimer();
+}, 1000);
+
+document.getElementById("open").addEventListener("click", () => {
+  chrome.tabs.create({ url: `${WEB_URL}/dashboard` });
+});
+
+document.getElementById("brand-open").addEventListener("click", () => {
+  chrome.tabs.create({ url: `${WEB_URL}/dashboard` });
+});
+
+document.getElementById("signin").addEventListener("click", () => {
+  chrome.tabs.create({ url: `${WEB_URL}/extension-auth` });
+});
+
+document.getElementById("record-toggle").addEventListener("click", () => {
+  setCaptureState(captureState === "recording" ? "paused" : "recording");
+});
+document.getElementById("record-stop").addEventListener("click", () => setCaptureState("stopped"));
+
+document.getElementById("cluster").addEventListener("click", async (e) => {
+  const btn = e.currentTarget;
+  if (captureState === "stopped") {
+    setClusterLabel("Press play to start");
+    window.setTimeout(() => setClusterLabel("Build rabbit holes"), 1300);
+    return;
+  }
+  setClusterLabel("Thinking…");
+  try {
+    try {
+      await chrome.runtime.sendMessage({ type: "flush" });
+    } catch {
+      // Older loaded copies of the extension may not have the flush listener yet.
+      // Continue anyway so Build still tests the backend instead of failing early.
+    }
+    const { accessToken } = await chrome.storage.local.get("accessToken");
+    const res = await fetch(`${BACKEND_URL}/cluster`, {
+      method: "POST",
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+    });
+    if (!res.ok) throw new Error(`cluster failed: ${res.status}`);
+    const payload = await res.json();
+    const holeCount = Array.isArray(payload?.holes) ? payload.holes.length : 0;
+    setClusterLabel(`${holeCount} rabbit hole${holeCount === 1 ? "" : "s"} found`);
+    chrome.tabs.create({ url: `${WEB_URL}/dashboard?cluster=1` });
+  } catch {
+    setClusterLabel("Backend offline");
+  }
+});
+
+render();

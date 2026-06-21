@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Rabbit Holes",
+  "description": "Turns your browsing into structured investigations.",
+  "version": "0.1.0",
+  "permissions": ["tabs", "history", "storage", "webNavigation", "alarms"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Rabbit Holes"
+  },
+  "externally_connectable": {
+    "matches": ["http://localhost:3000/*", "https://xlxjzxnlcplqmdoedhqm.supabase.co/*"]
+  }
+}
