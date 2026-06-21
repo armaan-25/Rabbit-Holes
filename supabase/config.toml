@@ -4,9 +4,6 @@ project_id = "rabbit-holes"
 enabled = true
 site_url = "https://web-production-bde52.up.railway.app"
 additional_redirect_urls = [
-  "http://localhost:3000/auth/callback",
-  "http://localhost:3000/extension-auth",
-  "http://localhost:3000/rabbit-auth",
   "https://web-production-bde52.up.railway.app/auth/callback",
   "https://web-production-bde52.up.railway.app/extension-auth",
   "https://web-production-bde52.up.railway.app/rabbit-auth"
