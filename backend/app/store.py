@@ -12,7 +12,9 @@ _events_by_user: dict[str, list[RawEvent]] = {}
 
 def add_events(events: list[RawEvent], user_id: str = "dev-user") -> int:
     if db.enabled():
-        return db.add_events(user_id, events)
+        total = db.add_events(user_id, events)
+        if db.enabled():
+            return total
     user_events = _events_by_user.setdefault(user_id, [])
     user_events.extend(events)
     return len(user_events)

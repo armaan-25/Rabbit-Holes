@@ -265,11 +265,12 @@ async function flush() {
   buffer = [];
   try {
     const auth = await authHeaders();
-    await fetch(`${BACKEND_URL}/events`, {
+    const res = await fetch(`${BACKEND_URL}/events`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...auth },
       body: JSON.stringify({ sessionId, events: batch }),
     });
+    if (!res.ok) throw new Error(`events failed: ${res.status}`);
   } catch {
     // Backend offline — keep the batch so we don't lose it.
     buffer = batch.concat(buffer);

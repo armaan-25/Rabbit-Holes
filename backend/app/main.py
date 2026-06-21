@@ -26,7 +26,7 @@ app.add_middleware(
 
 @app.get("/health")
 def health():
-    return {"ok": True, "db": db.enabled()}
+    return {"ok": True, "db": db.status()}
 
 
 @app.get("/me")
