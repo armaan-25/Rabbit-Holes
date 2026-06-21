@@ -124,7 +124,8 @@ document.getElementById("brand-open").addEventListener("click", () => {
   chrome.tabs.create({ url: `${WEB_URL}/dashboard` });
 });
 
-document.getElementById("signin").addEventListener("click", () => {
+document.getElementById("signin").addEventListener("click", async () => {
+  await chrome.runtime.sendMessage({ type: "signOut" }).catch(() => {});
   chrome.tabs.create({ url: `${WEB_URL}/extension-auth` });
 });
 

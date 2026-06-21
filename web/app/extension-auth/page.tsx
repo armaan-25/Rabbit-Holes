@@ -10,11 +10,14 @@ export default function ExtensionAuthPage() {
   useEffect(() => {
     void (async () => {
       const { data } = await supabase.auth.getSession();
-      const session = data.session;
+      let session = data.session;
       if (!session) {
         window.location.href = `/login?next=${encodeURIComponent(`/extension-auth${window.location.search}`)}`;
         return;
       }
+
+      const refreshed = await supabase.auth.refreshSession();
+      if (refreshed.data.session) session = refreshed.data.session;
 
       setStatus("Connecting extension...");
       const hash = new URLSearchParams({

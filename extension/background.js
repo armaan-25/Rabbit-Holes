@@ -35,7 +35,10 @@ async function refreshAccessToken() {
       headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY },
       body: JSON.stringify({ refresh_token: refreshToken }),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      await chrome.storage.local.remove(["accessToken", "refreshToken", "tokenExpiresAt", "user"]);
+      return null;
+    }
     const data = await res.json();
     if (!data?.access_token) return null;
     const next = {
@@ -53,9 +56,14 @@ async function refreshAccessToken() {
 
 // Returns a non-expired access token, refreshing a minute early when needed.
 async function getValidAccessToken() {
-  const { accessToken, tokenExpiresAt } = await chrome.storage.local.get(["accessToken", "tokenExpiresAt"]);
+  const { accessToken, refreshToken, tokenExpiresAt } = await chrome.storage.local.get(["accessToken", "refreshToken", "tokenExpiresAt"]);
   if (!accessToken) return null;
   const expSec = Number(tokenExpiresAt) || 0;
+  if (!expSec) {
+    if (!refreshToken) return null;
+    refreshing ??= refreshAccessToken().finally(() => { refreshing = null; });
+    return (await refreshing) ?? null;
+  }
   if (expSec && Date.now() / 1000 > expSec - 60) {
     refreshing ??= refreshAccessToken().finally(() => { refreshing = null; });
     return (await refreshing) ?? null;
