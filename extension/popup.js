@@ -63,12 +63,35 @@ async function setCaptureState(state) {
   }
 }
 
+// state: "in" (app panel), "out" (sign in), "expired" (sign in again).
+function setAuthView(state) {
+  const signedOut = state !== "in";
+  document.getElementById("auth-panel").classList.toggle("signed-out", signedOut);
+  document.getElementById("app-panel").classList.toggle("signed-out", signedOut);
+  document.getElementById("auth-msg").textContent =
+    state === "expired"
+      ? "Your session expired. Sign in again to keep capturing."
+      : "Sign in to save sessions to your Rabbit Holes account.";
+}
+
 async function render() {
   const auth = await chrome.runtime.sendMessage({ type: "getAuthState" }).catch(() => ({ signedIn: false }));
   signedIn = Boolean(auth?.signedIn);
-  document.getElementById("auth-panel").classList.toggle("signed-out", !signedIn);
-  document.getElementById("app-panel").classList.toggle("signed-out", !signedIn);
-  if (!signedIn) return;
+  if (!signedIn) {
+    setAuthView("out");
+    return;
+  }
+
+  // Validate (and silently refresh) the token; if it can't be revived the session is dead.
+  const valid = await chrome.runtime.sendMessage({ type: "getValidToken" }).catch(() => null);
+  if (!valid?.token) {
+    signedIn = false;
+    setAuthView("expired");
+    return;
+  }
+
+  setAuthView("in");
+  document.getElementById("account-email").textContent = auth.user?.email || "Signed in";
 
   const {
     events = [],
@@ -105,6 +128,12 @@ document.getElementById("signin").addEventListener("click", () => {
   chrome.tabs.create({ url: `${WEB_URL}/extension-auth` });
 });
 
+document.getElementById("signout").addEventListener("click", async () => {
+  await chrome.runtime.sendMessage({ type: "signOut" }).catch(() => {});
+  signedIn = false;
+  setAuthView("out");
+});
+
 document.getElementById("record-toggle").addEventListener("click", () => {
   setCaptureState(captureState === "recording" ? "paused" : "recording");
 });
@@ -125,11 +154,35 @@ document.getElementById("cluster").addEventListener("click", async (e) => {
       // Older loaded copies of the extension may not have the flush listener yet.
       // Continue anyway so Build still tests the backend instead of failing early.
     }
-    const { accessToken } = await chrome.storage.local.get("accessToken");
-    const res = await fetch(`${BACKEND_URL}/cluster`, {
+    const valid = await chrome.runtime.sendMessage({ type: "getValidToken" }).catch(() => null);
+    let token = valid?.token;
+    if (!token) {
+      setClusterLabel("Sign in first");
+      setAuthView("expired");
+      window.setTimeout(() => setClusterLabel("Build rabbit holes"), 1600);
+      return;
+    }
+    let res = await fetch(`${BACKEND_URL}/cluster`, {
       method: "POST",
-      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      headers: { Authorization: `Bearer ${token}` },
     });
+    if (res.status === 401) {
+      // Token rejected — force one refresh and retry before giving up.
+      const refreshed = await chrome.runtime.sendMessage({ type: "refreshToken" }).catch(() => null);
+      token = refreshed?.token;
+      if (token) {
+        res = await fetch(`${BACKEND_URL}/cluster`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+    }
+    if (res.status === 401) {
+      setClusterLabel("Session expired — sign in");
+      setAuthView("expired");
+      window.setTimeout(() => setClusterLabel("Build rabbit holes"), 1600);
+      return;
+    }
     if (!res.ok) throw new Error(`cluster failed: ${res.status}`);
     const payload = await res.json();
     const holeCount = Array.isArray(payload?.holes) ? payload.holes.length : 0;

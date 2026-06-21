@@ -3,6 +3,11 @@
 export const WEB_URL = "https://web-production-bde52.up.railway.app";
 export const BACKEND_URL = "https://rabbit-holes-production.up.railway.app";
 
+// Supabase project (publishable anon key — same one shipped in the web bundle,
+// safe to embed). Used to silently refresh an expired access token.
+export const SUPABASE_URL = "https://xlxjzxnlcplqmdoedhqm.supabase.co";
+export const SUPABASE_ANON_KEY = "sb_publishable_jdSlL8lF0b38mvIMiRHDWw_IvtYCw4x";
+
 // How many events to batch before flushing to the backend.
 export const FLUSH_AT = 1;
 

@@ -1,4 +1,4 @@
-import { BACKEND_URL, WEB_URL, FLUSH_AT, FLUSH_INTERVAL_MS, IGNORED_DOMAINS } from "./config.js";
+import { BACKEND_URL, WEB_URL, SUPABASE_URL, SUPABASE_ANON_KEY, FLUSH_AT, FLUSH_INTERVAL_MS, IGNORED_DOMAINS } from "./config.js";
 
 /**
  * Rabbit Holes capture worker.
@@ -23,9 +23,49 @@ let captureElapsedMs = 0;
 // detect close events with the URL still attached.
 const tabUrl = new Map();
 
+// In-flight refresh so concurrent callers share one network request.
+let refreshing = null;
+
+async function refreshAccessToken() {
+  const { refreshToken } = await chrome.storage.local.get("refreshToken");
+  if (!refreshToken) return null;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data?.access_token) return null;
+    const next = {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token ?? refreshToken,
+      tokenExpiresAt: data.expires_at ?? null,
+    };
+    if (data.user) next.user = { id: data.user.id ?? null, email: data.user.email ?? null };
+    await chrome.storage.local.set(next);
+    return data.access_token;
+  } catch {
+    return null;
+  }
+}
+
+// Returns a non-expired access token, refreshing a minute early when needed.
+async function getValidAccessToken() {
+  const { accessToken, tokenExpiresAt } = await chrome.storage.local.get(["accessToken", "tokenExpiresAt"]);
+  if (!accessToken) return null;
+  const expSec = Number(tokenExpiresAt) || 0;
+  if (expSec && Date.now() / 1000 > expSec - 60) {
+    refreshing ??= refreshAccessToken().finally(() => { refreshing = null; });
+    return (await refreshing) ?? null;
+  }
+  return accessToken;
+}
+
 async function authHeaders() {
-  const { accessToken } = await chrome.storage.local.get("accessToken");
-  return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+  const token = await getValidAccessToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 function persistTimer() {
@@ -153,6 +193,16 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     chrome.storage.local.get(["accessToken", "user"]).then(({ accessToken, user }) => {
       sendResponse({ ok: true, signedIn: Boolean(accessToken), user: user ?? null });
     });
+    return true;
+  }
+
+  if (message?.type === "getValidToken") {
+    getValidAccessToken().then((token) => sendResponse({ ok: true, token: token ?? null }));
+    return true;
+  }
+
+  if (message?.type === "refreshToken") {
+    refreshAccessToken().then((token) => sendResponse({ ok: true, token: token ?? null }));
     return true;
   }
 
