@@ -68,6 +68,97 @@ async function authHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+// ---- Account settings (synced from the web app's user_metadata) -----------
+
+const SETTINGS_DEFAULTS = {
+  auto_cluster: true,
+  ignore_glances: true,
+  pause_idle: true,
+  capture_private: false,
+  local_first: true,
+  strip_ids: true,
+  anon_insights: false,
+  src_papers: true,
+  src_github: true,
+  src_video: true,
+  src_social: true,
+};
+let settings = { ...SETTINGS_DEFAULTS };
+
+// Runtime capture gates.
+let idlePaused = false;
+const incognitoTabs = new Set();
+const pendingVisits = new Map(); // tabId -> timeout id (ignore-glances dwell gate)
+const GLANCE_DWELL_MS = 6000;
+
+async function loadSettings() {
+  const { settings: stored } = await chrome.storage.local.get("settings");
+  if (stored) settings = { ...SETTINGS_DEFAULTS, ...stored };
+}
+
+// Pull the latest settings the user saved on the web app.
+async function fetchSettings() {
+  const token = await getValidAccessToken();
+  if (!token) return;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return;
+    const user = await res.json();
+    const remote = user?.user_metadata?.settings;
+    if (remote && typeof remote === "object") {
+      settings = { ...SETTINGS_DEFAULTS, ...remote };
+      await chrome.storage.local.set({ settings });
+    }
+  } catch {
+    /* offline — keep cached settings */
+  }
+}
+
+// Strip query/hash from a captured URL when the privacy toggle is on.
+function cleanUrl(url) {
+  if (!settings.strip_ids) return url;
+  try {
+    const u = new URL(url);
+    u.search = "";
+    u.hash = "";
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
+// Honor the per-source toggles. Unmapped domains are always allowed.
+function sourceAllowed(host) {
+  const h = host.replace(/^www\./, "");
+  if (h === "github.com" || h.endsWith(".github.com")) return settings.src_github;
+  if (h === "arxiv.org" || h.endsWith(".arxiv.org")) return settings.src_papers;
+  if (h === "youtube.com" || h === "youtu.be" || h.endsWith(".youtube.com")) return settings.src_video;
+  if (h === "reddit.com" || h.endsWith(".reddit.com") || h === "x.com" || h === "twitter.com") return settings.src_social;
+  return true;
+}
+
+function captureActive() {
+  return captureState === "recording" && !idlePaused;
+}
+
+// Hold a visit briefly so quick glances (left within the dwell window) drop out
+// when "Ignore quick glances" is on.
+function scheduleVisit(tabId, event) {
+  if (!settings.ignore_glances) {
+    enqueue(event);
+    return;
+  }
+  const prev = pendingVisits.get(tabId);
+  if (prev) clearTimeout(prev);
+  const timer = setTimeout(() => {
+    pendingVisits.delete(tabId);
+    enqueue(event);
+  }, GLANCE_DWELL_MS);
+  pendingVisits.set(tabId, timer);
+}
+
 function persistTimer() {
   return chrome.storage.local.set({ captureStartedAt, captureElapsedMs });
 }
@@ -81,6 +172,9 @@ chrome.storage.local.get(["captureState", "sessionId", "captureStartedAt", "capt
   if (captureState === "recording" && captureStartedAt == null) captureStartedAt = Date.now();
   chrome.storage.local.set({ captureState, sessionId, captureStartedAt, captureElapsedMs });
 });
+
+// Load cached settings immediately, then refresh from the account.
+loadSettings().then(fetchSettings);
 
 const SEARCH_ENGINES = [
   { host: "www.google.com", param: "q", name: "Google" },
@@ -121,6 +215,7 @@ async function captureAuthFromUrl(url, tabId) {
         email: hash.get("email") || null,
       },
     });
+    void fetchSettings();
     if (tabId >= 0) chrome.tabs.remove(tabId).catch(() => null);
     return true;
   } catch {
@@ -141,7 +236,7 @@ function detectSearch(url) {
 }
 
 function enqueue(event) {
-  if (captureState !== "recording") return;
+  if (!captureActive()) return;
   const enriched = { ...event, sessionId, at: new Date().toISOString() };
   buffer.push(enriched);
   persist(enriched);
@@ -183,6 +278,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         user: message.user ?? null,
       })
       .then(() => {
+        void fetchSettings();
         if (_sender.tab?.id != null) chrome.tabs.remove(_sender.tab.id).catch(() => null);
         sendResponse({ ok: true });
       });
@@ -272,7 +368,10 @@ chrome.runtime.onMessageExternal.addListener((message, _sender, sendResponse) =>
       tokenExpiresAt: message.expiresAt,
       user: message.user ?? null,
     })
-    .then(() => sendResponse({ ok: true }));
+    .then(() => {
+      void fetchSettings();
+      sendResponse({ ok: true });
+    });
 
   return true;
 });
@@ -286,10 +385,13 @@ chrome.webNavigation.onCommitted.addListener((details) => {
     return;
   }
   if (!isCapturable(details.url)) return;
+  // Incognito stays incognito unless the user opted in.
+  if (incognitoTabs.has(details.tabId) && !settings.capture_private) return;
 
   const previous = tabUrl.get(details.tabId);
   tabUrl.set(details.tabId, details.url);
 
+  const host = hostnameOf(details.url);
   const search = detectSearch(details.url);
   if (search) {
     enqueue({
@@ -302,14 +404,17 @@ chrome.webNavigation.onCommitted.addListener((details) => {
     return;
   }
 
-  enqueue({
+  // Respect the per-source toggles.
+  if (!sourceAllowed(host)) return;
+
+  scheduleVisit(details.tabId, {
     type: "visit",
     tabId: details.tabId,
-    url: details.url,
-    domain: hostnameOf(details.url),
+    url: cleanUrl(details.url),
+    domain: host,
     // transitionType tells us link-click vs typed vs reload — the chain signal.
     transition: details.transitionType,
-    referrer: previous ?? null,
+    referrer: previous ? cleanUrl(previous) : null,
   });
 });
 
@@ -329,17 +434,35 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
 // ---- Tab lifecycle --------------------------------------------------------
 
 chrome.tabs.onCreated.addListener((tab) => {
+  if (tab.incognito && tab.id != null) incognitoTabs.add(tab.id);
+  if (tab.incognito && !settings.capture_private) return;
   enqueue({ type: "tab_open", tabId: tab.id, url: tab.pendingUrl || tab.url || null });
 });
 
 chrome.tabs.onRemoved.addListener((tabId) => {
+  // A still-pending visit means the tab was closed within the glance window — drop it.
+  const pending = pendingVisits.get(tabId);
+  if (pending) {
+    clearTimeout(pending);
+    pendingVisits.delete(tabId);
+  }
   enqueue({ type: "tab_close", tabId, url: tabUrl.get(tabId) ?? null });
   tabUrl.delete(tabId);
+  incognitoTabs.delete(tabId);
 });
 
-// ---- Periodic flush -------------------------------------------------------
+// ---- Idle: pause capture when the user steps away -------------------------
+
+chrome.idle.setDetectionInterval(60);
+chrome.idle.onStateChanged.addListener((state) => {
+  idlePaused = settings.pause_idle && state !== "active";
+});
+
+// ---- Periodic flush + settings sync ---------------------------------------
 
 chrome.alarms.create("flush", { periodInMinutes: FLUSH_INTERVAL_MS / 60000 });
+chrome.alarms.create("settings", { periodInMinutes: 5 });
 chrome.alarms.onAlarm.addListener((a) => {
   if (a.name === "flush") flush();
+  if (a.name === "settings") fetchSettings();
 });
