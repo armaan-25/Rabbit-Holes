@@ -85,6 +85,16 @@ const STEPS = [
   { n: "03", title: "Get your holes", body: "AI clusters the session into named investigations with a map, timeline, and brief." },
 ];
 
+const BROWSERS = [
+  { name: "Chrome", status: "Available now" },
+  { name: "Edge", status: "Chromium install" },
+  { name: "Brave", status: "Chromium install" },
+  { name: "Arc", status: "Chromium install" },
+  { name: "Opera", status: "Chromium install" },
+  { name: "Firefox", status: "Coming next" },
+  { name: "Safari", status: "Coming next" },
+];
+
 const reveal = {
   initial: { opacity: 0, y: 22 },
   whileInView: { opacity: 1, y: 0 },
@@ -105,11 +115,19 @@ export default function Landing() {
             <nav className="hidden items-center gap-7 text-[13px] font-semibold uppercase tracking-[0.12em] text-[#6a5a48] lg:flex">
               <a href="#how" className="transition hover:text-[#2a2018]">How it works</a>
               <a href="#features" className="transition hover:text-[#2a2018]">Features</a>
+              <a href="#download" className="transition hover:text-[#2a2018]">Download</a>
               <a href="#demo" className="transition hover:text-[#2a2018]">Demo</a>
             </nav>
           </div>
           <div className="flex items-center gap-2.5">
             <HeaderThemeToggle />
+            <a
+              href="/downloads/rabbit-holes-extension.zip"
+              download
+              className="hidden rounded-full border border-[#785a3224] bg-[#fbf6ec] px-5 py-3 text-[14.5px] font-semibold text-[#2a2018] transition hover:-translate-y-0.5 sm:inline-flex"
+            >
+              Download extension
+            </a>
             <button
               onClick={signInWithGoogle}
               className="inline-flex items-center gap-2.5 rounded-full bg-[#2a2018] px-5 py-3 text-[14.5px] font-semibold text-[#f3e8d4] shadow-[0_8px_22px_rgba(42,32,24,.18)] transition hover:-translate-y-0.5"
@@ -130,21 +148,28 @@ export default function Landing() {
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="mb-7 inline-flex items-center gap-2.5 rounded-full border border-[#785a3224] bg-[#fbf6ec] px-4 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-[#6a5a48]">
-              <span className="h-2 w-2 rounded-full bg-[#6a8050]" /> Chrome extension · Smart browser history
+              <span className="h-2 w-2 rounded-full bg-[#6a8050]" /> Browser extension · Smart history
             </div>
             <h1 className="rh-display text-[clamp(52px,8.2vw,120px)] font-semibold leading-[0.9] tracking-tight text-[#2a2018]">
-              Follow ideas,
+              Remember what
               <br />
-              <span className="italic text-[#c2703f]">not tabs.</span>
+              <span className="italic text-[#c2703f]">you looked into.</span>
             </h1>
             <p className="mt-7 max-w-[44ch] text-[clamp(18px,1.7vw,24px)] leading-[1.5] text-[#5a4a38]">
-              Rabbit Holes turns your browsing into <span className="font-semibold text-[#2a2018]">searchable investigations</span> — mapped, replayable, and ready to pick back up.
+              Rabbit Holes groups your searches and pages into the actual topics you were researching, so you can retrace, ask, and pick things back up later.
             </p>
 
             <div className="mt-9 flex flex-wrap items-center gap-4">
+              <a
+                href="/downloads/rabbit-holes-extension.zip"
+                download
+                className="inline-flex items-center gap-3 rounded-full bg-[#2a2018] px-8 py-4 text-[17px] font-semibold text-[#f3e8d4] shadow-[0_14px_40px_rgba(42,32,24,.24)] transition hover:-translate-y-0.5"
+              >
+                Download extension ↓
+              </a>
               <button
                 onClick={signInWithGoogle}
-                className="inline-flex items-center gap-3 rounded-full bg-[#2a2018] px-8 py-4 text-[17px] font-semibold text-[#f3e8d4] shadow-[0_14px_40px_rgba(42,32,24,.24)] transition hover:-translate-y-0.5"
+                className="inline-flex items-center gap-3 rounded-full border border-[#785a3233] bg-[#fbf6ec] px-8 py-4 text-[17px] font-semibold text-[#2a2018] transition hover:-translate-y-0.5"
               >
                 <GoogleMark /> Continue with Google
               </button>
@@ -161,9 +186,9 @@ export default function Landing() {
 
             <div className="mt-9 h-px w-full max-w-[680px] bg-[#785a3224]" />
             <div className="mt-5 flex flex-wrap gap-x-7 gap-y-2.5 text-[12.5px] font-semibold uppercase tracking-[0.08em] text-[#8a7860]">
-              <span>◳ Chrome extension</span>
+              <span>◳ Chrome · Edge · Brave · Arc · Opera</span>
               <span>✓ Free · no credit card</span>
-              <span>⛉ You stay in control</span>
+              <span>⛉ Pause or stop anytime</span>
             </div>
           </motion.div>
 
@@ -195,7 +220,7 @@ export default function Landing() {
         >
           {[0, 1].map((rep) => (
             <div key={rep} className="flex items-center">
-              {["Follow the thread", "In your own curiosity", "It maps, you explore", "Smart browser history", "Never lose the thread"].map((p, idx) => (
+              {["Searches become topics", "Pages become paths", "Maps, timelines, summaries", "Smart browser history", "Pick it back up later"].map((p, idx) => (
                 <span key={p} className="flex items-center">
                   <span
                     className={`rh-display px-7 text-[clamp(26px,3.6vw,48px)] font-semibold ${idx % 2 === 1 ? "" : "text-[#2a2018]"}`}
@@ -251,6 +276,48 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ── Download / browser support ────────────────────────── */}
+      <section id="download" className="mx-auto w-full max-w-[1200px] px-5 py-20 sm:px-8">
+        <motion.div {...reveal} className="overflow-hidden rounded-[30px] border border-[#785a3224] bg-[#fbf6ec] p-7 shadow-[0_18px_50px_rgba(70,45,20,.10)] sm:p-9">
+          <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+            <div>
+              <div className="mb-3 text-[13px] font-semibold uppercase tracking-[0.2em] text-[#a8967d]">Download</div>
+              <h2 className="rh-display text-[clamp(34px,4.6vw,60px)] font-semibold leading-[1.04] text-[#2a2018]">
+                Add Rabbit Holes to your browser.
+              </h2>
+              <p className="mt-4 text-[17px] leading-[1.6] text-[#6a5a48]">
+                Install the extension, sign in, and browse normally. Chromium browsers can load the same extension package today.
+              </p>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <a
+                  href="/downloads/rabbit-holes-extension.zip"
+                  download
+                  className="inline-flex rounded-full bg-[#2a2018] px-7 py-4 text-[16px] font-semibold text-[#f3e8d4] shadow-[0_12px_34px_rgba(42,32,24,.20)] transition hover:-translate-y-0.5"
+                >
+                  Download extension ↓
+                </a>
+                <a href="#how" className="inline-flex rounded-full border border-[#785a3233] bg-[#f6efe1] px-7 py-4 text-[16px] font-semibold text-[#2a2018] transition hover:-translate-y-0.5">
+                  Install steps
+                </a>
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {BROWSERS.map((browser) => {
+                const live = browser.status !== "Coming next";
+                return (
+                  <div key={browser.name} className="flex items-center justify-between gap-4 rounded-[16px] border border-[#785a3221] bg-[#f6efe1] px-4 py-3">
+                    <span className="rh-display text-[21px] font-semibold text-[#2a2018]">{browser.name}</span>
+                    <span className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${live ? "bg-[#e9f1e4] text-[#4d7049]" : "bg-[#f2e9d6] text-[#8a7860]"}`}>
+                      {browser.status}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
       {/* ── How it works ───────────────────────────────────────── */}
       <section id="how" className="mx-auto w-full max-w-[1200px] px-5 py-20 sm:px-8">
         <motion.div {...reveal} className="mb-14 text-center">
@@ -272,15 +339,22 @@ export default function Landing() {
       <section className="mx-auto w-full max-w-[1200px] px-5 pb-24 sm:px-8">
         <motion.div {...reveal} className="overflow-hidden rounded-[32px] bg-[#2a2018] px-8 py-20 text-center shadow-[0_24px_70px_rgba(42,32,24,.28)]">
           <h2 className="rh-display mx-auto max-w-[18ch] text-[clamp(38px,5vw,68px)] font-semibold leading-[1.03] text-[#f6ecd9]">
-            Stop losing the thread.
+            Browse normally. Keep the trail.
           </h2>
           <p className="mx-auto mt-5 max-w-[46ch] text-[clamp(17px,1.6vw,21px)] leading-[1.5] text-[#cdbd9f]">
-            Turn your browsing into a searchable map of everything you&rsquo;ve ever chased down.
+            Download the extension and let Rabbit Holes organize what you were researching without extra work.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="/downloads/rabbit-holes-extension.zip"
+              download
+              className="inline-flex items-center gap-2.5 rounded-full bg-[#f3e8d4] px-7 py-4 text-[16px] font-semibold text-[#1a1009] transition hover:-translate-y-0.5"
+            >
+              Download extension ↓
+            </a>
             <button
               onClick={signInWithGoogle}
-              className="inline-flex items-center gap-2.5 rounded-full bg-[#f3e8d4] px-7 py-4 text-[16px] font-semibold text-[#1a1009] transition hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2.5 rounded-full border border-[#f3e8d433] px-7 py-4 text-[16px] font-semibold text-[#f3e8d4] transition hover:-translate-y-0.5"
             >
               <GoogleMark /> Continue with Google
             </button>
@@ -295,7 +369,7 @@ export default function Landing() {
       <footer className="border-t border-[#785a321f]">
         <div className="mx-auto flex w-full max-w-[1200px] flex-col items-center justify-between gap-3 px-5 py-8 text-[14px] text-[#8a7860] sm:flex-row sm:px-8">
           <Wordmark className="text-[17px]" />
-          <span>Follow ideas, not tabs.</span>
+          <span>Smart history for the things you were actually researching.</span>
         </div>
       </footer>
     </div>

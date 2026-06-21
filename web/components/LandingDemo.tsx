@@ -182,50 +182,97 @@ const Holes = () => (
   </div>
 );
 
-const NODES = [
-  { label: "AI Systems", x: 27, y: 32 },
-  { label: "Startups", x: 78, y: 27 },
-  { label: "Quant", x: 33, y: 78 },
-  { label: "Inference", x: 75, y: 75 },
+const MAP_NODES = [
+  { label: "vLLM", kind: "Repo", x: 20, y: 30, dot: "#5f6f4d" },
+  { label: "PagedAttention", kind: "Paper", x: 43, y: 24, dot: "#9a5f45" },
+  { label: "DistServe", kind: "Paper", x: 62, y: 48, dot: "#9a5f45" },
+  { label: "Queueing Theory", kind: "Page", x: 50, y: 72, dot: "#8f7859" },
+  { label: "SGLang", kind: "Repo", x: 78, y: 70, dot: "#5f6f4d" },
 ];
 
 const Map = () => (
   <div>
-    <SceneHeader kicker="03 · The map" title="See how the thread actually connects" />
-    <div className="relative h-[250px] overflow-hidden rounded-[18px] border border-[#4a3928] bg-[#1b130d] [background-image:radial-gradient(rgba(194,112,63,.18)_1px,transparent_1px)] [background-size:22px_22px]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(120,90,50,.08),transparent_62%)]" />
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
-        {NODES.map((n, idx) => (
-          <motion.line
-            key={idx}
-            x1="50"
-            y1="50"
-            x2={n.x}
-            y2={n.y}
-            stroke="#8a623a"
-            strokeWidth="0.7"
-            opacity="0.62"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ delay: idx * 0.12, duration: 0.65, ease: "easeOut" }}
-          />
+    <div className="mb-4 flex items-end justify-between gap-4">
+      <SceneHeader kicker="03 · The map" title="See the route you actually took" />
+      <div className="hidden gap-1.5 sm:flex">
+        {["AI Systems", "Startups", "Quant"].map((item, idx) => (
+          <span key={item} className={`rounded-full border px-3 py-1.5 text-[11.5px] font-semibold ${idx === 0 ? "border-[#21170f] bg-[#21170f] text-[#f3e8d4]" : "border-[#d8c3a1] bg-[#fbf6ec] text-[#6a5a48]"}`}>
+            {item}
+          </span>
         ))}
-      </svg>
-      <div className="absolute left-1/2 top-1/2 grid h-14 w-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-[#6a5137] bg-[#2a2018] text-[12px] font-semibold uppercase tracking-wide text-[#b69b77] shadow-[0_10px_24px_rgba(0,0,0,.22)]">
-        YOU
       </div>
-      {NODES.map((n, idx) => (
+    </div>
+    <div className="grid h-[282px] overflow-hidden rounded-[18px] border border-[#4a3928] bg-[#1b130d] shadow-[0_18px_50px_rgba(25,15,6,.22)] sm:grid-cols-[minmax(0,1fr)_235px]">
+      <div className="relative overflow-hidden [background-image:radial-gradient(rgba(194,112,63,.18)_1px,transparent_1px)] [background-size:22px_22px]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(120,90,50,.10),transparent_62%)]" />
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
+          <defs>
+            <marker id="demo-arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#b77637" opacity="0.72" />
+            </marker>
+          </defs>
+          {MAP_NODES.slice(0, -1).map((n, idx) => {
+            const next = MAP_NODES[idx + 1];
+            return (
+              <motion.path
+                key={`${n.label}-${next.label}`}
+                d={`M ${n.x} ${n.y} C ${(n.x + next.x) / 2} ${n.y}, ${(n.x + next.x) / 2} ${next.y}, ${next.x} ${next.y}`}
+                fill="none"
+                stroke={idx === 1 ? "#b77637" : "#8a623a"}
+                strokeWidth="0.9"
+                opacity="0.72"
+                markerEnd="url(#demo-arrow)"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ delay: idx * 0.13, duration: 0.75, ease: "easeOut" }}
+              />
+            );
+          })}
+        </svg>
+        <div className="absolute left-4 top-4 rounded-full border border-[#4a3928] bg-[#21170f]/90 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#b69b77]">
+          AI Systems · 8 pages · 5 searches
+        </div>
         <motion.div
-          key={n.label}
-          initial={{ opacity: 0, scale: 0.6 }}
+          initial={{ opacity: 0, scale: 0.82 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.12 + idx * 0.1 }}
-          className="absolute -translate-x-1/2 -translate-y-1/2 rounded-[12px] border border-[#5b4530] bg-[#21170f] px-4 py-2 text-[14px] font-semibold text-[#f3e8d4] shadow-[0_10px_24px_rgba(0,0,0,.2)]"
-          style={{ left: `${n.x}%`, top: `${n.y}%` }}
+          transition={{ delay: 0.05 }}
+          className="absolute left-[8%] top-[48%] w-[122px] rounded-[15px] border border-[#c79f6b] bg-[#f6ecdc] px-3 py-2 shadow-[0_12px_28px_rgba(25,15,6,.18)]"
         >
-          {n.label}
+          <div className="mb-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-[#9b825f]">Search</div>
+          <div className="rh-display truncate text-[16px] font-semibold leading-none text-[#2a2018]">vLLM</div>
         </motion.div>
-      ))}
+        {MAP_NODES.map((n, idx) => (
+          <motion.div
+            key={n.label}
+            initial={{ opacity: 0, y: 8, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay: 0.12 + idx * 0.09 }}
+            className={`absolute w-[126px] -translate-x-1/2 -translate-y-1/2 rounded-[15px] border px-3 py-2 shadow-[0_12px_28px_rgba(25,15,6,.18)] ${idx === 2 ? "border-[#2a2018] bg-[#fff8ea] ring-4 ring-[#fff8ea]/10" : "border-[#d8c3a1] bg-[#fbf6ec]"}`}
+            style={{ left: `${n.x}%`, top: `${n.y}%` }}
+          >
+            <div className="mb-1 flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full" style={{ background: n.dot }} />
+              <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[#9b825f]">{n.kind}</span>
+            </div>
+            <div className="rh-display truncate text-[16px] font-semibold leading-none text-[#2a2018]">{n.label}</div>
+          </motion.div>
+        ))}
+      </div>
+      <div className="hidden border-l border-[#4a3928] bg-[#fbf6ec] p-4 sm:block">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a8967d]">Selected node</div>
+        <div className="rh-display mt-3 text-[27px] font-semibold leading-tight text-[#2a2018]">DistServe</div>
+        <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9b825f]">arxiv.org paper</div>
+        <p className="mt-3 text-[12.5px] leading-5 text-[#6a5a48]">
+          Came from PagedAttention, then opened Queueing Theory and SGLang.
+        </p>
+        <div className="mt-4 rounded-[13px] border border-[#e1d2ba] bg-white/55 p-3 text-[12px] font-semibold text-[#4c3927]">
+          1 path in · 2 paths out
+        </div>
+        <div className="mt-3 flex gap-2">
+          <span className="rounded-full bg-[#f2e9d6] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#8a7860]">paper</span>
+          <span className="rounded-full bg-[#e9f1e4] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#4d7049]">20m read</span>
+        </div>
+      </div>
     </div>
   </div>
 );
