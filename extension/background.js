@@ -1,4 +1,4 @@
-import { BACKEND_URL, FLUSH_AT, FLUSH_INTERVAL_MS, IGNORED_DOMAINS } from "./config.js";
+import { BACKEND_URL, WEB_URL, FLUSH_AT, FLUSH_INTERVAL_MS, IGNORED_DOMAINS } from "./config.js";
 
 /**
  * Rabbit Holes capture worker.
@@ -59,7 +59,7 @@ function hostnameOf(url) {
 
 function isCapturable(url) {
   if (!url || !/^https?:/.test(url)) return false;
-  if (url.startsWith("http://localhost:3000/rabbit-auth")) return false;
+  if (url.startsWith(`${WEB_URL}/rabbit-auth`)) return false;
   const host = hostnameOf(url);
   return !IGNORED_DOMAINS.includes(host);
 }
@@ -67,7 +67,7 @@ function isCapturable(url) {
 async function captureAuthFromUrl(url, tabId) {
   try {
     const parsed = new URL(url);
-    if (parsed.origin !== "http://localhost:3000" || parsed.pathname !== "/rabbit-auth") return false;
+    if (parsed.origin !== WEB_URL || parsed.pathname !== "/rabbit-auth") return false;
     const hash = new URLSearchParams(parsed.hash.replace(/^#/, ""));
     const accessToken = hash.get("accessToken");
     if (!accessToken) return false;
@@ -216,7 +216,7 @@ chrome.runtime.onMessageExternal.addListener((message, _sender, sendResponse) =>
 
 chrome.webNavigation.onCommitted.addListener((details) => {
   if (details.frameId !== 0) return; // top frame only
-  if (details.url.startsWith("http://localhost:3000/rabbit-auth")) {
+  if (details.url.startsWith(`${WEB_URL}/rabbit-auth`)) {
     void captureAuthFromUrl(details.url, details.tabId);
     return;
   }

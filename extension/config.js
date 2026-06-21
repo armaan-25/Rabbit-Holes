@@ -1,5 +1,7 @@
-// Where captured browsing events get shipped. Point this at your FastAPI backend.
-export const BACKEND_URL = "http://localhost:8000";
+// Production endpoints for the unpacked Chrome extension.
+// Keep these in sync with Railway service domains.
+export const WEB_URL = "https://web-production-bde52.up.railway.app";
+export const BACKEND_URL = "https://rabbit-holes-production.up.railway.app";
 
 // How many events to batch before flushing to the backend.
 export const FLUSH_AT = 1;
