@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { RABBIT_HOLES } from "@/lib/data";
 import { clusterHoleToRabbitHole, markDiscoverySeen, nextUnseenDiscovery, runCluster } from "@/lib/discovery";
 import { ACCENTS } from "@/lib/ui";
 import { useApp } from "@/lib/store";
+import { useHoles } from "@/hooks/useHoles";
 
 interface Item {
   label: string;
@@ -18,7 +18,8 @@ interface Item {
 }
 
 export function CommandPalette() {
-  const { paletteOpen, setPaletteOpen, togglePalette, triggerDiscovery, liveHoles, setLiveHoles } = useApp();
+  const { paletteOpen, setPaletteOpen, togglePalette, triggerDiscovery, setLiveHoles } = useApp();
+  const visibleHoles = useHoles();
   const router = useRouter();
   const [q, setQ] = useState("");
   const [cursor, setCursor] = useState(0);
@@ -66,7 +67,6 @@ export function CommandPalette() {
         },
       },
     ];
-    const visibleHoles = liveHoles.length ? liveHoles : RABBIT_HOLES;
     const holes: Item[] = visibleHoles.map((h) => ({
       label: h.title,
       hint: `${h.pages.length} pages · ${h.entities.length} entities`,
@@ -80,7 +80,7 @@ export function CommandPalette() {
     return all.filter(
       (i) => i.label.toLowerCase().includes(needle) || i.hint.toLowerCase().includes(needle)
     );
-  }, [q, triggerDiscovery, liveHoles, setLiveHoles]);
+  }, [q, triggerDiscovery, visibleHoles, setLiveHoles]);
 
   function go(item: Item) {
     setPaletteOpen(false);

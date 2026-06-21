@@ -4,9 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { RABBIT_HOLES } from "@/lib/data";
 import { ACCENTS, STATUS_META } from "@/lib/ui";
 import { useApp } from "@/lib/store";
+import { useHoles } from "@/hooks/useHoles";
 import { ThemeToggle } from "./ThemeToggle";
 import { Wordmark } from "./Logo";
 import { supabase } from "@/lib/supabase/client";
@@ -22,8 +22,7 @@ const NAV = [
 export function Sidebar() {
   const pathname = usePathname();
   const togglePalette = useApp((s) => s.togglePalette);
-  const liveHoles = useApp((s) => s.liveHoles);
-  const holes = liveHoles.length ? liveHoles : RABBIT_HOLES;
+  const holes = useHoles();
 
   // The landing is a full-bleed minimalist canvas — no chrome.
   if (pathname === "/") return null;

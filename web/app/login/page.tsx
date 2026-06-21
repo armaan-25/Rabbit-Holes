@@ -39,7 +39,9 @@ function LoginForm() {
       return;
     }
 
-    window.location.href = next;
+    // First-time accounts go through onboarding before their destination.
+    const onboarded = result.data.user?.user_metadata?.onboarded;
+    window.location.href = onboarded ? next : `/onboarding?next=${encodeURIComponent(next)}`;
   }
 
   async function google() {

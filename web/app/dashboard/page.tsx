@@ -1,17 +1,16 @@
 "use client";
 
-import { RABBIT_HOLES } from "@/lib/data";
 import { HoleCard } from "@/components/HoleCard";
 import { DiscoverButton } from "@/components/DiscoverButton";
 import { clusterHoleToRabbitHole, runCluster } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
-import { useEffect, useMemo, useState } from "react";
+import { useHoles } from "@/hooks/useHoles";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
-  const liveHoles = useApp((s) => s.liveHoles);
   const setLiveHoles = useApp((s) => s.setLiveHoles);
   const [syncLabel, setSyncLabel] = useState("live");
-  const holes = useMemo(() => (liveHoles.length ? liveHoles : RABBIT_HOLES), [liveHoles]);
+  const holes = useHoles();
   const totalTabs = holes.reduce((a, h) => a + h.pages.length, 0);
   const active = holes.filter((h) => h.status === "active").length;
   const latest = holes.find((h) => h.status === "active") ?? holes[0];
@@ -59,32 +58,62 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="mt-6 flex items-center gap-3 rounded-2xl border border-[#5f8a5c42] bg-[linear-gradient(100deg,rgba(95,138,92,.13),rgba(95,138,92,.05))] px-5 py-4">
-          <div className="relative h-[11px] w-[11px] shrink-0">
-            <span className="absolute inset-0 rounded-full bg-[#5f8a5c] [animation:dash-pulse_2s_ease-in-out_infinite]" />
-            <span className="absolute inset-0 rounded-full bg-[#5f8a5c] [animation:dash-ring_2s_ease-out_infinite]" />
-          </div>
-          <div className="text-[15.5px] text-[#3f5a3d]">
-            <span className="font-semibold text-[#37502f]">Capturing now</span> — this session is feeding <span className="font-semibold">{latest.title}</span> · {latest.pages.length} pages captured
-          </div>
-          <div className="ml-auto hidden text-[13px] italic text-[#7f9a7c] sm:block">{syncLabel}</div>
-        </div>
+        {holes.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <>
+            {latest && (
+              <div className="mt-6 flex items-center gap-3 rounded-2xl border border-[#5f8a5c42] bg-[linear-gradient(100deg,rgba(95,138,92,.13),rgba(95,138,92,.05))] px-5 py-4">
+                <div className="relative h-[11px] w-[11px] shrink-0">
+                  <span className="absolute inset-0 rounded-full bg-[#5f8a5c] [animation:dash-pulse_2s_ease-in-out_infinite]" />
+                  <span className="absolute inset-0 rounded-full bg-[#5f8a5c] [animation:dash-ring_2s_ease-out_infinite]" />
+                </div>
+                <div className="text-[15.5px] text-[#3f5a3d]">
+                  <span className="font-semibold text-[#37502f]">Capturing now</span> — this session is feeding <span className="font-semibold">{latest.title}</span> · {latest.pages.length} pages captured
+                </div>
+                <div className="ml-auto hidden text-[13px] italic text-[#7f9a7c] sm:block">{syncLabel}</div>
+              </div>
+            )}
 
-        <div className="mt-7 flex items-center justify-between">
-          <h2 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#a8967d]">
-            Active investigations
-          </h2>
-        </div>
+            <div className="mt-7 flex items-center justify-between">
+              <h2 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#a8967d]">
+                Active investigations
+              </h2>
+            </div>
 
-        <div className="mt-4 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(340px,1fr))] xl:[grid-template-columns:repeat(auto-fit,minmax(372px,1fr))]">
-          {holes.map((h, i) => (
-            <HoleCard key={h.id} hole={h} index={i} />
-          ))}
-        </div>
+            <div className="mt-4 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(340px,1fr))] xl:[grid-template-columns:repeat(auto-fit,minmax(372px,1fr))]">
+              {holes.map((h, i) => (
+                <HoleCard key={h.id} hole={h} index={i} />
+              ))}
+            </div>
 
-        <p className="mt-8 text-center text-[13px] italic text-[#9c8b75]">
-          Smart history for your research.
-        </p>
+            <p className="mt-8 text-center text-[13px] italic text-[#9c8b75]">
+              Smart history for your research.
+            </p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="mt-10 rounded-[24px] border border-dashed border-[#785a3240] bg-[#fbf6ec] px-8 py-16 text-center">
+      <div className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-2xl border border-[#785a3224] bg-[#f2e9d6] text-[30px]">🕳️</div>
+      <h2 className="rh-display text-[28px] font-semibold text-[#2a2018]">No rabbit holes yet</h2>
+      <p className="mx-auto mt-3 max-w-[46ch] text-[16px] leading-[1.55] text-[#6a5a48]">
+        Install the extension and browse normally. As you go down a rabbit hole, your searches and
+        pages get clustered into investigations that show up right here.
+      </p>
+      <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+        <a
+          href="/downloads/rabbit-holes-extension.zip"
+          download
+          className="inline-flex rounded-full bg-[#2a2018] px-7 py-3.5 text-[15px] font-semibold text-[#f3e8d4] transition hover:-translate-y-0.5"
+        >
+          Download extension ↓
+        </a>
       </div>
     </div>
   );
