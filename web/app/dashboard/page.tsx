@@ -1,6 +1,7 @@
 "use client";
 
 import { HoleCard } from "@/components/HoleCard";
+import { EmptyHoles } from "@/components/EmptyHoles";
 import { DiscoverButton } from "@/components/DiscoverButton";
 import { clusterHoleToRabbitHole, runCluster } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
@@ -59,7 +60,9 @@ export default function Dashboard() {
         </div>
 
         {holes.length === 0 ? (
-          <EmptyState />
+          <div className="mt-12">
+            <EmptyHoles eyebrow="Your rabbit holes" />
+          </div>
         ) : (
           <>
             {latest && (
@@ -92,28 +95,6 @@ export default function Dashboard() {
             </p>
           </>
         )}
-      </div>
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="mt-10 rounded-[24px] border border-dashed border-[#785a3240] bg-[#fbf6ec] px-8 py-16 text-center">
-      <div className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-2xl border border-[#785a3224] bg-[#f2e9d6] text-[30px]">🕳️</div>
-      <h2 className="rh-display text-[28px] font-semibold text-[#2a2018]">No rabbit holes yet</h2>
-      <p className="mx-auto mt-3 max-w-[46ch] text-[16px] leading-[1.55] text-[#6a5a48]">
-        Install the extension and browse normally. As you go down a rabbit hole, your searches and
-        pages get clustered into investigations that show up right here.
-      </p>
-      <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-        <a
-          href="/downloads/rabbit-holes-extension.zip"
-          download
-          className="inline-flex rounded-full bg-[#2a2018] px-7 py-3.5 text-[15px] font-semibold text-[#f3e8d4] transition hover:-translate-y-0.5"
-        >
-          Download extension ↓
-        </a>
       </div>
     </div>
   );

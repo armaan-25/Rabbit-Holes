@@ -134,6 +134,21 @@ async function flush() {
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message?.type === "rabbitHolesAuth") {
+    chrome.storage.local
+      .set({
+        accessToken: message.accessToken,
+        refreshToken: message.refreshToken,
+        tokenExpiresAt: message.expiresAt,
+        user: message.user ?? null,
+      })
+      .then(() => {
+        if (_sender.tab?.id != null) chrome.tabs.remove(_sender.tab.id).catch(() => null);
+        sendResponse({ ok: true });
+      });
+    return true;
+  }
+
   if (message?.type === "getAuthState") {
     chrome.storage.local.get(["accessToken", "user"]).then(({ accessToken, user }) => {
       sendResponse({ ok: true, signedIn: Boolean(accessToken), user: user ?? null });

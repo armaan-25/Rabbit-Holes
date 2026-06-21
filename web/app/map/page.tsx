@@ -13,6 +13,7 @@ import ReactFlow, {
   type NodeProps,
 } from "reactflow";
 import { ACCENTS, faviconFor } from "@/lib/ui";
+import { EmptyHolesPage } from "@/components/EmptyHoles";
 import { useHoles } from "@/hooks/useHoles";
 import { useDark } from "@/lib/useDark";
 import type { GraphNode, NodeKind, RabbitHole } from "@/lib/types";
@@ -157,6 +158,10 @@ export default function MapPage() {
   }, [hole]);
 
   const insight = hole ? selectedInsight(hole, selectedId) : null;
+
+  if (holes.length === 0) {
+    return <EmptyHolesPage eyebrow="Map" title="Nothing to map yet" hint="Once the extension clusters a browsing session, your investigations show up here as a graph of searches and pages." />;
+  }
 
   return (
     <div className="rh-paper min-h-screen px-5 py-7 sm:px-8 xl:px-12">

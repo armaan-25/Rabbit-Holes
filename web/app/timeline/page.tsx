@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { ACCENTS, KIND_META } from "@/lib/ui";
 import { clockTime, dayLabel } from "@/lib/format";
 import { useHoles } from "@/hooks/useHoles";
+import { EmptyHolesPage } from "@/components/EmptyHoles";
 import { CuriosityHeatmap } from "@/components/heatmaps/CuriosityHeatmap";
 
 interface Row {
@@ -44,6 +45,10 @@ export default function TimelinePage() {
     }
     return [...byDay.entries()];
   }, [filter, holes]);
+
+  if (holes.length === 0) {
+    return <EmptyHolesPage eyebrow="Timeline" title="No timeline yet" hint="Browse with the extension on and your searches and pages will replay here in the order they happened." />;
+  }
 
   return (
     <div className="rh-paper min-h-screen px-5 py-8 sm:px-8 xl:px-12">
