@@ -6,8 +6,12 @@ import { PluginHost } from "@/components/PluginHost";
 import { YouAreHere } from "@/components/shared/YouAreHere";
 
 export const metadata: Metadata = {
-  title: "Rabbit Holes — Follow ideas, not tabs.",
+  title: "Rabbit Holes — Smart history for your research.",
   description: "Your browsing, understood as investigations.",
+  icons: {
+    icon: "/icon.png",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

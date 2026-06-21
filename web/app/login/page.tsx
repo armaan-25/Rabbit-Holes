@@ -81,7 +81,7 @@ function LoginShell({ children }: { children: React.ReactNode }) {
       <div className="w-full max-w-[440px] rounded-[28px] border border-[#785a3224] bg-[#fbf6ec] p-8 shadow-[0_18px_60px_rgba(70,45,20,.13)]">
         <div className="mb-7 text-center">
           <Wordmark className="text-[40px]" />
-          <p className="mt-3 text-[16px] italic text-[#8a7860]">Follow ideas, not tabs.</p>
+          <p className="mt-3 text-[16px] italic text-[#8a7860]">Smart history for your research.</p>
         </div>
         {children}
       </div>

@@ -47,17 +47,17 @@
         margin-bottom: 14px;
       }
       .brand {
-        width: 100%; height: 42px; padding: 0; display: flex; align-items: center; gap: 9px;
+        width: 100%; height: 42px; padding: 0; display: flex; align-items: center; gap: 10px;
         border: 0; background: transparent; text-align: left;
       }
       .logo {
         display: grid; place-items: center; width: 38px; height: 38px; flex: 0 0 auto;
         overflow: hidden; border-radius: 12px; border: 1px solid var(--line); background: var(--ink);
       }
-      .logo img { width: 100%; height: 100%; object-fit: cover; }
+      .logo img { width: 34px; height: 34px; object-fit: contain; transform: translateY(-1px); }
       .title {
         min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        font-family: "Playfair Display", Georgia, serif; font-size: 21px; font-weight: 700; line-height: 1;
+        font-family: "Playfair Display", Georgia, serif; font-size: 21px; font-weight: 700; line-height: .95;
       }
       .icon-button {
         width: 36px; height: 36px; min-height: 36px; padding: 0; display: grid; place-items: center;
@@ -118,7 +118,7 @@
   <body>
     <div class="header">
       <button class="brand" id="brand-open" title="Open dashboard">
-        <span class="logo"><img src="assets/watercolor-rabbit-front.png" alt="" /></span>
+        <span class="logo"><img src="assets/icon-128.png" alt="" /></span>
         <span class="title">Rabbit Holes</span>
       </button>
       <button class="icon-button dashboard-link" id="open" title="Open dashboard">↗</button>

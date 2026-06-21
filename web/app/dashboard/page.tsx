@@ -83,7 +83,7 @@ export default function Dashboard() {
         </div>
 
         <p className="mt-8 text-center text-[13px] italic text-[#9c8b75]">
-          Follow ideas, not tabs.
+          Smart history for your research.
         </p>
       </div>
     </div>

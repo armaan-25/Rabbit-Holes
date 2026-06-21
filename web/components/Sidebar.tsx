@@ -32,7 +32,7 @@ export function Sidebar() {
     <aside className="sticky top-0 z-20 hidden h-screen w-[352px] shrink-0 flex-col border-r border-[#785a3224] bg-[#f6efe1] px-7 py-8 md:flex">
       <Link href="/" className="mb-8 block px-2 no-underline">
         <Wordmark className="text-[22px]" />
-        <div className="mt-1.5 text-[13px] italic text-[#8a7860]">Follow ideas, not tabs.</div>
+        <div className="mt-1.5 text-[13px] italic text-[#8a7860]">Smart history for your research.</div>
       </Link>
 
       <button

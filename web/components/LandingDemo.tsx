@@ -33,7 +33,7 @@ export function LandingDemo() {
             <span className="h-3 w-3 rounded-full bg-[#6a8050]" />
           </div>
           <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-[#785a3221] bg-[#fbf6ec] px-4 py-1 text-[12.5px] text-[#8a7860]">
-            <span>🔒</span> rabbithole.app
+            <span>●</span> Rabbit Holes
           </div>
         </div>
 
