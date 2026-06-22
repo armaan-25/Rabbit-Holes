@@ -20,6 +20,11 @@
       "matches": ["https://web-production-bde52.up.railway.app/rabbit-auth*"],
       "js": ["auth-relay.js"],
       "run_at": "document_start"
+    },
+    {
+      "matches": ["https://web-production-bde52.up.railway.app/*", "http://localhost:3000/*"],
+      "js": ["stats-bridge.js"],
+      "run_at": "document_idle"
     }
   ],
   "action": {

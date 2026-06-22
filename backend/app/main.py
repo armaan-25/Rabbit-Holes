@@ -107,6 +107,22 @@ def signals(user: CurrentUser = Depends(get_current_user)):
     }
 
 
+@app.get("/stats")
+def stats(user: CurrentUser = Depends(get_current_user)):
+    """Live counters matching the extension popup's page/search/tab metrics."""
+    events = store.all_events(user.id)
+    visits = {e.url for e in events if e.type == "visit" and e.url}
+    searches = [e for e in events if e.type == "search"]
+    tabs = [e for e in events if e.type == "tab_open"]
+    return {
+        "pages": len(visits),
+        "searches": len(searches),
+        "tabs": len(tabs),
+        "captureState": "recording",
+        "source": "backend",
+    }
+
+
 @app.post("/clear")
 def clear(req: ClearRequest | None = None, user: CurrentUser = Depends(get_current_user)):
     """Clear the current in-memory capture session."""

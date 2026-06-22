@@ -7,6 +7,7 @@ import type { User } from "@supabase/supabase-js";
 import { ACCENTS, STATUS_META } from "@/lib/ui";
 import { useApp } from "@/lib/store";
 import { useHoles } from "@/hooks/useHoles";
+import { formatElapsed, useSessionStats } from "@/hooks/useSessionStats";
 import { ThemeToggle } from "./ThemeToggle";
 import { Wordmark } from "./Logo";
 import { supabase } from "@/lib/supabase/client";
@@ -23,6 +24,8 @@ export function Sidebar() {
   const pathname = usePathname();
   const togglePalette = useApp((s) => s.togglePalette);
   const holes = useHoles();
+  const stats = useSessionStats();
+  const statusLabel = stats.captureState === "recording" ? "Capturing" : stats.captureState === "paused" ? "Paused" : "Stopped";
 
   // The landing is a full-bleed minimalist canvas — no chrome.
   if (pathname === "/") return null;
@@ -94,16 +97,34 @@ export function Sidebar() {
         })}
       </div>
 
-      <div className="mt-5 flex items-center gap-3 rounded-[13px] border border-[#5f8a5c42] bg-[#eef5ea] px-4 py-3">
+      <div className="mt-5 rounded-[13px] border border-[#5f8a5c42] bg-[#eef5ea] px-4 py-3">
+        <div className="flex items-center gap-3">
         <span
           className="h-2.5 w-2.5 rounded-full"
-          style={{ background: STATUS_META.active.dot }}
+          style={{ background: stats.captureState === "recording" ? STATUS_META.active.dot : "#c7ae84" }}
         />
-        <span className="text-[14px] text-[#4d7049]">Capturing · 3 tabs</span>
+          <span className="text-[14px] font-semibold text-[#4d7049]">
+            {statusLabel}{typeof stats.elapsedMs === "number" ? ` · ${formatElapsed(stats.elapsedMs)}` : ""}
+          </span>
+        </div>
+        <div className="mt-3 grid grid-cols-3 divide-x divide-[#5f8a5c24] rounded-[10px] bg-[#fbf6ec]/70 py-2">
+          <MiniStat n={stats.pages} label="pages" />
+          <MiniStat n={stats.searches} label="searches" />
+          <MiniStat n={stats.tabs} label="tabs" />
+        </div>
       </div>
       <ThemeToggle />
       <SidebarAccount />
     </aside>
+  );
+}
+
+function MiniStat({ n, label }: { readonly n: number; readonly label: string }) {
+  return (
+    <div className="px-2 text-center">
+      <div className="text-[17px] font-semibold tabular-nums text-[#2a2018]">{n}</div>
+      <div className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-[#8a7860]">{label}</div>
+    </div>
   );
 }
 

@@ -6,15 +6,16 @@ import { DiscoverButton } from "@/components/DiscoverButton";
 import { clusterHoleToRabbitHole, runCluster } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
 import { useHoles } from "@/hooks/useHoles";
+import { formatElapsed, useSessionStats } from "@/hooks/useSessionStats";
 import { useEffect, useState } from "react";
 
 export default function Dashboard() {
   const setLiveHoles = useApp((s) => s.setLiveHoles);
   const [syncLabel, setSyncLabel] = useState("live");
   const holes = useHoles();
-  const totalTabs = holes.reduce((a, h) => a + h.pages.length, 0);
-  const active = holes.filter((h) => h.status === "active").length;
+  const stats = useSessionStats();
   const latest = holes.find((h) => h.status === "active") ?? holes[0];
+  const statusLabel = stats.captureState === "recording" ? "Capturing" : stats.captureState === "paused" ? "Paused" : "Stopped";
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("cluster") !== "1") return;
@@ -51,9 +52,9 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden items-center gap-5 rounded-xl border border-[#785a321f] bg-[#fbf6ec] px-4 py-2.5 shadow-[0_2px_16px_rgba(70,45,20,.06)] sm:flex">
-              <HeaderStat n={holes.length} label="holes" />
-              <HeaderStat n={totalTabs} label="pages" />
-              <HeaderStat n={active} label="active" accent />
+              <HeaderStat n={stats.pages} label="pages" />
+              <HeaderStat n={stats.searches} label="searches" />
+              <HeaderStat n={stats.tabs} label="tabs" accent />
             </div>
             <DiscoverButton />
           </div>
@@ -68,13 +69,15 @@ export default function Dashboard() {
             {latest && (
               <div className="mt-6 flex items-center gap-3 rounded-2xl border border-[#5f8a5c42] bg-[linear-gradient(100deg,rgba(95,138,92,.13),rgba(95,138,92,.05))] px-5 py-4">
                 <div className="relative h-[11px] w-[11px] shrink-0">
-                  <span className="absolute inset-0 rounded-full bg-[#5f8a5c] [animation:dash-pulse_2s_ease-in-out_infinite]" />
-                  <span className="absolute inset-0 rounded-full bg-[#5f8a5c] [animation:dash-ring_2s_ease-out_infinite]" />
+                  <span className={`absolute inset-0 rounded-full ${stats.captureState === "recording" ? "bg-[#5f8a5c] [animation:dash-pulse_2s_ease-in-out_infinite]" : "bg-[#c7ae84]"}`} />
+                  {stats.captureState === "recording" && <span className="absolute inset-0 rounded-full bg-[#5f8a5c] [animation:dash-ring_2s_ease-out_infinite]" />}
                 </div>
                 <div className="text-[15.5px] text-[#3f5a3d]">
-                  <span className="font-semibold text-[#37502f]">Capturing now</span> — this session is feeding <span className="font-semibold">{latest.title}</span> · {latest.pages.length} pages captured
+                  <span className="font-semibold text-[#37502f]">{statusLabel}</span>
+                  {typeof stats.elapsedMs === "number" ? <span className="font-semibold"> · {formatElapsed(stats.elapsedMs)}</span> : null}
+                  {" "}— {stats.pages} pages · {stats.searches} searches · {stats.tabs} tabs
                 </div>
-                <div className="ml-auto hidden text-[13px] italic text-[#7f9a7c] sm:block">{syncLabel}</div>
+                <div className="ml-auto hidden text-[13px] italic text-[#7f9a7c] sm:block">{stats.source === "extension" ? "extension live" : syncLabel}</div>
               </div>
             )}
 
