@@ -5,6 +5,7 @@ import { EmptyHoles } from "@/components/EmptyHoles";
 import { DiscoverButton } from "@/components/DiscoverButton";
 import { clusterHoleToRabbitHole, hasMeaningfulNewContext, rememberClusterContext, runCluster } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
+import { bulkPatchBackendHoles, patchBackendHole } from "@/lib/api";
 import { useLibraryHoles } from "@/hooks/useHoles";
 import { formatElapsed, useSessionStats } from "@/hooks/useSessionStats";
 import { useEffect, useMemo, useState } from "react";
@@ -14,6 +15,9 @@ export default function Dashboard() {
   const toggleFavorite = useApp((s) => s.toggleFavorite);
   const toggleArchive = useApp((s) => s.toggleArchive);
   const deleteHole = useApp((s) => s.deleteHole);
+  const patchHoles = useApp((s) => s.patchHoles);
+  const deleteHoles = useApp((s) => s.deleteHoles);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [syncLabel, setSyncLabel] = useState("live");
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"active" | "favorites" | "archived" | "all">("active");
@@ -39,6 +43,38 @@ export default function Dashboard() {
   }, [filter, holes, query, sort]);
   const latest = visibleHoles.find((h) => h.status === "active") ?? visibleHoles[0];
   const statusLabel = stats.captureState === "recording" ? "Capturing" : stats.captureState === "paused" ? "Paused" : "Stopped";
+
+  function updateSelection(id: string, selected: boolean) {
+    setSelectedIds((ids) => selected ? Array.from(new Set([...ids, id])) : ids.filter((x) => x !== id));
+  }
+
+  function favoriteOne(id: string) {
+    const hole = holes.find((h) => h.id === id);
+    toggleFavorite(id);
+    void patchBackendHole(id, { favorite: !(hole?.favorite ?? false) }).catch((err) => console.error("favorite persist failed", err));
+  }
+
+  function archiveOne(id: string) {
+    const hole = holes.find((h) => h.id === id);
+    toggleArchive(id);
+    void patchBackendHole(id, { archived: !(hole?.archived ?? false) }).catch((err) => console.error("archive persist failed", err));
+  }
+
+  function deleteOne(id: string) {
+    deleteHole(id);
+    setSelectedIds((ids) => ids.filter((x) => x !== id));
+    void patchBackendHole(id, { deleted: true }).catch((err) => console.error("delete persist failed", err));
+  }
+
+  function bulk(action: "favorite" | "archive" | "delete") {
+    const ids = selectedIds;
+    if (!ids.length) return;
+    if (action === "favorite") patchHoles(ids, { favorite: true });
+    if (action === "archive") patchHoles(ids, { archived: true, status: "dormant" });
+    if (action === "delete") deleteHoles(ids);
+    setSelectedIds([]);
+    void bulkPatchBackendHoles(ids, action).catch((err) => console.error("bulk persist failed", err));
+  }
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("cluster") !== "1") return;
@@ -141,6 +177,16 @@ export default function Dashboard() {
               </div>
             </div>
 
+            {selectedIds.length > 0 && (
+              <div className="sticky top-4 z-10 mt-4 flex flex-wrap items-center gap-3 rounded-[18px] border border-[#5f8a5c42] bg-[#f4efe3]/95 px-4 py-3 shadow-[0_12px_34px_rgba(70,45,20,.12)] backdrop-blur">
+                <div className="mr-auto text-[14px] font-semibold text-[#37502f]">{selectedIds.length} selected</div>
+                <button onClick={() => bulk("favorite")} className="rounded-full border border-[#785a3224] bg-[#fbf6ec] px-4 py-2 text-[13px] font-semibold text-[#5a4a38]">Favorite</button>
+                <button onClick={() => bulk("archive")} className="rounded-full border border-[#785a3224] bg-[#fbf6ec] px-4 py-2 text-[13px] font-semibold text-[#5a4a38]">Archive</button>
+                <button onClick={() => bulk("delete")} className="rounded-full border border-[#b8795f33] bg-[#fff6f1] px-4 py-2 text-[13px] font-semibold text-[#a8472a]">Delete</button>
+                <button onClick={() => setSelectedIds([])} className="rounded-full px-4 py-2 text-[13px] font-semibold text-[#8a7860]">Clear</button>
+              </div>
+            )}
+
             {visibleHoles.length === 0 ? (
               <div className="mt-6 rounded-[22px] border border-dashed border-[#785a3224] bg-[#fbf6ec] px-8 py-12 text-center">
                 <div className="rh-display text-[28px] font-semibold text-[#2a2018]">Nothing matches this view</div>
@@ -154,7 +200,16 @@ export default function Dashboard() {
             ) : (
               <div className="mt-4 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(340px,1fr))] xl:[grid-template-columns:repeat(auto-fit,minmax(372px,1fr))]">
                 {visibleHoles.map((h, i) => (
-                  <HoleCard key={h.id} hole={h} index={i} onFavorite={toggleFavorite} onArchive={toggleArchive} onDelete={deleteHole} />
+                  <HoleCard
+                    key={h.id}
+                    hole={h}
+                    index={i}
+                    selected={selectedIds.includes(h.id)}
+                    onSelect={updateSelection}
+                    onFavorite={favoriteOne}
+                    onArchive={archiveOne}
+                    onDelete={deleteOne}
+                  />
                 ))}
               </div>
             )}

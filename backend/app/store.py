@@ -8,6 +8,7 @@ from .schemas import RawEvent
 from . import db
 
 _events_by_user: dict[str, list[RawEvent]] = {}
+_last_signature_by_user: dict[str, str] = {}
 
 
 def add_events(events: list[RawEvent], user_id: str = "dev-user") -> int:
@@ -20,10 +21,11 @@ def add_events(events: list[RawEvent], user_id: str = "dev-user") -> int:
     return len(user_events)
 
 
-def all_events(user_id: str = "dev-user") -> list[RawEvent]:
+def all_events(user_id: str = "dev-user", limit: int | None = None, offset: int = 0) -> list[RawEvent]:
     if db.enabled():
-        return db.all_events(user_id)
-    return list(_events_by_user.get(user_id, []))
+        return db.all_events(user_id, limit, offset)
+    events = list(_events_by_user.get(user_id, []))
+    return events[offset : offset + limit] if limit is not None else events
 
 
 def pages(user_id: str = "dev-user") -> list[RawEvent]:
@@ -55,3 +57,13 @@ def clear(user_id: str = "dev-user", session_id: str | None = None) -> None:
         _events_by_user[user_id] = [e for e in _events_by_user.get(user_id, []) if e.sessionId != session_id]
     else:
         _events_by_user[user_id] = []
+
+
+def latest_source_signature(user_id: str = "dev-user") -> str | None:
+    if db.enabled():
+        return db.latest_source_signature(user_id)
+    return _last_signature_by_user.get(user_id)
+
+
+def remember_source_signature(user_id: str, signature: str) -> None:
+    _last_signature_by_user[user_id] = signature

@@ -83,3 +83,30 @@ export async function clearBackendData(): Promise<void> {
   if (res.status === 401) return;
   if (!res.ok) throw new Error(`clear failed: ${res.status}`);
 }
+
+export type HolePatch = {
+  favorite?: boolean;
+  archived?: boolean;
+  deleted?: boolean;
+};
+
+export async function patchBackendHole(id: string, patch: HolePatch): Promise<void> {
+  const res = await fetch(`${BACKEND_URL}/holes/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: await authHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify(patch),
+  });
+  if (res.status === 401) return;
+  if (!res.ok) throw new Error(`hole patch failed: ${res.status}`);
+}
+
+export async function bulkPatchBackendHoles(ids: string[], action: "favorite" | "unfavorite" | "archive" | "restore" | "delete"): Promise<void> {
+  if (!ids.length) return;
+  const res = await fetch(`${BACKEND_URL}/holes/bulk`, {
+    method: "POST",
+    headers: await authHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ ids, action }),
+  });
+  if (res.status === 401) return;
+  if (!res.ok) throw new Error(`bulk hole patch failed: ${res.status}`);
+}

@@ -18,6 +18,8 @@ interface AppState {
   setLiveHoles: (holes: RabbitHole[]) => void;
   updateHole: (id: string, patch: Partial<RabbitHole>) => void;
   deleteHole: (id: string) => void;
+  patchHoles: (ids: string[], patch: Partial<RabbitHole>) => void;
+  deleteHoles: (ids: string[]) => void;
   toggleFavorite: (id: string) => void;
   toggleArchive: (id: string) => void;
 
@@ -60,6 +62,18 @@ export const useApp = create<AppState>((set) => ({
   }),
   deleteHole: (id) => set((s) => {
     const holes = s.liveHoles.filter((h) => h.id !== id);
+    writeLiveHoles(holes);
+    return { liveHoles: holes };
+  }),
+  patchHoles: (ids, patch) => set((s) => {
+    const selected = new Set(ids);
+    const holes = s.liveHoles.map((h) => (selected.has(h.id) ? { ...h, ...patch } : h));
+    writeLiveHoles(holes);
+    return { liveHoles: holes };
+  }),
+  deleteHoles: (ids) => set((s) => {
+    const selected = new Set(ids);
+    const holes = s.liveHoles.filter((h) => !selected.has(h.id));
     writeLiveHoles(holes);
     return { liveHoles: holes };
   }),

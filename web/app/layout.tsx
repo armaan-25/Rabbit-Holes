@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "reactflow/dist/style.css";
-import { Sidebar } from "@/components/Sidebar";
+import { MobileNav, Sidebar } from "@/components/Sidebar";
 import { PluginHost } from "@/components/PluginHost";
 import { YouAreHere } from "@/components/shared/YouAreHere";
 
@@ -25,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </main>
         </div>
         <YouAreHere />
+        <MobileNav />
         <PluginHost />
       </body>
     </html>

@@ -50,6 +50,17 @@ class ClusterResult(BaseModel):
     confidence: float
 
 
+class HoleUpdate(BaseModel):
+    favorite: Optional[bool] = None
+    archived: Optional[bool] = None
+    deleted: Optional[bool] = None
+
+
+class BulkHoleAction(BaseModel):
+    ids: list[str]
+    action: Literal["favorite", "unfavorite", "archive", "restore", "delete"]
+
+
 # --- Per-hole AI requests (ask + synthesize) -------------------------------
 
 class HolePage(BaseModel):

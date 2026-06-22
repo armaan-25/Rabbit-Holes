@@ -13,12 +13,16 @@ export function HoleCard({
   onFavorite,
   onArchive,
   onDelete,
+  selected,
+  onSelect,
 }: {
   hole: RabbitHole;
   index: number;
   onFavorite?: (id: string) => void;
   onArchive?: (id: string) => void;
   onDelete?: (id: string) => void;
+  selected?: boolean;
+  onSelect?: (id: string, selected: boolean) => void;
 }) {
   const accent = ACCENTS[hole.accent];
   const repos = hole.entities.filter((e) => e.kind === "repo").length || hole.summary.repos.length;
@@ -39,7 +43,7 @@ export function HoleCard({
       transition={{ delay: index * 0.06, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
       <Link href={`/holes/${hole.id}`} className="group block">
-        <div className="relative min-h-[292px] overflow-hidden rounded-[20px] border border-[#785a3224] bg-[#fbf6ec] p-6 text-left shadow-[0_2px_18px_rgba(70,45,20,.06)] transition duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_16px_36px_rgba(70,45,20,.14)]">
+        <div className={`relative min-h-[292px] overflow-hidden rounded-[20px] border bg-[#fbf6ec] p-6 text-left shadow-[0_2px_18px_rgba(70,45,20,.06)] transition duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_16px_36px_rgba(70,45,20,.14)] ${selected ? "border-[#5f8a5c] ring-2 ring-[#5f8a5c33]" : "border-[#785a3224]"}`}>
           {hole.status === "active" && (
             <>
               <div className="pointer-events-none absolute inset-0 rounded-[20px] shadow-[0_0_0_1px_rgba(95,138,92,.24),0_12px_34px_rgba(95,138,92,.12)]" />
@@ -50,6 +54,19 @@ export function HoleCard({
             <div className="mb-4 flex items-center justify-between gap-3">
               <StatusBadge status={hole.status} />
               <div className="flex items-center gap-2">
+                {onSelect && (
+                  <button
+                    type="button"
+                    title={selected ? "Deselect" : "Select"}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onSelect(hole.id, !selected);
+                    }}
+                    className={`grid h-7 w-7 place-items-center rounded-full border text-[13px] transition ${selected ? "border-[#5f8a5c66] bg-[#e5efe0] text-[#37502f]" : "border-[#785a3224] bg-[#f6efe1] text-[#8a7860]"}`}
+                  >
+                    {selected ? "✓" : ""}
+                  </button>
+                )}
                 <span className="text-[13px] text-[#a8967d]">{relativeTime(hole.lastActive)}</span>
                 {(onFavorite || onArchive || onDelete) && (
                   <div className="flex items-center gap-1 opacity-80 transition group-hover:opacity-100">

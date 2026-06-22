@@ -119,6 +119,31 @@ export function Sidebar() {
   );
 }
 
+export function MobileNav() {
+  const pathname = usePathname();
+  if (pathname === "/") return null;
+
+  return (
+    <nav className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 rounded-[20px] border border-[#785a3224] bg-[#1f150f]/92 p-2 shadow-[0_18px_48px_rgba(18,11,5,.32)] backdrop-blur md:hidden">
+      {NAV.map((n) => {
+        const active = pathname === n.href;
+        return (
+          <Link
+            key={n.href}
+            href={n.href}
+            className={`flex flex-col items-center justify-center rounded-[14px] px-2 py-2 text-[11px] font-semibold transition ${
+              active ? "bg-[#f3e8d4] text-[#20140d]" : "text-[#d8c6a8] hover:bg-[#f3e8d414]"
+            }`}
+          >
+            <span className="text-[16px] leading-none">{n.glyph}</span>
+            <span className="mt-1 truncate">{n.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
 function MiniStat({ n, label }: { readonly n: number; readonly label: string }) {
   return (
     <div className="px-2 text-center">

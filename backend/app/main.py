@@ -1,18 +1,20 @@
 import os
+import hashlib
+import json
 import uuid
 
 from dotenv import load_dotenv
 
 load_dotenv()  # pull ANTHROPIC_API_KEY etc. from backend/.env before anything else
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi import Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import store, ai, db
 from .auth import CurrentUser, get_current_user
 from .rate_limit import check as rate_limit
-from .schemas import EventBatch, AskRequest, SynthesizeRequest, ClearRequest
+from .schemas import EventBatch, AskRequest, SynthesizeRequest, ClearRequest, HoleUpdate, BulkHoleAction
 
 app = FastAPI(title="Rabbit Holes API", version="0.1.0")
 
@@ -61,33 +63,88 @@ def run_cluster(user: CurrentUser = Depends(get_current_user)):
     db.ensure_user(user.id, user.email)
     pages = store.pages(user.id)
     searches = store.searches(user.id)
+    signature = source_signature(pages, searches)
+    empty_signature = source_signature([], [])
+    if signature == empty_signature or store.latest_source_signature(user.id) == signature:
+        return {
+            "holes": [],
+            "pages": serialize_pages(pages),
+            "searches": serialize_searches(searches),
+            "no_change": True,
+            "source_signature": signature,
+        }
     holes = ai.cluster(pages, searches)
     session_id = pages[-1].sessionId if pages else searches[-1].sessionId if searches else str(uuid.uuid4())
-    db.save_holes(user.id, session_id, holes)
+    saved_holes = db.save_holes(user.id, session_id, holes, signature)
+    store.remember_source_signature(user.id, signature)
     return {
-        "holes": [h.model_dump() for h in holes],
-        "pages": [
-            {
-                "id": f"p{i}",
-                "url": p.url,
-                "domain": p.domain,
-                "title": p.title,
-                "at": p.at,
-                "referrer": p.referrer,
-            }
-            for i, p in enumerate(pages)
-        ],
-        "searches": [
-            {
-                "id": f"s{i}",
-                "query": s.query,
-                "engine": s.engine,
-                "url": s.url,
-                "at": s.at,
-            }
-            for i, s in enumerate(searches)
-        ],
+        "holes": saved_holes or [h.model_dump() for h in holes],
+        "pages": serialize_pages(pages),
+        "searches": serialize_searches(searches),
+        "no_change": False,
+        "source_signature": signature,
     }
+
+
+def source_signature(pages, searches) -> str:
+    source = {
+        "pages": sorted({(p.url or p.title or "").strip().lower() for p in pages if p.url or p.title}),
+        "searches": sorted({(s.query or s.url or "").strip().lower() for s in searches if s.query or s.url}),
+    }
+    return hashlib.sha256(json.dumps(source, sort_keys=True).encode("utf-8")).hexdigest()
+
+
+def serialize_pages(pages):
+    return [
+        {
+            "id": f"p{i}",
+            "url": p.url,
+            "domain": p.domain,
+            "title": p.title,
+            "at": p.at,
+            "referrer": p.referrer,
+        }
+        for i, p in enumerate(pages)
+    ]
+
+
+def serialize_searches(searches):
+    return [
+        {
+            "id": f"s{i}",
+            "query": s.query,
+            "engine": s.engine,
+            "url": s.url,
+            "at": s.at,
+        }
+        for i, s in enumerate(searches)
+    ]
+
+
+@app.get("/holes")
+def holes(
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    include_archived: bool = False,
+    user: CurrentUser = Depends(get_current_user),
+):
+    rate_limit("read", user.id)
+    db.ensure_user(user.id, user.email)
+    return db.list_holes(user.id, limit, offset, include_archived)
+
+
+@app.patch("/holes/{client_id}")
+def patch_hole(client_id: str, req: HoleUpdate, user: CurrentUser = Depends(get_current_user)):
+    rate_limit("read", user.id)
+    ok = db.update_hole(user.id, client_id, req.favorite, req.archived, req.deleted)
+    return {"ok": ok}
+
+
+@app.post("/holes/bulk")
+def bulk_holes(req: BulkHoleAction, user: CurrentUser = Depends(get_current_user)):
+    rate_limit("read", user.id)
+    updated = db.bulk_update_holes(user.id, req.ids, req.action)
+    return {"ok": True, "updated": updated}
 
 
 @app.post("/ask")
@@ -105,12 +162,19 @@ def synthesize(req: SynthesizeRequest, user: CurrentUser = Depends(get_current_u
 
 
 @app.get("/signals")
-def signals(user: CurrentUser = Depends(get_current_user)):
+def signals(
+    limit: int = Query(500, ge=1, le=5000),
+    offset: int = Query(0, ge=0),
+    user: CurrentUser = Depends(get_current_user),
+):
     """Inspect what's been captured (debugging / the demo)."""
     rate_limit("read", user.id)
     return {
+        "events": [e.model_dump() for e in store.all_events(user.id, limit, offset)],
         "pages": [p.model_dump() for p in store.pages(user.id)],
         "searches": [s.model_dump() for s in store.searches(user.id)],
+        "limit": limit,
+        "offset": offset,
     }
 
 

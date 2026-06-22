@@ -10,6 +10,7 @@ export interface ClusterEntity {
 }
 
 export interface ClusterHole {
+  client_id?: string;
   title: string;
   description: string;
   topics: string[];
@@ -40,6 +41,8 @@ export interface ClusterResponse {
   holes: ClusterHole[];
   pages?: CapturedPage[];
   searches?: CapturedSearch[];
+  no_change?: boolean;
+  source_signature?: string;
 }
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
@@ -71,7 +74,7 @@ export function pickAccent(seed: string): RabbitHole["accent"] {
 }
 
 export function holeToDiscovery(hole: ClusterHole): Discovery {
-  const id = buildHoleId(hole.title, hole.page_ids);
+  const id = hole.client_id ?? buildHoleId(hole.title, hole.page_ids);
   return {
     id,
     title: hole.title,
@@ -100,7 +103,7 @@ function pageKind(url?: string | null, title?: string | null): RabbitHole["pages
 }
 
 export function clusterHoleToRabbitHole(hole: ClusterHole, capturedPages: CapturedPage[] = [], capturedSearches: CapturedSearch[] = []): RabbitHole {
-  const id = buildHoleId(hole.title, hole.page_ids);
+  const id = hole.client_id ?? buildHoleId(hole.title, hole.page_ids);
   const now = new Date().toISOString();
   const capturedById = new Map(capturedPages.map((p) => [p.id, p]));
   const selectedPages = (hole.page_ids.length ? hole.page_ids : capturedPages.map((p) => p.id)).map((pid) => capturedById.get(pid)).filter(Boolean) as CapturedPage[];
@@ -203,6 +206,7 @@ export function clusterSignature(cluster: ClusterResponse): string {
 }
 
 export function hasMeaningfulNewContext(cluster: ClusterResponse): boolean {
+  if (cluster.no_change) return false;
   if (typeof window === "undefined") return true;
   const signature = clusterSignature(cluster);
   if (signature === JSON.stringify({ pages: [], searches: [] })) return false;
@@ -228,5 +232,5 @@ export async function runCluster(): Promise<ClusterResponse> {
     throw new Error(`cluster request failed: ${res.status}`);
   }
   const data = (await res.json()) as ClusterResponse;
-  return { holes: data.holes ?? [], pages: data.pages ?? [], searches: data.searches ?? [] };
+  return { holes: data.holes ?? [], pages: data.pages ?? [], searches: data.searches ?? [], no_change: data.no_change, source_signature: data.source_signature };
 }
