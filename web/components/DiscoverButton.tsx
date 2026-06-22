@@ -2,6 +2,7 @@
 
 import { clusterHoleToRabbitHole, hasMeaningfulNewContext, holeToDiscovery, markDiscoverySeen, nextUnseenDiscovery, rememberClusterContext, runCluster } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
+import { RabbitEars } from "@/components/Logo";
 import type { CSSProperties } from "react";
 import { useState } from "react";
 
@@ -53,7 +54,7 @@ export function DiscoverButton() {
       >
         <span className="pointer-events-none absolute inset-0 opacity-70 [background:radial-gradient(80%_120%_at_20%_20%,rgba(180,143,88,.26),transparent_55%),radial-gradient(90%_120%_at_90%_80%,rgba(95,138,92,.18),transparent_58%)]" />
         <span className="relative inline-flex items-center gap-2">
-          <img src="/assets/images/rabbit-hole-hero.png" alt="" className="h-5 w-5 object-contain opacity-85" />
+          <RabbitEars className="h-4 w-4 opacity-80" />
           {label}
         </span>
       </button>

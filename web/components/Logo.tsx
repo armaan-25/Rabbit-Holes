@@ -19,6 +19,21 @@ export function BunnyO({ className = "" }: { className?: string }) {
   );
 }
 
+export function RabbitEars({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={`inline-block ${className}`}
+      fill="none"
+    >
+      <ellipse cx="9" cy="10.2" rx="2.2" ry="6.8" fill="currentColor" transform="rotate(-17 9 10.2)" />
+      <ellipse cx="15" cy="10.2" rx="2.2" ry="6.8" fill="currentColor" transform="rotate(17 15 10.2)" />
+      <path d="M6.8 18.2c1.2-2.2 2.9-3.2 5.2-3.2s4 1 5.2 3.2" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 /** Pure-text "Rabbit Holes" wordmark with the bunny standing in for the "o". */
 export function Wordmark({ className = "" }: { className?: string }) {
   return (

@@ -6,7 +6,7 @@ let captureElapsedMs = 0;
 let signedIn = false;
 
 function setClusterLabel(text) {
-  document.getElementById("cluster").innerHTML = `<span><img src="assets/watercolor-burrow.png" alt="" />${text}</span>`;
+  document.getElementById("cluster").innerHTML = `<span><svg class="ears" viewBox="0 0 24 24" aria-hidden="true" fill="none"><ellipse cx="9" cy="10.2" rx="2.2" ry="6.8" fill="currentColor" transform="rotate(-17 9 10.2)" /><ellipse cx="15" cy="10.2" rx="2.2" ry="6.8" fill="currentColor" transform="rotate(17 15 10.2)" /><path d="M6.8 18.2c1.2-2.2 2.9-3.2 5.2-3.2s4 1 5.2 3.2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /></svg>${text}</span>`;
 }
 
 function formatElapsed(ms) {
