@@ -40,6 +40,7 @@ export default function OnboardingPage() {
 function OnboardingFlow() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/dashboard";
+  const isExtensionFlow = next.startsWith("/extension-auth") || next.startsWith("/rabbit-auth");
 
   const [ready, setReady] = useState(false);
   const [step, setStep] = useState(0);
@@ -59,7 +60,7 @@ function OnboardingFlow() {
         window.location.replace(`/login?next=${encodeURIComponent(`/onboarding?next=${next}`)}`);
         return;
       }
-      if (user.user_metadata?.onboarded) {
+      if (user.user_metadata?.onboarded || isExtensionFlow) {
         window.location.replace(next);
         return;
       }
@@ -67,7 +68,7 @@ function OnboardingFlow() {
       setName(meta.full_name || meta.name || "");
       setReady(true);
     });
-  }, [next]);
+  }, [isExtensionFlow, next]);
 
   function toggleSource(id: string) {
     setSources((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));

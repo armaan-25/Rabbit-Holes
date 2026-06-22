@@ -24,9 +24,10 @@ function AuthCallbackBody() {
         setMessage(error.message);
         return;
       }
+      const isExtensionFlow = next.startsWith("/extension-auth") || next.startsWith("/rabbit-auth");
       // Send first-time users through onboarding before their destination.
       const { data } = await supabase.auth.getUser();
-      if (data.user && !data.user.user_metadata?.onboarded) {
+      if (data.user && !data.user.user_metadata?.onboarded && !isExtensionFlow) {
         window.location.replace(`/onboarding?next=${encodeURIComponent(next)}`);
         return;
       }

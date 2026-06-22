@@ -40,8 +40,9 @@ function LoginForm() {
     }
 
     // First-time accounts go through onboarding before their destination.
+    const isExtensionFlow = next.startsWith("/extension-auth") || next.startsWith("/rabbit-auth");
     const onboarded = result.data.user?.user_metadata?.onboarded;
-    window.location.href = onboarded ? next : `/onboarding?next=${encodeURIComponent(next)}`;
+    window.location.href = onboarded || isExtensionFlow ? next : `/onboarding?next=${encodeURIComponent(next)}`;
   }
 
   async function google() {

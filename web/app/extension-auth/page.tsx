@@ -17,6 +17,11 @@ export default function ExtensionAuthPage() {
       }
 
       const refreshed = await supabase.auth.refreshSession();
+      if (refreshed.error && !session.refresh_token) {
+        await supabase.auth.signOut();
+        window.location.href = `/login?next=${encodeURIComponent(`/extension-auth${window.location.search}`)}`;
+        return;
+      }
       if (refreshed.data.session) session = refreshed.data.session;
 
       setStatus("Connecting extension...");
