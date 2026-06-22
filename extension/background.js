@@ -172,7 +172,7 @@ function persistTimer() {
 }
 
 chrome.storage.local.get(["captureState", "sessionId", "captureStartedAt", "captureElapsedMs"]).then((stored) => {
-  captureState = "recording";
+  captureState = stored.captureState || "recording";
   sessionId = stored.sessionId || sessionId;
   captureElapsedMs = stored.captureElapsedMs || 0;
   captureStartedAt = stored.captureStartedAt ?? null;
@@ -324,8 +324,32 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 
   if (message?.type === "setCaptureState") {
-    captureState = "recording";
-    if (captureStartedAt == null) captureStartedAt = Date.now();
+    const next = message.state;
+    if (!["recording", "paused", "stopped"].includes(next)) {
+      sendResponse({ ok: false, error: "invalid capture state" });
+      return false;
+    }
+
+    if (captureState === "recording" && captureStartedAt != null) {
+      captureElapsedMs += Date.now() - captureStartedAt;
+      captureStartedAt = null;
+    }
+
+    captureState = next;
+    if (next === "stopped") {
+      buffer = [];
+      tabUrl.clear();
+      sessionId = crypto.randomUUID();
+      captureStartedAt = null;
+      captureElapsedMs = 0;
+      Promise.all([
+        chrome.storage.local.set({ captureState, sessionId, events: [], lastCapture: null, captureStartedAt, captureElapsedMs }),
+        authHeaders().then((auth) => fetch(`${BACKEND_URL}/clear`, { method: "POST", headers: auth }).catch(() => null)),
+      ]).then(() => sendResponse({ ok: true, state: captureState, buffered: 0 }));
+      return true;
+    }
+
+    if (next === "recording") captureStartedAt = Date.now();
     chrome.storage.local.set({ captureState, sessionId, captureStartedAt, captureElapsedMs }).then(() => {
       sendResponse({ ok: true, state: captureState, buffered: buffer.length });
     });
