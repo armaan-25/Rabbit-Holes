@@ -3,18 +3,41 @@
 import { HoleCard } from "@/components/HoleCard";
 import { EmptyHoles } from "@/components/EmptyHoles";
 import { DiscoverButton } from "@/components/DiscoverButton";
-import { clusterHoleToRabbitHole, runCluster } from "@/lib/discovery";
+import { clusterHoleToRabbitHole, hasMeaningfulNewContext, rememberClusterContext, runCluster } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
-import { useHoles } from "@/hooks/useHoles";
+import { useLibraryHoles } from "@/hooks/useHoles";
 import { formatElapsed, useSessionStats } from "@/hooks/useSessionStats";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function Dashboard() {
   const setLiveHoles = useApp((s) => s.setLiveHoles);
+  const toggleFavorite = useApp((s) => s.toggleFavorite);
+  const toggleArchive = useApp((s) => s.toggleArchive);
+  const deleteHole = useApp((s) => s.deleteHole);
   const [syncLabel, setSyncLabel] = useState("live");
-  const holes = useHoles();
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<"active" | "favorites" | "archived" | "all">("active");
+  const [sort, setSort] = useState<"recent" | "pages" | "confidence">("recent");
+  const holes = useLibraryHoles();
   const stats = useSessionStats();
-  const latest = holes.find((h) => h.status === "active") ?? holes[0];
+  const visibleHoles = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return holes
+      .filter((h) => {
+        if (filter === "active" && h.archived) return false;
+        if (filter === "favorites" && !h.favorite) return false;
+        if (filter === "archived" && !h.archived) return false;
+        if (!needle) return true;
+        const haystack = [h.title, h.description, ...h.domains, ...h.summary.topics, ...h.searches.map((s) => s.query)].join(" ").toLowerCase();
+        return haystack.includes(needle);
+      })
+      .sort((a, b) => {
+        if (sort === "pages") return b.pages.length - a.pages.length;
+        if (sort === "confidence") return b.confidence - a.confidence;
+        return +new Date(b.lastActive) - +new Date(a.lastActive);
+      });
+  }, [filter, holes, query, sort]);
+  const latest = visibleHoles.find((h) => h.status === "active") ?? visibleHoles[0];
   const statusLabel = stats.captureState === "recording" ? "Capturing" : stats.captureState === "paused" ? "Paused" : "Stopped";
 
   useEffect(() => {
@@ -25,7 +48,12 @@ export default function Dashboard() {
     void runCluster()
       .then((cluster) => {
         if (cancelled) return;
+        if (!hasMeaningfulNewContext(cluster)) {
+          setSyncLabel("no new browsing");
+          return;
+        }
         setLiveHoles(cluster.holes.map((hole) => clusterHoleToRabbitHole(hole, cluster.pages, cluster.searches)));
+        rememberClusterContext(cluster);
         setSyncLabel("updated");
       })
       .catch((err) => {
@@ -44,7 +72,7 @@ export default function Dashboard() {
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <div className="mb-2 text-[12px] font-semibold uppercase tracking-[0.22em] text-[#a8967d]">
-              Your rabbit holes · {holes.length} holes
+              Your rabbit holes · {holes.length} total
             </div>
             <h1 className="rh-display text-[42px] font-semibold leading-none tracking-normal text-[#2a2018]">
               Rabbit holes
@@ -81,17 +109,55 @@ export default function Dashboard() {
               </div>
             )}
 
-            <div className="mt-7 flex items-center justify-between">
-              <h2 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#a8967d]">
-                Active investigations
-              </h2>
+            <div className="mt-7 rounded-[22px] border border-[#785a3224] bg-[#fbf6ec] p-4 shadow-[0_2px_16px_rgba(70,45,20,.05)]">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <h2 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#a8967d]">
+                    Library
+                  </h2>
+                  <p className="mt-1 text-[14px] text-[#6a5a48]">
+                    Search, favorite, archive, and clean up old investigations.
+                  </p>
+                </div>
+                <div className="flex flex-1 flex-wrap gap-2 lg:max-w-[760px] lg:justify-end">
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search holes, domains, topics..."
+                    className="min-w-[240px] flex-1 rounded-[13px] border border-[#785a3224] bg-[#fffaf1] px-4 py-3 text-[14px] text-[#2a2018] outline-none placeholder:text-[#a8967d] focus:border-[#785a3255]"
+                  />
+                  <select value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} className="rounded-[13px] border border-[#785a3224] bg-[#f6efe1] px-3 py-3 text-[14px] text-[#5a4a38] outline-none">
+                    <option value="active">Active</option>
+                    <option value="favorites">Favorites</option>
+                    <option value="archived">Archived</option>
+                    <option value="all">All</option>
+                  </select>
+                  <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} className="rounded-[13px] border border-[#785a3224] bg-[#f6efe1] px-3 py-3 text-[14px] text-[#5a4a38] outline-none">
+                    <option value="recent">Recent</option>
+                    <option value="pages">Most pages</option>
+                    <option value="confidence">Confidence</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
-            <div className="mt-4 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(340px,1fr))] xl:[grid-template-columns:repeat(auto-fit,minmax(372px,1fr))]">
-              {holes.map((h, i) => (
-                <HoleCard key={h.id} hole={h} index={i} />
-              ))}
-            </div>
+            {visibleHoles.length === 0 ? (
+              <div className="mt-6 rounded-[22px] border border-dashed border-[#785a3224] bg-[#fbf6ec] px-8 py-12 text-center">
+                <div className="rh-display text-[28px] font-semibold text-[#2a2018]">Nothing matches this view</div>
+                <p className="mx-auto mt-2 max-w-[46ch] text-[15px] leading-6 text-[#6a5a48]">
+                  Clear the search, switch filters, or build a fresh rabbit hole after browsing something new.
+                </p>
+                <button onClick={() => { setQuery(""); setFilter("active"); }} className="mt-5 rounded-full bg-[#2a2018] px-5 py-3 text-[14px] font-semibold text-[#f3e8d4]">
+                  Reset library view
+                </button>
+              </div>
+            ) : (
+              <div className="mt-4 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(340px,1fr))] xl:[grid-template-columns:repeat(auto-fit,minmax(372px,1fr))]">
+                {visibleHoles.map((h, i) => (
+                  <HoleCard key={h.id} hole={h} index={i} onFavorite={toggleFavorite} onArchive={toggleArchive} onDelete={deleteHole} />
+                ))}
+              </div>
+            )}
 
             <p className="mt-8 text-center text-[13px] italic text-[#9c8b75]">
               Smart history for your research.

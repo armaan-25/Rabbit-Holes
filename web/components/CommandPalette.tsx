@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { clusterHoleToRabbitHole, markDiscoverySeen, nextUnseenDiscovery, runCluster } from "@/lib/discovery";
+import { clusterHoleToRabbitHole, hasMeaningfulNewContext, markDiscoverySeen, nextUnseenDiscovery, rememberClusterContext, runCluster } from "@/lib/discovery";
 import { ACCENTS } from "@/lib/ui";
 import { useApp } from "@/lib/store";
 import { useHoles } from "@/hooks/useHoles";
@@ -55,7 +55,9 @@ export function CommandPalette() {
           void (async () => {
             try {
               const cluster = await runCluster();
+              if (!hasMeaningfulNewContext(cluster)) return;
               setLiveHoles(cluster.holes.map((hole) => clusterHoleToRabbitHole(hole, cluster.pages, cluster.searches)));
+              rememberClusterContext(cluster);
               const next = nextUnseenDiscovery(cluster.holes);
               if (!next) return;
               markDiscoverySeen(next.id);

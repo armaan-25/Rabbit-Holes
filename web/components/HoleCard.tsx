@@ -7,7 +7,19 @@ import { ACCENTS, KIND_META, faviconFor } from "@/lib/ui";
 import { relativeTime } from "@/lib/format";
 import { StatusBadge } from "./atoms";
 
-export function HoleCard({ hole, index }: { hole: RabbitHole; index: number }) {
+export function HoleCard({
+  hole,
+  index,
+  onFavorite,
+  onArchive,
+  onDelete,
+}: {
+  hole: RabbitHole;
+  index: number;
+  onFavorite?: (id: string) => void;
+  onArchive?: (id: string) => void;
+  onDelete?: (id: string) => void;
+}) {
   const accent = ACCENTS[hole.accent];
   const repos = hole.entities.filter((e) => e.kind === "repo").length || hole.summary.repos.length;
   const papers = hole.pages.filter((p) => p.kind === "paper").length;
@@ -37,7 +49,52 @@ export function HoleCard({ hole, index }: { hole: RabbitHole; index: number }) {
           <div className="relative">
             <div className="mb-4 flex items-center justify-between gap-3">
               <StatusBadge status={hole.status} />
-              <span className="text-[13px] text-[#a8967d]">{relativeTime(hole.lastActive)}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[13px] text-[#a8967d]">{relativeTime(hole.lastActive)}</span>
+                {(onFavorite || onArchive || onDelete) && (
+                  <div className="flex items-center gap-1 opacity-80 transition group-hover:opacity-100">
+                    {onFavorite && (
+                      <button
+                        type="button"
+                        title={hole.favorite ? "Unfavorite" : "Favorite"}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          onFavorite(hole.id);
+                        }}
+                        className="grid h-7 w-7 place-items-center rounded-full border border-[#785a3224] bg-[#f6efe1] text-[13px] text-[#8a7860] transition hover:text-[#c2703f]"
+                      >
+                        {hole.favorite ? "★" : "☆"}
+                      </button>
+                    )}
+                    {onArchive && (
+                      <button
+                        type="button"
+                        title={hole.archived ? "Restore" : "Archive"}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          onArchive(hole.id);
+                        }}
+                        className="grid h-7 w-7 place-items-center rounded-full border border-[#785a3224] bg-[#f6efe1] text-[13px] text-[#8a7860] transition hover:text-[#2a2018]"
+                      >
+                        {hole.archived ? "↥" : "⌄"}
+                      </button>
+                    )}
+                    {onDelete && (
+                      <button
+                        type="button"
+                        title="Delete"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (window.confirm(`Delete "${hole.title}"?`)) onDelete(hole.id);
+                        }}
+                        className="grid h-7 w-7 place-items-center rounded-full border border-[#b8795f33] bg-[#fff6f1] text-[13px] text-[#a8472a] transition hover:bg-[#fde8dc]"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             <h3 className="rh-display text-[23px] font-semibold leading-[1.12] tracking-normal text-[#2a2018]">

@@ -70,6 +70,8 @@ export interface RabbitHole {
   title: string;
   description: string;
   status: HoleStatus;
+  favorite?: boolean;
+  archived?: boolean;
   /** 0..1 clustering confidence */
   confidence: number;
   accent: "rabbit" | "iris" | "moss" | "sky";

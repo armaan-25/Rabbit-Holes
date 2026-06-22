@@ -1,6 +1,6 @@
 "use client";
 
-import { clusterHoleToRabbitHole, holeToDiscovery, markDiscoverySeen, nextUnseenDiscovery, runCluster } from "@/lib/discovery";
+import { clusterHoleToRabbitHole, hasMeaningfulNewContext, holeToDiscovery, markDiscoverySeen, nextUnseenDiscovery, rememberClusterContext, runCluster } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
 import type { CSSProperties } from "react";
 import { useState } from "react";
@@ -19,7 +19,12 @@ export function DiscoverButton() {
 
     try {
       const cluster = await runCluster();
+      if (!hasMeaningfulNewContext(cluster)) {
+        setLabel("No new browsing yet");
+        return;
+      }
       setLiveHoles(cluster.holes.map((hole) => clusterHoleToRabbitHole(hole, cluster.pages, cluster.searches)));
+      rememberClusterContext(cluster);
       const next = nextUnseenDiscovery(cluster.holes) ?? (cluster.holes[0] ? holeToDiscovery(cluster.holes[0]) : null);
 
       if (!next) {

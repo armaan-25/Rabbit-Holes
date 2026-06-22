@@ -1,8 +1,6 @@
-const NOW = new Date("2026-06-17T20:10:00Z").getTime();
-
 export function relativeTime(iso: string): string {
   const then = new Date(iso).getTime();
-  const diff = NOW - then;
+  const diff = Date.now() - then;
   const min = Math.round(diff / 60000);
   if (min < 1) return "just now";
   if (min < 60) return `${min}m ago`;

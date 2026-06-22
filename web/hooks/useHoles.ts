@@ -13,6 +13,13 @@ import type { RabbitHole } from "@/lib/types";
 export function useHoles(): RabbitHole[] {
   const liveHoles = useApp((s) => s.liveHoles);
   const signedIn = useSignedIn();
+  if (liveHoles.length) return liveHoles.filter((h) => !h.archived);
+  return signedIn === false ? RABBIT_HOLES : [];
+}
+
+export function useLibraryHoles(): RabbitHole[] {
+  const liveHoles = useApp((s) => s.liveHoles);
+  const signedIn = useSignedIn();
   if (liveHoles.length) return liveHoles;
   return signedIn === false ? RABBIT_HOLES : [];
 }

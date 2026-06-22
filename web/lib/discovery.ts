@@ -45,6 +45,7 @@ export interface ClusterResponse {
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
 const ACCENTS: RabbitHole["accent"][] = ["rabbit", "iris", "moss", "sky"];
 export const discoveredHoleIds = new Set<string>(RABBIT_HOLES.map((h) => h.id));
+const LAST_CLUSTER_SIGNATURE_KEY = "rabbit-hole-last-cluster-signature";
 
 export function buildHoleId(title: string, pageIds: string[] = []): string {
   const base = title
@@ -193,6 +194,24 @@ export function nextUnseenDiscovery(holes: ClusterHole[], seen: Set<string> = di
 
 export function markDiscoverySeen(id: string, seen: Set<string> = discoveredHoleIds) {
   seen.add(id);
+}
+
+export function clusterSignature(cluster: ClusterResponse): string {
+  const pages = (cluster.pages ?? []).map((p) => p.url || p.title || p.id).filter(Boolean).sort();
+  const searches = (cluster.searches ?? []).map((s) => s.query || s.url || s.id).filter(Boolean).sort();
+  return JSON.stringify({ pages, searches });
+}
+
+export function hasMeaningfulNewContext(cluster: ClusterResponse): boolean {
+  if (typeof window === "undefined") return true;
+  const signature = clusterSignature(cluster);
+  if (signature === JSON.stringify({ pages: [], searches: [] })) return false;
+  return window.localStorage.getItem(LAST_CLUSTER_SIGNATURE_KEY) !== signature;
+}
+
+export function rememberClusterContext(cluster: ClusterResponse) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(LAST_CLUSTER_SIGNATURE_KEY, clusterSignature(cluster));
 }
 
 async function authHeaders(): Promise<HeadersInit> {
