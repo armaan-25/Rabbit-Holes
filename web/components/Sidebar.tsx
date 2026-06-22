@@ -109,10 +109,17 @@ export function Sidebar() {
 
 function SidebarAccount() {
   const [user, setUser] = useState<User | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    void supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null));
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null));
+    void supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user ?? null);
+      setReady(true);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setReady(true);
+    });
     return () => listener.subscription.unsubscribe();
   }, []);
 
@@ -121,12 +128,23 @@ function SidebarAccount() {
     setUser(null);
   }
 
+  if (!ready) {
+    return (
+      <div className="mt-4 rounded-[16px] border border-[#785a3224] bg-[#fbf6ec] p-3 shadow-[0_2px_12px_rgba(70,45,20,.05)]">
+        <div className="h-10 rounded-[12px] bg-[#f2e9d6]" />
+      </div>
+    );
+  }
+
   if (!user) {
     return (
       <div className="mt-4 rounded-[16px] border border-[#785a3224] bg-[#fbf6ec] p-3 shadow-[0_2px_12px_rgba(70,45,20,.05)]">
         <div className="mb-3 text-[12px] leading-5 text-[#8a7860]">Sign in to save sessions across devices.</div>
         <Link href="/login?next=/dashboard" className="block rounded-[12px] bg-[#2a2018] px-4 py-2.5 text-center text-[14px] font-semibold text-[#f3e8d4]">
           Sign in
+        </Link>
+        <Link href="/signup?next=/dashboard" className="mt-2 block rounded-[12px] border border-[#785a3224] bg-[#f2e9d6] px-4 py-2.5 text-center text-[14px] font-semibold text-[#5a4a38]">
+          Create account
         </Link>
       </div>
     );

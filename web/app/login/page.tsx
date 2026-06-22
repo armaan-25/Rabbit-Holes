@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, Suspense, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { Wordmark } from "@/components/Logo";
@@ -18,24 +19,15 @@ function LoginForm() {
   const next = searchParams.get("next") || "/dashboard";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [status, setStatus] = useState("");
 
   async function submit(e: FormEvent) {
     e.preventDefault();
-    setStatus(mode === "signin" ? "Signing in..." : "Creating account...");
-    const result =
-      mode === "signin"
-        ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` } });
+    setStatus("Signing in...");
+    const result = await supabase.auth.signInWithPassword({ email, password });
 
     if (result.error) {
       setStatus(result.error.message);
-      return;
-    }
-
-    if (mode === "signup" && !result.data.session) {
-      setStatus("Check your email to confirm your account.");
       return;
     }
 
@@ -66,13 +58,13 @@ function LoginForm() {
         <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="Email" className="w-full rounded-[14px] border border-[#785a3224] bg-[#fffaf1] px-4 py-3 text-[15px] text-[#2a2018] outline-none placeholder:text-[#a8967d]" />
         <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required minLength={6} placeholder="Password" className="w-full rounded-[14px] border border-[#785a3224] bg-[#fffaf1] px-4 py-3 text-[15px] text-[#2a2018] outline-none placeholder:text-[#a8967d]" />
         <button type="submit" className="w-full rounded-[15px] border border-[#785a3224] bg-[#f2e9d6] px-5 py-3.5 text-[15px] font-semibold text-[#2a2018]">
-          {mode === "signin" ? "Sign in" : "Create account"}
+          Sign in
         </button>
       </form>
 
-      <button onClick={() => setMode(mode === "signin" ? "signup" : "signin")} className="mt-4 w-full text-center text-[14px] text-[#6a5a48] underline-offset-4 hover:underline">
-        {mode === "signin" ? "Need an account? Create one" : "Already have an account? Sign in"}
-      </button>
+      <Link href={`/signup?next=${encodeURIComponent(next)}`} className="mt-4 block text-center text-[14px] text-[#6a5a48] underline-offset-4 hover:underline">
+        Need an account? Create one
+      </Link>
       {status && <p className="mt-4 rounded-[13px] bg-[#f2e9d6] px-4 py-3 text-[14px] text-[#6a5a48]">{status}</p>}
     </LoginShell>
   );

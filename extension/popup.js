@@ -71,7 +71,9 @@ function setAuthView(state) {
   document.getElementById("auth-msg").textContent =
     state === "expired"
       ? "Your session expired. Sign in again to keep capturing."
-      : "Sign in to save sessions to your Rabbit Holes account.";
+      : state === "loading"
+        ? "Checking session..."
+        : "Sign in to save sessions to your Rabbit Holes account.";
 }
 
 async function render() {
