@@ -11,7 +11,7 @@ type Row = { id: string; name: string; body: string; default: boolean; tone?: st
 const CAPTURE: Row[] = [
   { id: "auto_cluster", name: "Auto-cluster sessions", body: "Group tabs into rabbit holes automatically as you browse.", default: true },
   { id: "ignore_glances", name: "Ignore quick glances", body: "Only capture pages you actually spend time reading.", default: true },
-  { id: "pause_idle", name: "Pause when idle", body: "Stop capturing after a few minutes of inactivity.", default: true },
+  { id: "pause_idle", name: "Always-on capture", body: "Rabbit Holes keeps monitoring like Honey while privacy filters stay on.", default: true },
   { id: "capture_private", name: "Capture private windows", body: "Off by default — incognito stays incognito.", default: false },
 ];
 
@@ -110,7 +110,7 @@ export default function SettingsPage() {
         <section className="mb-8 flex items-center justify-between rounded-[20px] border border-[#5f8a5c42] bg-[#eef5ea] px-6 py-5 shadow-[0_8px_30px_rgba(70,45,20,.04)]">
           <div className="flex items-center gap-4">
             <div className="relative grid h-12 w-12 place-items-center rounded-[12px] bg-white shadow-[0_1px_4px_rgba(70,45,20,.12)]">
-              <span className="text-[22px] text-[#2a2018]">△</span>
+              <img src="/assets/images/rabbit-holes-mark.png" alt="" className="h-10 w-10 object-contain" />
               <span className="absolute right-[-3px] top-[-3px] h-4 w-4 rounded-full border-2 border-[#eef5ea] bg-[#6a9a66]" />
             </div>
             <div>

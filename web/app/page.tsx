@@ -75,7 +75,7 @@ const FEATURES = [
   {
     tag: "Private",
     title: "Yours, and only yours",
-    body: "Captured to your own account. Sensitive domains are skipped, and you can pause, stop, or clear a session any time from the extension.",
+    body: "Captured to your own account. Sensitive domains are skipped, and the extension keeps monitoring quietly in the background like Honey.",
   },
 ];
 
@@ -188,7 +188,7 @@ export default function Landing() {
             <div className="mt-5 flex flex-wrap gap-x-7 gap-y-2.5 text-[12.5px] font-semibold uppercase tracking-[0.08em] text-[#8a7860]">
               <span>◳ Chrome · Edge · Brave · Arc · Opera</span>
               <span>✓ Free · no credit card</span>
-              <span>⛉ Pause or stop anytime</span>
+              <span>⛉ Always-on browser context</span>
             </div>
           </motion.div>
 

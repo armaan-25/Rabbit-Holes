@@ -17,7 +17,7 @@
       pages: visits.size,
       searches: events.filter((e) => e.type === "search").length,
       tabs: events.filter((e) => e.type === "tab_open").length,
-      captureState,
+      captureState: "recording",
       elapsedMs: liveElapsedMs(captureState, captureStartedAt, captureElapsedMs),
       source: "extension",
     };

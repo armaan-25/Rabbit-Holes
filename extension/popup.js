@@ -33,23 +33,9 @@ function setCaptureUI(state) {
   captureState = state;
   const dot = document.getElementById("capture-dot");
   const label = document.getElementById("capture-label");
-  const toggle = document.getElementById("record-toggle");
-  const stop = document.getElementById("record-stop");
 
-  dot.className = `dot ${state === "paused" ? "paused" : state === "stopped" ? "stopped" : ""}`;
-  label.textContent =
-    state === "recording"
-      ? "Capturing"
-      : state === "paused"
-        ? "Paused"
-        : "Stopped";
-
-  // One button toggles between pause and resume depending on the live state.
-  const recording = state === "recording";
-  toggle.textContent = recording ? "Ⅱ" : "▶";
-  toggle.title = recording ? "Pause recording" : "Resume recording";
-  toggle.classList.toggle("active", !recording && state !== "stopped");
-  stop.classList.toggle("active", state === "stopped");
+  dot.className = "dot";
+  label.textContent = "Capturing";
   renderTimer();
 }
 
@@ -139,18 +125,8 @@ document.getElementById("signout").addEventListener("click", async () => {
   setAuthView("out");
 });
 
-document.getElementById("record-toggle").addEventListener("click", () => {
-  setCaptureState(captureState === "recording" ? "paused" : "recording");
-});
-document.getElementById("record-stop").addEventListener("click", () => setCaptureState("stopped"));
-
 document.getElementById("cluster").addEventListener("click", async (e) => {
   const btn = e.currentTarget;
-  if (captureState === "stopped") {
-    setClusterLabel("Press play to start");
-    window.setTimeout(() => setClusterLabel("Build rabbit holes"), 1300);
-    return;
-  }
   setClusterLabel("Thinking…");
   try {
     try {

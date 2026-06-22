@@ -81,7 +81,7 @@ async function authHeaders() {
 const SETTINGS_DEFAULTS = {
   auto_cluster: true,
   ignore_glances: true,
-  pause_idle: true,
+  pause_idle: false,
   capture_private: false,
   local_first: true,
   strip_ids: true,
@@ -148,7 +148,7 @@ function sourceAllowed(host) {
 }
 
 function captureActive() {
-  return captureState === "recording" && !idlePaused;
+  return captureState === "recording";
 }
 
 // Hold a visit briefly so quick glances (left within the dwell window) drop out
@@ -172,7 +172,7 @@ function persistTimer() {
 }
 
 chrome.storage.local.get(["captureState", "sessionId", "captureStartedAt", "captureElapsedMs"]).then((stored) => {
-  captureState = stored.captureState || "recording";
+  captureState = "recording";
   sessionId = stored.sessionId || sessionId;
   captureElapsedMs = stored.captureElapsedMs || 0;
   captureStartedAt = stored.captureStartedAt ?? null;
@@ -324,34 +324,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 
   if (message?.type === "setCaptureState") {
-    const next = message.state;
-    if (!["recording", "paused", "stopped"].includes(next)) {
-      sendResponse({ ok: false, error: "invalid capture state" });
-      return false;
-    }
-
-    // Bank the running time before switching away from "recording".
-    if (captureState === "recording" && captureStartedAt != null) {
-      captureElapsedMs += Date.now() - captureStartedAt;
-      captureStartedAt = null;
-    }
-
-    captureState = next;
-    if (next === "stopped") {
-      buffer = [];
-      tabUrl.clear();
-      sessionId = crypto.randomUUID();
-      captureStartedAt = null;
-      captureElapsedMs = 0;
-      Promise.all([
-        chrome.storage.local.set({ captureState, sessionId, events: [], lastCapture: null, captureStartedAt, captureElapsedMs }),
-        authHeaders().then((auth) => fetch(`${BACKEND_URL}/clear`, { method: "POST", headers: auth }).catch(() => null)),
-      ]).then(() => sendResponse({ ok: true, state: captureState, buffered: 0 }));
-      return true;
-    }
-
-    if (next === "recording") captureStartedAt = Date.now();
-
+    captureState = "recording";
+    if (captureStartedAt == null) captureStartedAt = Date.now();
     chrome.storage.local.set({ captureState, sessionId, captureStartedAt, captureElapsedMs }).then(() => {
       sendResponse({ ok: true, state: captureState, buffered: buffer.length });
     });
@@ -460,11 +434,11 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   incognitoTabs.delete(tabId);
 });
 
-// ---- Idle: pause capture when the user steps away -------------------------
+// ---- Idle ---------------------------------------------------------------
 
 chrome.idle.setDetectionInterval(60);
 chrome.idle.onStateChanged.addListener((state) => {
-  idlePaused = settings.pause_idle && state !== "active";
+  idlePaused = false;
 });
 
 // ---- Periodic flush + settings sync ---------------------------------------
