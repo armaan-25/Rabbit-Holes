@@ -63,47 +63,45 @@ export function DiscoverButton() {
 }
 
 const WORDS = [
-  { text: "tabs", x: "-300px", y: "-128px", d: "0s" },
-  { text: "searches", x: "286px", y: "-124px", d: ".18s" },
-  { text: "notes", x: "-260px", y: "18px", d: ".34s" },
-  { text: "links", x: "262px", y: "24px", d: ".52s" },
-  { text: "threads", x: "-272px", y: "150px", d: ".7s" },
-  { text: "questions", x: "280px", y: "146px", d: ".9s" },
-  { text: "ideas", x: "-82px", y: "-190px", d: "1.08s" },
-  { text: "context", x: "96px", y: "-184px", d: "1.24s" },
-  { text: "memory", x: "-92px", y: "204px", d: "1.42s" },
-  { text: "patterns", x: "92px", y: "202px", d: "1.62s" },
+  { text: "tabs", x: "-270px", y: "-132px", d: "0s" },
+  { text: "searches", x: "246px", y: "-112px", d: ".18s" },
+  { text: "notes", x: "-238px", y: "4px", d: ".34s" },
+  { text: "links", x: "238px", y: "22px", d: ".52s" },
+  { text: "threads", x: "-220px", y: "124px", d: ".7s" },
+  { text: "questions", x: "226px", y: "124px", d: ".9s" },
+  { text: "ideas", x: "-74px", y: "-180px", d: "1.08s" },
+  { text: "context", x: "96px", y: "-172px", d: "1.24s" },
 ];
 
 function RabbitHoleLoading() {
   return (
-    <div className="fixed inset-0 z-[70] grid place-items-center overflow-hidden bg-[#1a130d]/58 px-5 backdrop-blur-[10px]">
+    <div className="fixed inset-0 z-[70] grid place-items-center overflow-hidden bg-[#140d08]/72 px-4 backdrop-blur-[8px]">
       <style>{`
         @keyframes word-to-hole {
           0% { transform: translate(var(--x), var(--y)) scale(1); opacity: 0; filter: blur(0); }
-          16% { opacity: .72; }
-          70% { opacity: .58; }
-          100% { transform: translate(0, 6px) scale(.2); opacity: 0; filter: blur(2px); }
+          16% { opacity: .62; }
+          66% { opacity: .44; }
+          100% { transform: translate(0, 18px) scale(.22); opacity: 0; filter: blur(2.2px); }
         }
         @keyframes hole-breathe {
-          0%, 100% { transform: scale(1); filter: saturate(.95) contrast(1.02); }
-          50% { transform: scale(1.035); filter: saturate(1.05) contrast(1.08); }
+          0%, 100% { transform: scale(1); filter: saturate(.98) contrast(1.02); }
+          50% { transform: scale(1.025); filter: saturate(1.05) contrast(1.08); }
         }
         @keyframes loading-grain {
-          0%, 100% { opacity: .35; transform: translate3d(0,0,0); }
-          50% { opacity: .55; transform: translate3d(-1%,1%,0); }
+          0%, 100% { opacity: .28; transform: translate3d(0,0,0); }
+          50% { opacity: .42; transform: translate3d(-1%,1%,0); }
         }
       `}</style>
 
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(246,239,225,.10),transparent_46%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(246,239,225,.10),transparent_38%)]" />
 
-      <div className="relative grid h-[650px] w-full max-w-[920px] place-items-center overflow-hidden rounded-[42px] border border-[#f3e8d426] bg-[#f6efe1] shadow-[0_38px_120px_rgba(18,11,5,.45)]">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,252,244,.86),rgba(246,239,225,.74)_62%,rgba(230,218,199,.88))]" />
-        <div className="pointer-events-none absolute inset-0 opacity-55 mix-blend-multiply [animation:loading-grain_3.2s_ease-in-out_infinite] [background-image:radial-gradient(rgba(120,90,50,.12)_1px,transparent_1px)] [background-size:22px_22px]" />
+      <div className="relative h-[760px] w-full max-w-[920px] overflow-hidden rounded-[34px] border border-[#f3e8d442] bg-[#f7edda] shadow-[0_40px_130px_rgba(18,11,5,.58)]">
+        <div className="absolute inset-x-0 top-0 h-[470px] bg-[radial-gradient(ellipse_at_center,rgba(255,252,244,.94),rgba(246,239,225,.82)_64%,rgba(226,213,193,.92))]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[470px] opacity-65 mix-blend-multiply [animation:loading-grain_3.2s_ease-in-out_infinite] [background-image:radial-gradient(rgba(120,90,50,.13)_1.1px,transparent_1.1px)] [background-size:24px_24px]" />
         {WORDS.map((word) => (
           <span
             key={word.text}
-            className="absolute rh-display select-none text-[25px] italic tracking-wide text-[#8a6a48]/62"
+            className="absolute left-1/2 top-[235px] rh-display select-none text-[24px] italic tracking-wide text-[#8a6a48]/54"
             style={{
               "--x": word.x,
               "--y": word.y,
@@ -114,19 +112,22 @@ function RabbitHoleLoading() {
           </span>
         ))}
 
-        <div className="relative grid place-items-center">
-          <div className="absolute h-48 w-80 rounded-full bg-[#5f8a5c]/12 blur-3xl" />
+        <div className="absolute inset-x-0 top-[106px] grid place-items-center">
+          <div className="absolute h-52 w-[420px] rounded-full bg-[#5f8a5c]/12 blur-3xl" />
           <img
             src="/assets/images/rabbit-hole-hero.png"
             alt=""
-            className="relative h-[330px] w-[520px] object-contain [animation:hole-breathe_2.4s_ease-in-out_infinite]"
+            className="relative h-[390px] w-[650px] object-contain [animation:hole-breathe_2.4s_ease-in-out_infinite]"
           />
-          <div className="absolute bottom-[86px] h-12 w-44 rounded-full bg-black/26 blur-2xl" />
+          <div className="absolute bottom-[82px] h-12 w-52 rounded-full bg-black/24 blur-2xl" />
         </div>
 
-        <div className="absolute bottom-14 text-center">
-          <div className="rh-display text-[42px] font-semibold leading-none text-[#2a2018]">Building rabbit holes</div>
-          <div className="mt-3 text-[16px] italic text-[#8a7860]">Following the thread through your session.</div>
+        <div className="absolute inset-x-0 bottom-0 border-t border-[#f3e8d43b] bg-[#18100a] px-8 py-12 text-center">
+          <div className="mx-auto mb-6 h-1.5 max-w-[520px] overflow-hidden rounded-full bg-[#3a2a18]">
+            <div className="h-full w-2/3 rounded-full bg-[linear-gradient(90deg,#8db0bf,#d88c5d)] [animation:hole-breathe_1.6s_ease-in-out_infinite]" />
+          </div>
+          <div className="rh-display text-[50px] font-semibold leading-none text-[#f8ecd6]">Building rabbit holes</div>
+          <div className="mt-3 text-[17px] italic text-[#b8a486]">Following the thread through your session.</div>
         </div>
       </div>
     </div>
