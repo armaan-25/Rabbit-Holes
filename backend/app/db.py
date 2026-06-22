@@ -11,6 +11,7 @@ from .schemas import RawEvent, ClusterResult
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 _disabled_reason: str | None = None
+_schema_checked = False
 
 
 def enabled() -> bool:
@@ -25,6 +26,79 @@ def _disable(exc: Exception) -> None:
     global _disabled_reason
     if _disabled_reason is None:
         _disabled_reason = f"{type(exc).__name__}: {exc}"
+
+
+def ensure_schema() -> None:
+    """Create the minimal production tables if the configured DB is empty."""
+    global _schema_checked
+    if not enabled() or _schema_checked:
+        return
+    try:
+        with connect() as conn:
+            conn.execute(
+                """
+                create table if not exists app_users (
+                    id text primary key,
+                    email text,
+                    created_at timestamptz not null default now()
+                )
+                """
+            )
+            conn.execute(
+                """
+                create table if not exists sessions (
+                    id text primary key,
+                    user_id text not null references app_users(id) on delete cascade,
+                    status text not null default 'recording',
+                    started_at timestamptz not null default now(),
+                    ended_at timestamptz
+                )
+                """
+            )
+            conn.execute(
+                """
+                create table if not exists events (
+                    id bigserial primary key,
+                    user_id text not null references app_users(id) on delete cascade,
+                    session_id text not null references sessions(id) on delete cascade,
+                    type text not null,
+                    url text,
+                    domain text,
+                    title text,
+                    query text,
+                    engine text,
+                    referrer text,
+                    transition text,
+                    tab_id integer,
+                    occurred_at timestamptz not null,
+                    raw jsonb not null,
+                    created_at timestamptz not null default now()
+                )
+                """
+            )
+            conn.execute("create index if not exists events_user_time_idx on events(user_id, occurred_at, id)")
+            conn.execute("create index if not exists events_user_session_idx on events(user_id, session_id)")
+            conn.execute(
+                """
+                create table if not exists rabbit_holes (
+                    id bigserial primary key,
+                    user_id text not null references app_users(id) on delete cascade,
+                    session_id text not null references sessions(id) on delete cascade,
+                    title text not null,
+                    description text not null default '',
+                    topics jsonb not null default '[]'::jsonb,
+                    questions jsonb not null default '[]'::jsonb,
+                    entities jsonb not null default '[]'::jsonb,
+                    page_ids jsonb not null default '[]'::jsonb,
+                    confidence double precision not null default 0,
+                    created_at timestamptz not null default now()
+                )
+                """
+            )
+            conn.execute("create index if not exists rabbit_holes_user_session_idx on rabbit_holes(user_id, session_id)")
+        _schema_checked = True
+    except psycopg.Error:
+        return
 
 
 @contextmanager
@@ -42,6 +116,7 @@ def connect() -> Iterator[psycopg.Connection]:
 def ensure_user(user_id: str, email: str | None = None) -> None:
     if not enabled():
         return
+    ensure_schema()
     try:
         with connect() as conn:
             conn.execute(
@@ -113,6 +188,7 @@ def add_events(user_id: str, events: list[RawEvent]) -> int:
 def all_events(user_id: str) -> list[RawEvent]:
     if not enabled():
         return []
+    ensure_schema()
     try:
         with connect() as conn:
             rows = conn.execute(

@@ -27,6 +27,7 @@ app.add_middleware(
 
 @app.get("/health")
 def health():
+    db.ensure_schema()
     return {"ok": True, "db": db.status()}
 
 
