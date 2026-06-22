@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase/client";
 import type { RabbitHole } from "@/lib/types";
+import { BunnyO } from "@/components/Logo";
 
 type Row = { id: string; name: string; body: string; default: boolean; tone?: string };
 
@@ -109,8 +110,8 @@ export default function SettingsPage() {
 
         <section className="mb-8 flex items-center justify-between rounded-[20px] border border-[#5f8a5c42] bg-[#eef5ea] px-6 py-5 shadow-[0_8px_30px_rgba(70,45,20,.04)]">
           <div className="flex items-center gap-4">
-            <div className="relative grid h-12 w-12 place-items-center rounded-[12px] bg-white shadow-[0_1px_4px_rgba(70,45,20,.12)]">
-              <img src="/assets/images/rabbit-holes-mark.png" alt="" className="h-10 w-10 object-contain" />
+            <div className="relative grid h-12 w-12 place-items-center rounded-[12px] bg-white text-[30px] leading-none text-[#37502f] shadow-[0_1px_4px_rgba(70,45,20,.12)]">
+              <BunnyO />
               <span className="absolute right-[-3px] top-[-3px] h-4 w-4 rounded-full border-2 border-[#eef5ea] bg-[#6a9a66]" />
             </div>
             <div>

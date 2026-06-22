@@ -50,14 +50,14 @@
         width: 100%; height: 42px; padding: 0; display: flex; align-items: center; gap: 10px;
         border: 0; background: transparent; text-align: left;
       }
-      .logo {
-        display: grid; place-items: center; width: 38px; height: 38px; flex: 0 0 auto;
-        overflow: hidden; border-radius: 12px; border: 1px solid var(--line); background: var(--ink);
-      }
-      .logo img { width: 34px; height: 34px; object-fit: contain; transform: translateY(-1px); }
       .title {
         min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         font-family: "Playfair Display", Georgia, serif; font-size: 21px; font-weight: 700; line-height: .95;
+      }
+      /* Typographic wordmark — the "o" in "Holes" drawn as a bunny, matching the web app logo. */
+      .bunny-o {
+        display: inline-block; height: 1.02em; width: .72em;
+        vertical-align: -.14em; margin: 0 .015em; fill: currentColor;
       }
       .icon-button {
         width: 36px; height: 36px; min-height: 36px; padding: 0; display: grid; place-items: center;
@@ -133,8 +133,7 @@
   <body>
     <div class="header">
       <button class="brand" id="brand-open" title="Open dashboard">
-        <span class="logo"><img src="assets/icon-128.png" alt="" /></span>
-        <span class="title">Rabbit Holes</span>
+        <span class="title">Rabbit&nbsp;H<svg class="bunny-o" viewBox="0 0 30 42" aria-hidden="true"><g fill="currentColor"><ellipse cx="11" cy="12.5" rx="3" ry="9.5" transform="rotate(-15 11 12.5)" /><ellipse cx="19" cy="12.5" rx="3" ry="9.5" transform="rotate(15 19 12.5)" /></g><circle cx="15" cy="29.5" r="9.5" fill="none" stroke="currentColor" stroke-width="3.8" /></svg>les</span>
       </button>
       <button class="icon-button dashboard-link" id="open" title="Open dashboard">↗</button>
     </div>

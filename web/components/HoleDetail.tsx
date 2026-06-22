@@ -109,7 +109,7 @@ export function HoleDetail({ hole }: { hole: RabbitHole }) {
           <aside className="space-y-5 lg:sticky lg:top-8">
             <div className="overflow-hidden rounded-[18px] border border-[#785a3224] bg-[#fbf6ec] px-6 pb-6 pt-3 shadow-[0_2px_16px_rgba(70,45,20,.06)]">
               <div className="-mx-6 mb-2 flex h-[88px] items-end justify-center bg-[radial-gradient(120%_120%_at_50%_120%,rgba(95,138,92,.18),transparent_70%)]">
-                <img src="/assets/images/rabbit-holes-mark.png" alt="" className="h-[82px] w-[82px] object-contain" />
+                <img src="/assets/images/rabbit-hole-hero.png" alt="" className="h-[82px] w-[110px] object-contain" />
               </div>
               <div className="text-center">
                 <div className="rh-display text-[42px] font-semibold leading-none" style={{ color: accent.hex }}>{Math.round(hole.confidence * 100)}%</div>

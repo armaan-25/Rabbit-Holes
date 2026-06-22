@@ -37,17 +37,6 @@ export function StatusBadge({ status }: { status: HoleStatus }) {
   );
 }
 
-export function Stat({ value, label }: { value: string | number; label: string }) {
-  return (
-    <div className="flex flex-col">
-      <span className="text-[19px] font-semibold tabular-nums tracking-tight text-haze-100">
-        {value}
-      </span>
-      <span className="text-[11px] uppercase tracking-wide text-haze-400">{label}</span>
-    </div>
-  );
-}
-
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div className="mb-3 text-[12px] font-semibold uppercase tracking-[0.16em] text-[#a8967d]">

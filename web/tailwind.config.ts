@@ -10,23 +10,6 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Light theme: `ink` = backgrounds (white → light grays),
-        // `haze` = text/foreground (mid grays → near-black).
-        ink: {
-          950: "#ffffff",
-          900: "#ffffff",
-          850: "#f7f7f8",
-          800: "#f1f1f3",
-          700: "#e9e9ec",
-          600: "#dededf",
-          500: "#cfcfd2",
-        },
-        haze: {
-          400: "#8c8c93",
-          300: "#5c5c63",
-          200: "#3a3a40",
-          100: "#1b1b1f",
-        },
         rabbit: {
           DEFAULT: "#f0641e",
           soft: "#ff8a4c",

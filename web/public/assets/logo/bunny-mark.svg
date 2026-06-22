@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 42" width="30" height="42" fill="none" role="img" aria-label="Rabbit Holes mark">
+  <g fill="#2a2018">
+    <ellipse cx="11" cy="12.5" rx="3" ry="9.5" transform="rotate(-15 11 12.5)"/>
+    <ellipse cx="19" cy="12.5" rx="3" ry="9.5" transform="rotate(15 19 12.5)"/>
+  </g>
+  <circle cx="15" cy="29.5" r="9.5" fill="none" stroke="#2a2018" stroke-width="3.8"/>
+</svg>

@@ -105,7 +105,6 @@ html.rabbit-dark .text-\[\#3a2f25\] {
 
 html.rabbit-dark .text-\[\#5a4a38\],
 html.rabbit-dark .text-\[\#6a5a48\],
-html.rabbit-dark .text-\[\#6a5a48\],
 html.rabbit-dark .text-\[\#8a7860\],
 html.rabbit-dark .text-\[\#9c8b75\] {
   color: #c8b89d !important;
@@ -326,38 +325,6 @@ html.rabbit-dark .rh-map-node {
 @keyframes map-float-soft {
   0%, 100% { transform: translate(-50%, -50%) translateY(0); }
   50% { transform: translate(-50%, -50%) translateY(-4px); }
-}
-
-.glass {
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-}
-
-/* Clean gray buttons (primary action style) */
-.btn-gray {
-  background: #2c2c31;
-  color: #ffffff;
-  border: 1px solid #2c2c31;
-  transition: background 0.15s ease, transform 0.1s ease;
-}
-.btn-gray:hover {
-  background: #3a3a40;
-}
-.btn-gray:active {
-  transform: scale(0.98);
-}
-.btn-soft {
-  background: #f1f1f3;
-  color: #2c2c31;
-  border: 1px solid rgba(17, 17, 20, 0.08);
-  transition: background 0.15s ease, transform 0.1s ease;
-}
-.btn-soft:hover {
-  background: #e7e7ea;
-}
-.btn-soft:active {
-  transform: scale(0.98);
 }
 
 /* Painterly reed sway for RabbitScene */
