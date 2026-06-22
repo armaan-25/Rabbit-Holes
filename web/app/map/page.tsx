@@ -22,6 +22,7 @@ type FlowNodeData = {
   node: GraphNode;
   hole: RabbitHole;
   selected: boolean;
+  dark: boolean;
 };
 
 const KIND_LABEL: Record<NodeKind, string> = {
@@ -33,13 +34,13 @@ const KIND_LABEL: Record<NodeKind, string> = {
   video: "Video",
 };
 
-const KIND_STYLE: Record<NodeKind, { bg: string; border: string; dot: string }> = {
-  search: { bg: "#f6ecdc", border: "#c79f6b", dot: "#b77637" },
-  website: { bg: "#fbf6ec", border: "#d8c3a1", dot: "#8f7859" },
-  repo: { bg: "#f4f0e7", border: "#b9aa8d", dot: "#5f6f4d" },
-  paper: { bg: "#f7efe7", border: "#c8a891", dot: "#9a5f45" },
-  doc: { bg: "#f5f1e6", border: "#b9b38d", dot: "#73805a" },
-  video: { bg: "#f6eded", border: "#c9a1a1", dot: "#9a5959" },
+const KIND_STYLE: Record<NodeKind, { bg: string; darkBg: string; border: string; darkBorder: string; dot: string }> = {
+  search: { bg: "#f6ecdc", darkBg: "#2a1f15", border: "#c79f6b", darkBorder: "#8a623a", dot: "#b77637" },
+  website: { bg: "#fbf6ec", darkBg: "#241c14", border: "#d8c3a1", darkBorder: "#70583b", dot: "#8f7859" },
+  repo: { bg: "#f4f0e7", darkBg: "#202018", border: "#b9aa8d", darkBorder: "#687257", dot: "#5f6f4d" },
+  paper: { bg: "#f7efe7", darkBg: "#271d18", border: "#c8a891", darkBorder: "#7e5947", dot: "#9a5f45" },
+  doc: { bg: "#f5f1e6", darkBg: "#222018", border: "#b9b38d", darkBorder: "#6d704f", dot: "#73805a" },
+  video: { bg: "#f6eded", darkBg: "#271b1b", border: "#c9a1a1", darkBorder: "#7e5050", dot: "#9a5959" },
 };
 
 function flowNodeDomain(node: GraphNode, hole: RabbitHole) {
@@ -47,18 +48,18 @@ function flowNodeDomain(node: GraphNode, hole: RabbitHole) {
 }
 
 function FlowNode({ data }: NodeProps<FlowNodeData>) {
-  const { node, hole, selected } = data;
+  const { node, hole, selected, dark } = data;
   const style = KIND_STYLE[node.kind];
   const domain = flowNodeDomain(node, hole);
 
   return (
     <button
       type="button"
-      className="group block w-[210px] rounded-[16px] border px-3.5 py-3 text-left shadow-[0_12px_28px_rgba(25,15,6,.16)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(25,15,6,.22)]"
+      className="rh-map-node group block w-[210px] rounded-[16px] border px-3.5 py-3 text-left shadow-[0_12px_28px_rgba(25,15,6,.16)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(25,15,6,.22)]"
       style={{
-        background: selected ? "#fff8ea" : style.bg,
-        borderColor: selected ? "#2a2018" : style.border,
-        boxShadow: selected ? "0 0 0 3px rgba(42,32,24,.08), 0 18px 40px rgba(25,15,6,.22)" : undefined,
+        background: selected ? (dark ? "#332417" : "#fff8ea") : dark ? style.darkBg : style.bg,
+        borderColor: selected ? (dark ? "#d8c3a1" : "#2a2018") : dark ? style.darkBorder : style.border,
+        boxShadow: selected ? "0 0 0 3px rgba(216,195,161,.12), 0 18px 40px rgba(25,15,6,.28)" : undefined,
       }}
     >
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
@@ -71,10 +72,10 @@ function FlowNode({ data }: NodeProps<FlowNodeData>) {
             <span className="h-2.5 w-2.5 rounded-full" style={{ background: style.dot }} />
           </span>
         )}
-        <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9b825f]">{KIND_LABEL[node.kind]}</span>
+        <span className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: dark ? "#b69b77" : "#9b825f" }}>{KIND_LABEL[node.kind]}</span>
       </div>
-      <div className="rh-display line-clamp-2 text-[18px] font-semibold leading-tight text-[#2a2018]">{node.label.replace(/^Search: /, "")}</div>
-      {domain ? <div className="mt-2 truncate text-[12px] text-[#7a6954]">{domain}</div> : null}
+      <div className="rh-display line-clamp-2 text-[18px] font-semibold leading-tight">{node.label.replace(/^Search: /, "")}</div>
+      {domain ? <div className="mt-2 truncate text-[12px]" style={{ color: dark ? "#b7a487" : "#7a6954" }}>{domain}</div> : null}
     </button>
   );
 }
@@ -136,10 +137,10 @@ export default function MapPage() {
         x: node.x * 1120 - WIDTH / 2,
         y: node.y * 560 - HEIGHT / 2,
       },
-      data: { node, hole, selected: node.id === selectedId },
+      data: { node, hole, selected: node.id === selectedId, dark },
       draggable: false,
     }));
-  }, [hole, selectedId]);
+  }, [hole, selectedId, dark]);
 
   const edges = useMemo<Edge[]>(() => {
     if (!hole) return [];
@@ -164,13 +165,13 @@ export default function MapPage() {
   }
 
   return (
-    <div className="rh-paper min-h-screen px-5 py-7 sm:px-8 xl:px-12">
+    <div className="rh-app-bg min-h-screen px-5 py-7 sm:px-8 xl:px-12">
       <div className="mx-auto w-full max-w-[1480px]">
         <div className="flex flex-wrap items-end justify-between gap-5">
           <div>
-            <div className="mb-2 text-[12px] font-semibold uppercase tracking-[0.22em] text-[#a8967d]">Map</div>
-            <h1 className="rh-display text-[46px] font-semibold leading-none text-[#2a2018]">See the thread</h1>
-            <p className="mt-3 max-w-[640px] text-[15.5px] leading-6 text-[#6a5a48]">
+            <div className="rh-faint mb-2 text-[12px] font-semibold uppercase tracking-[0.22em]">Map</div>
+            <h1 className="rh-display rh-ink text-[46px] font-semibold leading-none">See the thread</h1>
+            <p className="rh-muted mt-3 max-w-[640px] text-[15.5px] leading-6">
               Click a node to see how a search became a page, how that page led somewhere else, and what the thread was actually about.
             </p>
           </div>
@@ -187,9 +188,9 @@ export default function MapPage() {
                   }}
                   className="rounded-full border px-4 py-2 text-[13px] font-semibold transition"
                   style={{
-                    background: active ? "#21170f" : "#fbf6ec",
-                    borderColor: active ? "#21170f" : "#d8c3a1",
-                    color: active ? "#f7ead3" : "#4c3927",
+                    background: active ? "var(--rh-primary)" : "var(--rh-surface)",
+                    borderColor: active ? "var(--rh-primary)" : "var(--rh-line-strong)",
+                    color: active ? "var(--rh-primary-text)" : "var(--rh-ink-soft)",
                   }}
                 >
                   {item.title}
@@ -200,7 +201,7 @@ export default function MapPage() {
         </div>
 
         <div className="mt-7 grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="h-[690px] overflow-hidden rounded-[28px] border border-[#4a3928] bg-[#1b130d] shadow-[0_24px_70px_rgba(40,25,10,.18)]">
+          <div className="rh-map-shell h-[690px] overflow-hidden rounded-[28px] border shadow-[0_24px_70px_rgba(40,25,10,.18)]">
             <ReactFlow
               nodes={nodes}
               edges={edges}
@@ -215,16 +216,16 @@ export default function MapPage() {
               onNodeClick={(_, node) => setSelectedId(node.id)}
             >
               <Background variant={BackgroundVariant.Dots} gap={26} size={1.2} color={dark ? "#3a2e1f" : "#3a2a1d"} />
-              <Controls showInteractive={false} className="!border-[#4a3928] !bg-[#fbf6ec] !shadow-none" />
+              <Controls showInteractive={false} className="!border-[var(--rh-map-line)] !bg-[var(--rh-surface)] !shadow-none" />
             </ReactFlow>
           </div>
 
-          <aside className="rounded-[28px] border border-[#d8c3a1] bg-[#fbf6ec] p-6 shadow-[0_18px_50px_rgba(70,45,20,.10)]">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a8967d]">Selected node</div>
-            <h2 className="rh-display mt-3 text-[31px] font-semibold leading-tight text-[#2a2018]">{insight?.title}</h2>
-            <div className="mt-2 text-[13px] font-semibold uppercase tracking-[0.14em] text-[#9b825f]">{insight?.eyebrow}</div>
-            <p className="mt-4 text-[15px] leading-6 text-[#6a5a48]">{insight?.detail}</p>
-            <div className="mt-5 rounded-2xl border border-[#e1d2ba] bg-white/55 p-4 text-[14px] font-semibold text-[#4c3927]">
+          <aside className="rh-map-panel rounded-[28px] border p-6 shadow-[0_18px_50px_rgba(70,45,20,.10)]">
+            <div className="rh-faint text-[11px] font-semibold uppercase tracking-[0.2em]">Selected node</div>
+            <h2 className="rh-display rh-ink mt-3 text-[31px] font-semibold leading-tight">{insight?.title}</h2>
+            <div className="mt-2 text-[13px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--rh-faint)" }}>{insight?.eyebrow}</div>
+            <p className="rh-muted mt-4 text-[15px] leading-6">{insight?.detail}</p>
+            <div className="rh-surface-2 mt-5 rounded-2xl border p-4 text-[14px] font-semibold">
               {insight?.flow}
             </div>
             {insight?.url ? (
@@ -232,7 +233,7 @@ export default function MapPage() {
                 href={insight.url}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-4 inline-flex rounded-full bg-[#21170f] px-5 py-3 text-[14px] font-semibold text-[#f7ead3] no-underline"
+                className="rh-primary mt-4 inline-flex rounded-full px-5 py-3 text-[14px] font-semibold no-underline"
               >
                 Open source →
               </a>
@@ -240,7 +241,7 @@ export default function MapPage() {
             {hole ? (
               <Link
                 href={`/map/${hole.id}`}
-                className="mt-3 inline-flex rounded-full border border-[#d8c3a1] px-5 py-3 text-[14px] font-semibold text-[#4c3927] no-underline"
+                className="rh-surface-2 mt-3 inline-flex rounded-full border px-5 py-3 text-[14px] font-semibold no-underline"
               >
                 Open full hole
               </Link>

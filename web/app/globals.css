@@ -10,6 +10,23 @@
   --font-sans: "Newsreader", Georgia, serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", monospace;
   --font-display: "Playfair Display", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --rh-bg: #f3ead9;
+  --rh-bg-soft: #f7f0e4;
+  --rh-sidebar: #f0e4d0;
+  --rh-surface: #fbf6ec;
+  --rh-surface-2: #f2e9d6;
+  --rh-surface-3: #fffaf1;
+  --rh-ink: #2a2018;
+  --rh-ink-soft: #5f4f3d;
+  --rh-muted: #8a7860;
+  --rh-faint: #a8967d;
+  --rh-line: rgba(120, 90, 50, 0.16);
+  --rh-line-strong: rgba(120, 90, 50, 0.28);
+  --rh-map-bg: #1b130d;
+  --rh-map-line: #4a3928;
+  --rh-primary: #21170f;
+  --rh-primary-text: #f7ead3;
+  --rh-green: #5f8a5c;
 }
 
 * {
@@ -41,6 +58,23 @@ html.rabbit-dark,
 html.rabbit-dark body {
   background: #15110d;
   color: #f3e8d4;
+  --rh-bg: #120e0a;
+  --rh-bg-soft: #18130e;
+  --rh-sidebar: #21190f;
+  --rh-surface: #211a14;
+  --rh-surface-2: #2a2118;
+  --rh-surface-3: #17120d;
+  --rh-ink: #f3e8d4;
+  --rh-ink-soft: #d8c8ad;
+  --rh-muted: #b7a487;
+  --rh-faint: #947f61;
+  --rh-line: rgba(230, 211, 180, 0.16);
+  --rh-line-strong: rgba(230, 211, 180, 0.31);
+  --rh-map-bg: #18100a;
+  --rh-map-line: rgba(230, 211, 180, 0.2);
+  --rh-primary: #f3e8d4;
+  --rh-primary-text: #21170f;
+  --rh-green: #9ec79a;
 }
 
 html.rabbit-dark .rh-paper {
@@ -209,6 +243,69 @@ html.rabbit-dark .bg-\[\#2a2018\] {
   background:
     radial-gradient(110% 90% at 50% 0%, rgba(255, 252, 244, 0.86), rgba(255, 252, 244, 0) 62%),
     linear-gradient(180deg, #f6efe1 0%, #efe4d0 100%);
+}
+
+.rh-app-bg {
+  background:
+    radial-gradient(80% 55% at 50% 0%, color-mix(in srgb, var(--rh-surface) 74%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--rh-bg-soft), var(--rh-bg));
+  color: var(--rh-ink);
+}
+
+.rh-sidebar {
+  background: var(--rh-sidebar);
+  border-color: var(--rh-line);
+  color: var(--rh-ink);
+}
+
+.rh-surface {
+  background: var(--rh-surface);
+  border-color: var(--rh-line);
+  color: var(--rh-ink);
+}
+
+.rh-surface-2 {
+  background: var(--rh-surface-2);
+  border-color: var(--rh-line);
+  color: var(--rh-ink);
+}
+
+.rh-muted {
+  color: var(--rh-muted);
+}
+
+.rh-faint {
+  color: var(--rh-faint);
+}
+
+.rh-ink {
+  color: var(--rh-ink);
+}
+
+.rh-primary {
+  background: var(--rh-primary);
+  color: var(--rh-primary-text);
+}
+
+.rh-map-shell {
+  background:
+    radial-gradient(70% 90% at 50% 38%, rgba(176, 118, 55, 0.08), transparent 62%),
+    var(--rh-map-bg);
+  border-color: var(--rh-map-line);
+}
+
+.rh-map-panel {
+  background: var(--rh-surface);
+  border-color: var(--rh-line-strong);
+  color: var(--rh-ink);
+}
+
+.rh-map-node {
+  color: #2a2018;
+}
+
+html.rabbit-dark .rh-map-node {
+  color: #f3e8d4;
 }
 
 @keyframes dash-pulse {

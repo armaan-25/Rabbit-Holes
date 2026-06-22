@@ -31,20 +31,20 @@ export function Sidebar() {
   if (pathname === "/") return null;
 
   return (
-    <aside className="sticky top-0 z-20 hidden h-screen w-[352px] shrink-0 flex-col border-r border-[#785a3224] bg-[#f6efe1] px-7 py-8 md:flex">
+    <aside className="rh-sidebar sticky top-0 z-20 hidden h-screen w-[352px] shrink-0 flex-col border-r px-7 py-8 md:flex">
       <Link href="/" className="mb-8 block px-2 no-underline">
         <Wordmark className="text-[22px]" />
-        <div className="mt-1.5 text-[13px] italic text-[#8a7860]">Smart history for your research.</div>
+        <div className="rh-muted mt-1.5 text-[13px] italic">Smart history for your research.</div>
       </Link>
 
       <button
         onClick={togglePalette}
-        className="mb-7 flex items-center justify-between rounded-[13px] border border-[#785a3224] bg-[#fbf6ec] px-5 py-4 text-[15px] text-[#6a5a48] transition hover:text-[#2a2018]"
+        className="rh-surface mb-7 flex items-center justify-between rounded-[13px] border px-5 py-4 text-[15px] transition"
       >
         <span className="flex items-center gap-2">
           <span className="text-[16px]">⌕</span> Quick jump
         </span>
-        <kbd className="rounded border border-[#785a3224] bg-white px-2 py-1 font-mono text-[11px] text-[#8a7860]">
+        <kbd className="rh-surface-2 rounded border px-2 py-1 font-mono text-[11px] rh-muted">
           ⌘K
         </kbd>
       </button>
@@ -58,18 +58,18 @@ export function Sidebar() {
               href={n.href}
               className={`flex items-center gap-3.5 rounded-[12px] px-5 py-3.5 text-[16px] transition ${
                 active
-                  ? "bg-[#fbf6ec] text-[#2a2018] shadow-[0_1px_3px_rgba(70,45,20,.08)]"
-                  : "text-[#6a5a48] hover:bg-[#fbf6ec] hover:text-[#2a2018]"
+                  ? "rh-surface shadow-[0_1px_3px_rgba(70,45,20,.08)]"
+                  : "rh-muted hover:bg-[var(--rh-surface)] hover:text-[var(--rh-ink)]"
               }`}
             >
-              <span className="w-5 text-center text-[17px] text-[#a8967d]">{n.glyph}</span>
+              <span className="rh-faint w-5 text-center text-[17px]">{n.glyph}</span>
               {n.label}
             </Link>
           );
         })}
       </nav>
 
-      <div className="mb-3 mt-8 px-3 text-[12px] font-semibold uppercase tracking-[0.16em] text-[#a8967d]">
+      <div className="rh-faint mb-3 mt-8 px-3 text-[12px] font-semibold uppercase tracking-[0.16em]">
         Rabbit Holes
       </div>
       <div className="flex-1 space-y-1 overflow-y-auto">
@@ -81,7 +81,7 @@ export function Sidebar() {
               key={h.id}
               href={`/holes/${h.id}`}
               className={`group flex items-center gap-3 rounded-[12px] px-5 py-3 text-[15px] transition ${
-                active ? "bg-[#fbf6ec] text-[#2a2018]" : "text-[#5a4a38] hover:bg-[#fbf6ec]"
+                active ? "rh-surface" : "rh-muted hover:bg-[var(--rh-surface)]"
               }`}
             >
               <span
@@ -89,7 +89,7 @@ export function Sidebar() {
                 style={{ background: accent.hex, boxShadow: `0 0 8px ${accent.ring}` }}
               />
               <span className="truncate">{h.title}</span>
-              <span className="ml-auto text-[13px] tabular-nums text-[#a8967d]">
+              <span className="rh-faint ml-auto text-[13px] tabular-nums">
                 {h.pages.length}
               </span>
             </Link>
@@ -97,17 +97,17 @@ export function Sidebar() {
         })}
       </div>
 
-      <div className="mt-5 rounded-[13px] border border-[#5f8a5c42] bg-[#eef5ea] px-4 py-3">
+      <div className="mt-5 rounded-[13px] border px-4 py-3" style={{ borderColor: "color-mix(in srgb, var(--rh-green) 34%, transparent)", background: "color-mix(in srgb, var(--rh-green) 12%, var(--rh-surface))" }}>
         <div className="flex items-center gap-3">
         <span
           className="h-2.5 w-2.5 rounded-full"
           style={{ background: stats.captureState === "recording" ? STATUS_META.active.dot : "#c7ae84" }}
         />
-          <span className="text-[14px] font-semibold text-[#4d7049]">
+          <span className="text-[14px] font-semibold" style={{ color: "var(--rh-green)" }}>
             {statusLabel}{typeof stats.elapsedMs === "number" ? ` · ${formatElapsed(stats.elapsedMs)}` : ""}
           </span>
         </div>
-        <div className="mt-3 grid grid-cols-3 divide-x divide-[#5f8a5c24] rounded-[10px] bg-[#fbf6ec]/70 py-2">
+        <div className="rh-surface mt-3 grid grid-cols-3 divide-x divide-[var(--rh-line)] rounded-[10px] border-0 py-2">
           <MiniStat n={stats.pages} label="pages" />
           <MiniStat n={stats.searches} label="searches" />
           <MiniStat n={stats.tabs} label="tabs" />
@@ -122,8 +122,8 @@ export function Sidebar() {
 function MiniStat({ n, label }: { readonly n: number; readonly label: string }) {
   return (
     <div className="px-2 text-center">
-      <div className="text-[17px] font-semibold tabular-nums text-[#2a2018]">{n}</div>
-      <div className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-[#8a7860]">{label}</div>
+      <div className="rh-ink text-[17px] font-semibold tabular-nums">{n}</div>
+      <div className="rh-muted mt-0.5 text-[9px] font-semibold uppercase tracking-[0.12em]">{label}</div>
     </div>
   );
 }
