@@ -374,6 +374,7 @@ export default function Landing() {
             <Link href="/install" className="text-[#6a5a48] underline decoration-[#785a3240] underline-offset-4">Install</Link>
             <Link href="/privacy" className="text-[#6a5a48] underline decoration-[#785a3240] underline-offset-4">Privacy</Link>
             <Link href="/terms" className="text-[#6a5a48] underline decoration-[#785a3240] underline-offset-4">Terms</Link>
+            <a href="mailto:aa5851@columbia.edu" className="text-[#6a5a48] underline decoration-[#785a3240] underline-offset-4">Support</a>
           </div>
         </div>
       </footer>

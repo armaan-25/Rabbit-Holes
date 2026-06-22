@@ -89,8 +89,8 @@ Point `extension/config.js` `BACKEND_URL` at your backend.
   OAuth, `extension/config.js`, CORS (`WEB_ORIGIN`), and landing-page links.
 - Publish the Chrome Web Store listing or keep `/install` clearly labeled as a
   developer-mode install flow.
-- Replace `/privacy` and `/terms` draft contact/legal language with your real
-  support email, legal entity, and reviewed policy text.
+- Review `/privacy` and `/terms` against your real legal entity and Chrome Web
+  Store listing. Support email is currently `aa5851@columbia.edu`.
 - Confirm `/cluster`, `/ask`, `/synthesize`, `/export`, and `/clear` work on
   the production Railway backend with a signed-in account.
 - Keep `RATE_LIMIT_*` env vars set before opening access.

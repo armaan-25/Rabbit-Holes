@@ -7,7 +7,7 @@ const TERMS = [
   "You may not use Rabbit Holes to capture another person's browsing activity without permission.",
   "The product may use AI-generated summaries and clusters. Those outputs can be incomplete or wrong and should be reviewed before use.",
   "The service may rate limit or reject requests to protect availability, cost, and abuse risk.",
-  "Before public launch, replace this draft with legal terms reviewed for your entity, jurisdiction, and Chrome Web Store listing.",
+  "For support, account issues, or deletion requests, contact aa5851@columbia.edu.",
 ];
 
 export default function TermsPage() {
@@ -18,7 +18,7 @@ export default function TermsPage() {
         <div className="mt-12 text-[12px] font-bold uppercase tracking-[0.24em] text-[#a8967d]">Terms</div>
         <h1 className="rh-display mt-3 text-[52px] font-semibold leading-none">Terms of Use</h1>
         <p className="mt-5 text-[18px] leading-8 text-[#5a4a38]">
-          These terms are a practical launch draft for testing and review. Get real legal review before public distribution.
+          These terms govern use of Rabbit Holes, including the web app and browser extension.
         </p>
         <div className="mt-10 rounded-[22px] border border-[#785a3224] bg-[#fbf6ec] p-7">
           <ol className="space-y-5">
@@ -30,7 +30,9 @@ export default function TermsPage() {
             ))}
           </ol>
         </div>
-        <p className="mt-8 text-[13px] text-[#8a7860]">Last updated: June 22, 2026</p>
+        <p className="mt-8 text-[13px] text-[#8a7860]">
+          Last updated: June 22, 2026 · Support: <a className="underline" href="mailto:aa5851@columbia.edu">aa5851@columbia.edu</a>
+        </p>
       </div>
     </main>
   );

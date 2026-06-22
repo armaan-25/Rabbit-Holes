@@ -24,7 +24,7 @@ const SECTIONS = [
   },
   {
     title: "Contact",
-    body: "Before public launch, replace this section with your support email and company/legal entity. Do not ship store listings without a real contact path.",
+    body: "For privacy questions, account deletion requests, or support, email aa5851@columbia.edu.",
   },
 ];
 
@@ -36,7 +36,7 @@ export default function PrivacyPage() {
         <div className="mt-12 text-[12px] font-bold uppercase tracking-[0.24em] text-[#a8967d]">Privacy</div>
         <h1 className="rh-display mt-3 text-[52px] font-semibold leading-none">Privacy Policy</h1>
         <p className="mt-5 text-[18px] leading-8 text-[#5a4a38]">
-          This is the launch-ready privacy draft for Rabbit Holes. It explains the browser-history data the product needs and the controls users have.
+          Rabbit Holes is a browser-history research tool. This policy explains the browsing data the product needs, how it is used, and the controls users have.
         </p>
         <div className="mt-10 space-y-4">
           {SECTIONS.map((section) => (
@@ -46,7 +46,9 @@ export default function PrivacyPage() {
             </section>
           ))}
         </div>
-        <p className="mt-8 text-[13px] text-[#8a7860]">Last updated: June 22, 2026</p>
+        <p className="mt-8 text-[13px] text-[#8a7860]">
+          Last updated: June 22, 2026 · Support: <a className="underline" href="mailto:aa5851@columbia.edu">aa5851@columbia.edu</a>
+        </p>
       </div>
     </main>
   );
