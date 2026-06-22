@@ -54,11 +54,6 @@
         min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         font-family: "Playfair Display", Georgia, serif; font-size: 21px; font-weight: 700; line-height: .95;
       }
-      /* Typographic wordmark — the "o" in "Holes" drawn as a bunny, matching the web app logo. */
-      .bunny-o {
-        display: inline-block; height: 1.02em; width: .72em;
-        vertical-align: -.14em; margin: 0 .015em; fill: currentColor;
-      }
       .icon-button {
         width: 36px; height: 36px; min-height: 36px; padding: 0; display: grid; place-items: center;
         border-radius: 12px; background: var(--ink); color: var(--cream-2); font-size: 15px;
@@ -126,14 +121,13 @@
         border: 1px solid var(--line); color: var(--rust); font-size: 12px; font-weight: 700;
       }
       button span { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-      .ears { width: 18px; height: 18px; color: currentColor; opacity: .82; }
       button:hover { filter: brightness(1.05); }
     </style>
   </head>
   <body>
     <div class="header">
       <button class="brand" id="brand-open" title="Open dashboard">
-        <span class="title">Rabbit&nbsp;H<svg class="bunny-o" viewBox="0 0 30 42" aria-hidden="true"><g fill="currentColor"><ellipse cx="11" cy="12.5" rx="3" ry="9.5" transform="rotate(-15 11 12.5)" /><ellipse cx="19" cy="12.5" rx="3" ry="9.5" transform="rotate(15 19 12.5)" /></g><circle cx="15" cy="29.5" r="9.5" fill="none" stroke="currentColor" stroke-width="3.8" /></svg>les</span>
+        <span class="title">Rabbit Holes</span>
       </button>
       <button class="icon-button dashboard-link" id="open" title="Open dashboard">↗</button>
     </div>
@@ -164,7 +158,7 @@
         </div>
       </div>
 
-      <button class="watercolor" id="cluster"><span><svg class="ears" viewBox="0 0 24 24" aria-hidden="true" fill="none"><ellipse cx="9" cy="10.2" rx="2.2" ry="6.8" fill="currentColor" transform="rotate(-17 9 10.2)" /><ellipse cx="15" cy="10.2" rx="2.2" ry="6.8" fill="currentColor" transform="rotate(17 15 10.2)" /><path d="M6.8 18.2c1.2-2.2 2.9-3.2 5.2-3.2s4 1 5.2 3.2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /></svg>Build rabbit holes</span></button>
+      <button class="watercolor" id="cluster"><span>Build rabbit holes</span></button>
 
       <div class="account" id="account">
         <span class="account-dot"></span>
