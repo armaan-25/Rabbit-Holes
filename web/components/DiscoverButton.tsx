@@ -58,27 +58,27 @@ export function DiscoverButton() {
 }
 
 const WORDS = [
-  { text: "tabs", x: "-34vw", y: "-19vh", d: "0s" },
-  { text: "searches", x: "31vw", y: "-16vh", d: ".18s" },
-  { text: "notes", x: "-25vw", y: "7vh", d: ".34s" },
-  { text: "links", x: "27vw", y: "8vh", d: ".52s" },
-  { text: "threads", x: "-38vw", y: "22vh", d: ".7s" },
-  { text: "questions", x: "34vw", y: "23vh", d: ".9s" },
-  { text: "ideas", x: "-12vw", y: "-30vh", d: "1.08s" },
-  { text: "context", x: "13vw", y: "-29vh", d: "1.24s" },
-  { text: "memory", x: "-6vw", y: "31vh", d: "1.42s" },
-  { text: "patterns", x: "7vw", y: "32vh", d: "1.62s" },
+  { text: "tabs", x: "-300px", y: "-128px", d: "0s" },
+  { text: "searches", x: "286px", y: "-124px", d: ".18s" },
+  { text: "notes", x: "-260px", y: "18px", d: ".34s" },
+  { text: "links", x: "262px", y: "24px", d: ".52s" },
+  { text: "threads", x: "-272px", y: "150px", d: ".7s" },
+  { text: "questions", x: "280px", y: "146px", d: ".9s" },
+  { text: "ideas", x: "-82px", y: "-190px", d: "1.08s" },
+  { text: "context", x: "96px", y: "-184px", d: "1.24s" },
+  { text: "memory", x: "-92px", y: "204px", d: "1.42s" },
+  { text: "patterns", x: "92px", y: "202px", d: "1.62s" },
 ];
 
 function RabbitHoleLoading() {
   return (
-    <div className="fixed inset-0 z-[70] grid place-items-center overflow-hidden bg-[#f6efe1]/92 backdrop-blur-[2px]">
+    <div className="fixed inset-0 z-[70] grid place-items-center overflow-hidden bg-[#1a130d]/58 px-5 backdrop-blur-[10px]">
       <style>{`
         @keyframes word-to-hole {
           0% { transform: translate(var(--x), var(--y)) scale(1); opacity: 0; filter: blur(0); }
-          14% { opacity: .9; }
-          72% { opacity: .75; }
-          100% { transform: translate(0, 0) scale(.18); opacity: 0; filter: blur(2px); }
+          16% { opacity: .72; }
+          70% { opacity: .58; }
+          100% { transform: translate(0, 6px) scale(.2); opacity: 0; filter: blur(2px); }
         }
         @keyframes hole-breathe {
           0%, 100% { transform: scale(1); filter: saturate(.95) contrast(1.02); }
@@ -90,14 +90,15 @@ function RabbitHoleLoading() {
         }
       `}</style>
 
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(251,246,236,.2),rgba(246,239,225,.82)_66%,rgba(230,218,199,.92))]" />
-      <div className="pointer-events-none absolute inset-[-20%] opacity-40 mix-blend-multiply [animation:loading-grain_3.2s_ease-in-out_infinite] [background-image:radial-gradient(rgba(120,90,50,.12)_1px,transparent_1px)] [background-size:18px_18px]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(246,239,225,.10),transparent_46%)]" />
 
-      <div className="relative grid h-[520px] w-full max-w-[760px] place-items-center">
+      <div className="relative grid h-[650px] w-full max-w-[920px] place-items-center overflow-hidden rounded-[42px] border border-[#f3e8d426] bg-[#f6efe1] shadow-[0_38px_120px_rgba(18,11,5,.45)]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,252,244,.86),rgba(246,239,225,.74)_62%,rgba(230,218,199,.88))]" />
+        <div className="pointer-events-none absolute inset-0 opacity-55 mix-blend-multiply [animation:loading-grain_3.2s_ease-in-out_infinite] [background-image:radial-gradient(rgba(120,90,50,.12)_1px,transparent_1px)] [background-size:22px_22px]" />
         {WORDS.map((word) => (
           <span
             key={word.text}
-            className="absolute rh-display select-none text-[24px] italic tracking-wide text-[#8a6a48]"
+            className="absolute rh-display select-none text-[25px] italic tracking-wide text-[#8a6a48]/62"
             style={{
               "--x": word.x,
               "--y": word.y,
@@ -109,18 +110,18 @@ function RabbitHoleLoading() {
         ))}
 
         <div className="relative grid place-items-center">
-          <div className="absolute h-52 w-72 rounded-full bg-[#5f8a5c]/10 blur-3xl" />
+          <div className="absolute h-48 w-80 rounded-full bg-[#5f8a5c]/12 blur-3xl" />
           <img
             src="/assets/images/rabbit-hole-hero.png"
             alt=""
-            className="relative h-[290px] w-[430px] object-contain [animation:hole-breathe_2.4s_ease-in-out_infinite]"
+            className="relative h-[330px] w-[520px] object-contain [animation:hole-breathe_2.4s_ease-in-out_infinite]"
           />
-          <div className="absolute bottom-[74px] h-12 w-40 rounded-full bg-black/35 blur-2xl" />
+          <div className="absolute bottom-[86px] h-12 w-44 rounded-full bg-black/26 blur-2xl" />
         </div>
 
-        <div className="absolute bottom-8 text-center">
-          <div className="rh-display text-[34px] font-semibold text-[#2a2018]">Building rabbit holes</div>
-          <div className="mt-2 text-[15px] italic text-[#8a7860]">Following the thread through your session.</div>
+        <div className="absolute bottom-14 text-center">
+          <div className="rh-display text-[42px] font-semibold leading-none text-[#2a2018]">Building rabbit holes</div>
+          <div className="mt-3 text-[16px] italic text-[#8a7860]">Following the thread through your session.</div>
         </div>
       </div>
     </div>
