@@ -93,7 +93,7 @@ export default function SettingsPage() {
     if (!window.confirm("Erase all rabbit holes and sign out? This cannot be undone.")) return;
     window.localStorage.removeItem(LIVE_HOLES_KEY);
     await supabase.auth.signOut();
-    window.location.href = "/";
+    window.location.replace("/login?next=/dashboard");
   }
 
   return (

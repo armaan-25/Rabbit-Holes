@@ -42,7 +42,7 @@ async function signInWithGoogle() {
     if (error) throw error;
   } catch {
     // Supabase not configured locally — fall back to the full login screen.
-    window.location.href = "/login";
+    window.location.replace("/login");
   }
 }
 

@@ -119,7 +119,6 @@ function SidebarAccount() {
   async function signOut() {
     await supabase.auth.signOut();
     setUser(null);
-    window.location.href = "/";
   }
 
   if (!user) {

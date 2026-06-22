@@ -12,14 +12,14 @@ export default function ExtensionAuthPage() {
       const { data } = await supabase.auth.getSession();
       let session = data.session;
       if (!session) {
-        window.location.href = `/login?next=${encodeURIComponent(`/extension-auth${window.location.search}`)}`;
+        window.location.replace(`/login?next=${encodeURIComponent(`/extension-auth${window.location.search}`)}`);
         return;
       }
 
       const refreshed = await supabase.auth.refreshSession();
       if (refreshed.error && !session.refresh_token) {
         await supabase.auth.signOut();
-        window.location.href = `/login?next=${encodeURIComponent(`/extension-auth${window.location.search}`)}`;
+        window.location.replace(`/login?next=${encodeURIComponent(`/extension-auth${window.location.search}`)}`);
         return;
       }
       if (refreshed.data.session) session = refreshed.data.session;

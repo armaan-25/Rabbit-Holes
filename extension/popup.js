@@ -125,11 +125,13 @@ document.getElementById("brand-open").addEventListener("click", () => {
 });
 
 document.getElementById("signin").addEventListener("click", async () => {
+  document.getElementById("auth-msg").textContent = "Opening sign in...";
   await chrome.runtime.sendMessage({ type: "signOut" }).catch(() => {});
   chrome.tabs.create({ url: `${WEB_URL}/extension-auth` });
 });
 
 document.getElementById("signout").addEventListener("click", async () => {
+  document.getElementById("account-email").textContent = "Signing out...";
   await chrome.runtime.sendMessage({ type: "signOut" }).catch(() => {});
   signedIn = false;
   setAuthView("out");
