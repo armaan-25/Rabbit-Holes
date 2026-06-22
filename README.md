@@ -63,7 +63,17 @@ then click **🕳 Build rabbit holes** (dashboard) or **Run clustering** (`⌘K`
 to trigger discovery animation when new clusters are returned.
 
 Endpoints: `POST /events` (ingest), `POST /cluster` (run the AI layer),
-`GET /signals`, `GET /health`.
+`GET /signals`, `GET /stats`, `GET /export`, `POST /clear`, `GET /health`.
+
+Default backend safety limits are intentionally conservative and can be tuned
+with env vars:
+
+```bash
+RATE_LIMIT_EVENTS_PER_MIN=240
+RATE_LIMIT_CLUSTER_PER_HOUR=20
+RATE_LIMIT_AI_PER_HOUR=60
+RATE_LIMIT_READS_PER_MIN=120
+```
 
 ## Load the extension
 
@@ -72,6 +82,18 @@ Endpoints: `POST /events` (ingest), `POST /cluster` (run the AI layer),
 3. Browse. Click the 🐇 to see capture stats and build rabbit holes.
 
 Point `extension/config.js` `BACKEND_URL` at your backend.
+
+## Launch checklist
+
+- Replace Railway test URLs with the real production domain in Supabase, Google
+  OAuth, `extension/config.js`, CORS (`WEB_ORIGIN`), and landing-page links.
+- Publish the Chrome Web Store listing or keep `/install` clearly labeled as a
+  developer-mode install flow.
+- Replace `/privacy` and `/terms` draft contact/legal language with your real
+  support email, legal entity, and reviewed policy text.
+- Confirm `/cluster`, `/ask`, `/synthesize`, `/export`, and `/clear` work on
+  the production Railway backend with a signed-in account.
+- Keep `RATE_LIMIT_*` env vars set before opening access.
 
 ---
 

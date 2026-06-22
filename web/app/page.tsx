@@ -296,9 +296,9 @@ export default function Landing() {
                 >
                   Download extension ↓
                 </a>
-                <a href="#how" className="inline-flex rounded-full border border-[#785a3233] bg-[#f6efe1] px-7 py-4 text-[16px] font-semibold text-[#2a2018] transition hover:-translate-y-0.5">
+                <Link href="/install" className="inline-flex rounded-full border border-[#785a3233] bg-[#f6efe1] px-7 py-4 text-[16px] font-semibold text-[#2a2018] transition hover:-translate-y-0.5">
                   Install steps
-                </a>
+                </Link>
               </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -369,7 +369,12 @@ export default function Landing() {
       <footer className="border-t border-[#785a321f]">
         <div className="mx-auto flex w-full max-w-[1200px] flex-col items-center justify-between gap-3 px-5 py-8 text-[14px] text-[#8a7860] sm:flex-row sm:px-8">
           <Wordmark className="text-[17px]" />
-          <span>Smart history for the things you were actually researching.</span>
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            <span>Smart history for the things you were actually researching.</span>
+            <Link href="/install" className="text-[#6a5a48] underline decoration-[#785a3240] underline-offset-4">Install</Link>
+            <Link href="/privacy" className="text-[#6a5a48] underline decoration-[#785a3240] underline-offset-4">Privacy</Link>
+            <Link href="/terms" className="text-[#6a5a48] underline decoration-[#785a3240] underline-offset-4">Terms</Link>
+          </div>
         </div>
       </footer>
     </div>

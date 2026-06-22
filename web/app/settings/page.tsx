@@ -6,6 +6,7 @@ import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase/client";
 import type { RabbitHole } from "@/lib/types";
 import { BunnyO } from "@/components/Logo";
+import { clearBackendData, exportBackendData } from "@/lib/api";
 
 type Row = { id: string; name: string; body: string; default: boolean; tone?: string };
 
@@ -68,9 +69,11 @@ export default function SettingsPage() {
     setSavedAt(error ? `Couldn't save: ${error.message}` : "Saved");
   }
 
-  function exportData() {
+  async function exportData() {
     const holes = readHoles();
-    const payload = { exportedAt: new Date().toISOString(), email: user?.email ?? null, settings, holes };
+    setDataMsg("Preparing export...");
+    const backend = await exportBackendData().catch(() => null);
+    const payload = { exportedAt: new Date().toISOString(), email: user?.email ?? null, settings, holes, backend };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -78,7 +81,7 @@ export default function SettingsPage() {
     a.download = `rabbit-holes-export-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    setDataMsg(`Exported ${holes.length} hole${holes.length === 1 ? "" : "s"}.`);
+    setDataMsg(`Exported ${holes.length} local hole${holes.length === 1 ? "" : "s"}${backend ? " plus backend capture data" : ""}.`);
   }
 
   function clearDormant() {
@@ -92,6 +95,8 @@ export default function SettingsPage() {
 
   async function resetFresh() {
     if (!window.confirm("Erase all rabbit holes and sign out? This cannot be undone.")) return;
+    setDataMsg("Clearing backend data...");
+    await clearBackendData().catch(() => null);
     window.localStorage.removeItem(LIVE_HOLES_KEY);
     await supabase.auth.signOut();
     window.location.replace("/login?next=/dashboard");
