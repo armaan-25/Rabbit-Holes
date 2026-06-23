@@ -24,12 +24,11 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      className="rh-surface mt-3 flex w-full items-center justify-between rounded-[13px] border px-4 py-3 text-[14px] transition"
+      title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+      aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+      className="rh-surface grid h-10 w-10 shrink-0 place-items-center rounded-[11px] border text-[16px] rh-muted transition hover:text-[var(--rh-ink)]"
     >
-      <span>{theme === "dark" ? "Dark mode" : "Light mode"}</span>
-      <span className="rh-surface-2 rounded-full border px-2 py-0.5 text-[12px] rh-muted">
-        {theme === "dark" ? "On" : "Off"}
-      </span>
+      {theme === "dark" ? "☀" : "☾"}
     </button>
   );
 }

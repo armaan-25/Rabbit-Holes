@@ -24,12 +24,25 @@
   }
 
   window.addEventListener("message", async (event) => {
-    if (event.source !== window || event.data?.type !== "rabbit-holes:get-stats") return;
-    const requestId = event.data.requestId;
-    try {
-      window.postMessage({ type: "rabbit-holes:stats", requestId, stats: await readStats() }, window.location.origin);
-    } catch {
-      window.postMessage({ type: "rabbit-holes:stats", requestId, stats: null }, window.location.origin);
+    if (event.source !== window) return;
+    const requestId = event.data?.requestId;
+
+    if (event.data?.type === "rabbit-holes:get-stats") {
+      try {
+        window.postMessage({ type: "rabbit-holes:stats", requestId, stats: await readStats() }, window.location.origin);
+      } catch {
+        window.postMessage({ type: "rabbit-holes:stats", requestId, stats: null }, window.location.origin);
+      }
+      return;
+    }
+
+    if (event.data?.type === "rabbit-holes:set-capture") {
+      try {
+        const res = await chrome.runtime.sendMessage({ type: "setCaptureState", state: event.data.state });
+        window.postMessage({ type: "rabbit-holes:capture-updated", requestId, ok: Boolean(res?.ok), state: res?.state ?? null }, window.location.origin);
+      } catch {
+        window.postMessage({ type: "rabbit-holes:capture-updated", requestId, ok: false }, window.location.origin);
+      }
     }
   });
 })();

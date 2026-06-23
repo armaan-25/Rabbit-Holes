@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { ACCENTS, STATUS_META } from "@/lib/ui";
 import { useApp } from "@/lib/store";
 import { useHoles } from "@/hooks/useHoles";
-import { formatElapsed, useSessionStats } from "@/hooks/useSessionStats";
+import { formatElapsed, setExtensionCapture, useSessionStats, type SessionStats } from "@/hooks/useSessionStats";
 import { ThemeToggle } from "./ThemeToggle";
 import { Wordmark } from "./Logo";
 import { supabase } from "@/lib/supabase/client";
@@ -17,6 +17,10 @@ const NAV = [
   { href: "/map", label: "Map", glyph: "⌗" },
   { href: "/timeline", label: "Timeline", glyph: "≣" },
   { href: "/heatmap", label: "Heatmap", glyph: "▦" },
+];
+
+const MOBILE_NAV = [
+  ...NAV,
   { href: "/settings", label: "Settings", glyph: "⚙" },
 ];
 
@@ -25,7 +29,6 @@ export function Sidebar() {
   const togglePalette = useApp((s) => s.togglePalette);
   const holes = useHoles();
   const stats = useSessionStats();
-  const statusLabel = stats.captureState === "recording" ? "Capturing" : stats.captureState === "paused" ? "Paused" : "Stopped";
 
   // The landing is a full-bleed minimalist canvas — no chrome.
   if (pathname === "/") return null;
@@ -97,23 +100,19 @@ export function Sidebar() {
         })}
       </div>
 
-      <div className="mt-5 rounded-[13px] border px-4 py-3" style={{ borderColor: "color-mix(in srgb, var(--rh-green) 34%, transparent)", background: "color-mix(in srgb, var(--rh-green) 12%, var(--rh-surface))" }}>
-        <div className="flex items-center gap-3">
-        <span
-          className="h-2.5 w-2.5 rounded-full"
-          style={{ background: stats.captureState === "recording" ? STATUS_META.active.dot : "#c7ae84" }}
-        />
-          <span className="text-[14px] font-semibold" style={{ color: "var(--rh-green)" }}>
-            {statusLabel}{typeof stats.elapsedMs === "number" ? ` · ${formatElapsed(stats.elapsedMs)}` : ""}
-          </span>
-        </div>
-        <div className="rh-surface mt-3 grid grid-cols-3 divide-x divide-[var(--rh-line)] rounded-[10px] border-0 py-2">
-          <MiniStat n={stats.pages} label="pages" />
-          <MiniStat n={stats.searches} label="searches" />
-          <MiniStat n={stats.tabs} label="tabs" />
-        </div>
+      <CaptureCard stats={stats} />
+
+      <div className="mt-3 flex items-center gap-2">
+        <Link
+          href="/settings"
+          className={`rh-surface flex h-10 flex-1 items-center justify-center gap-2 rounded-[11px] border text-[13.5px] font-medium transition ${
+            pathname === "/settings" ? "text-[var(--rh-ink)]" : "rh-muted hover:text-[var(--rh-ink)]"
+          }`}
+        >
+          <span className="text-[15px]">⚙</span> Settings
+        </Link>
+        <ThemeToggle />
       </div>
-      <ThemeToggle />
       <SidebarAccount />
     </aside>
   );
@@ -125,7 +124,7 @@ export function MobileNav() {
 
   return (
     <nav className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 rounded-[20px] border border-[#785a3224] bg-[#1f150f]/92 p-2 shadow-[0_18px_48px_rgba(18,11,5,.32)] backdrop-blur md:hidden">
-      {NAV.map((n) => {
+      {MOBILE_NAV.map((n) => {
         const active = pathname === n.href;
         return (
           <Link
@@ -141,6 +140,88 @@ export function MobileNav() {
         );
       })}
     </nav>
+  );
+}
+
+function CaptureCard({ stats }: { readonly stats: SessionStats }) {
+  const recording = stats.captureState === "recording";
+  const statusLabel = recording ? "Capturing" : stats.captureState === "paused" ? "Paused" : "Stopped";
+  const controllable = stats.source === "extension";
+  const hasTimer = typeof stats.elapsedMs === "number";
+
+  // The polled stats only refresh every ~2s; tick the clock locally each second
+  // so the timer counts smoothly instead of jumping.
+  const base = useRef({ ms: stats.elapsedMs ?? 0, at: Date.now() });
+  const [elapsed, setElapsed] = useState(stats.elapsedMs ?? 0);
+  useEffect(() => {
+    base.current = { ms: stats.elapsedMs ?? 0, at: Date.now() };
+    setElapsed(stats.elapsedMs ?? 0);
+    if (!recording) return;
+    const id = window.setInterval(() => {
+      setElapsed(base.current.ms + (Date.now() - base.current.at));
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [stats.elapsedMs, recording]);
+
+  const [pending, setPending] = useState(false);
+  async function send(next: "recording" | "paused" | "stopped") {
+    if (pending) return;
+    setPending(true);
+    await setExtensionCapture(next);
+    setPending(false);
+  }
+
+  return (
+    <div
+      className="mt-5 rounded-[13px] border px-4 py-3"
+      style={{ borderColor: "color-mix(in srgb, var(--rh-green) 34%, transparent)", background: "color-mix(in srgb, var(--rh-green) 12%, var(--rh-surface))" }}
+    >
+      <div className="flex items-center gap-3">
+        <span
+          className="h-2.5 w-2.5 shrink-0 rounded-full"
+          style={{ background: recording ? STATUS_META.active.dot : "#c7ae84" }}
+        />
+        <span className="flex-1 text-[14px] font-semibold" style={{ color: "var(--rh-green)" }}>
+          {statusLabel}
+          {hasTimer && <span className="tabular-nums"> · {formatElapsed(elapsed)}</span>}
+        </span>
+        {controllable && (
+          <div className="flex items-center gap-1.5">
+            <CaptureButton
+              onClick={() => send(recording ? "paused" : "recording")}
+              disabled={pending}
+              title={recording ? "Pause capture" : "Resume capture"}
+              label={recording ? "❚❚" : "▶"}
+            />
+            <CaptureButton
+              onClick={() => send("stopped")}
+              disabled={pending || stats.captureState === "stopped"}
+              title="Stop & clear session"
+              label="■"
+            />
+          </div>
+        )}
+      </div>
+      <div className="rh-surface mt-3 grid grid-cols-3 divide-x divide-[var(--rh-line)] rounded-[10px] border-0 py-2">
+        <MiniStat n={stats.pages} label="pages" />
+        <MiniStat n={stats.searches} label="searches" />
+        <MiniStat n={stats.tabs} label="tabs" />
+      </div>
+    </div>
+  );
+}
+
+function CaptureButton({ onClick, disabled, title, label }: { readonly onClick: () => void; readonly disabled: boolean; readonly title: string; readonly label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      aria-label={title}
+      className="rh-surface grid h-7 w-7 place-items-center rounded-[8px] border text-[11px] rh-muted transition hover:text-[var(--rh-ink)] disabled:opacity-40"
+    >
+      {label}
+    </button>
   );
 }
 
@@ -210,14 +291,9 @@ function SidebarAccount() {
           <div className="text-[12px] text-[#8a7860]">Signed in</div>
         </div>
       </div>
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <Link href="/settings" className="rounded-[11px] border border-[#785a3224] bg-[#f2e9d6] px-3 py-2 text-center text-[13px] font-semibold text-[#5a4a38]">
-          Settings
-        </Link>
-        <button onClick={signOut} className="rounded-[11px] border border-[#785a3224] bg-[#fbf6ec] px-3 py-2 text-[13px] font-semibold text-[#a8472a]">
-          Log out
-        </button>
-      </div>
+      <button onClick={signOut} className="mt-3 w-full rounded-[11px] border border-[#785a3224] bg-[#fbf6ec] px-3 py-2 text-[13px] font-semibold text-[#a8472a]">
+        Log out
+      </button>
     </div>
   );
 }

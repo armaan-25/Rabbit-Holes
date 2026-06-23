@@ -104,9 +104,51 @@ def ensure_schema() -> None:
             conn.execute("alter table rabbit_holes add column if not exists deleted_at timestamptz")
             conn.execute("create index if not exists sessions_user_started_idx on sessions(user_id, started_at desc)")
             conn.execute("create index if not exists rabbit_holes_user_client_idx on rabbit_holes(user_id, client_id)")
+            conn.execute(
+                """
+                create table if not exists rate_limit_hits (
+                    bucket text not null,
+                    user_id text not null,
+                    window_start bigint not null,
+                    count integer not null default 0,
+                    primary key (bucket, user_id, window_start)
+                )
+                """
+            )
         _schema_checked = True
     except psycopg.Error:
         return
+
+
+def rate_limit_hit(bucket: str, user_id: str, window_start: int) -> int | None:
+    """Atomically count one request in a fixed window and return the running total.
+
+    Shared across processes and durable across restarts (unlike the in-memory
+    fallback). Returns None when the DB is unavailable so the caller can fall
+    back. Prunes the key's expired windows in the same transaction so the table
+    only ever holds the current window per (bucket, user)."""
+    if not enabled():
+        return None
+    ensure_schema()
+    try:
+        with connect() as conn:
+            conn.execute(
+                "delete from rate_limit_hits where bucket = %s and user_id = %s and window_start < %s",
+                (bucket, user_id, window_start),
+            )
+            row = conn.execute(
+                """
+                insert into rate_limit_hits (bucket, user_id, window_start, count)
+                values (%s, %s, %s, 1)
+                on conflict (bucket, user_id, window_start)
+                do update set count = rate_limit_hits.count + 1
+                returning count
+                """,
+                (bucket, user_id, window_start),
+            ).fetchone()
+        return int(row["count"]) if row else None
+    except psycopg.Error:
+        return None
 
 
 @contextmanager

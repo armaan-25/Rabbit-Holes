@@ -74,6 +74,30 @@ function readExtensionStats(timeoutMs = 450): Promise<SessionStats | null> {
   });
 }
 
+/** Ask the extension (via stats-bridge.js) to pause/resume/stop capture. Resolves false if no extension answers. */
+export function setExtensionCapture(state: CaptureState, timeoutMs = 1500): Promise<boolean> {
+  if (typeof window === "undefined") return Promise.resolve(false);
+  const requestId = crypto.randomUUID();
+
+  return new Promise((resolve) => {
+    const timeout = window.setTimeout(() => {
+      window.removeEventListener("message", onMessage);
+      resolve(false);
+    }, timeoutMs);
+
+    function onMessage(event: MessageEvent) {
+      if (event.source !== window) return;
+      if (event.data?.type !== "rabbit-holes:capture-updated" || event.data.requestId !== requestId) return;
+      window.clearTimeout(timeout);
+      window.removeEventListener("message", onMessage);
+      resolve(Boolean(event.data.ok));
+    }
+
+    window.addEventListener("message", onMessage);
+    window.postMessage({ type: "rabbit-holes:set-capture", requestId, state }, window.location.origin);
+  });
+}
+
 export function useSessionStats(): SessionStats {
   const [stats, setStats] = useState<SessionStats>(EMPTY_STATS);
 

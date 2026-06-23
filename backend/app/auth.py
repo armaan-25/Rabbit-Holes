@@ -19,6 +19,12 @@ SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET")
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_PUBLISHABLE_KEY = os.environ.get("SUPABASE_PUBLISHABLE_KEY") or os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 
+# The shared dev user is a convenience for local work without Supabase. It must
+# be opted into explicitly — otherwise a production deploy that's missing its
+# Supabase env vars would silently authenticate every request as one shared
+# account (fail-open). Default is fail-closed.
+ALLOW_DEV_USER = os.environ.get("RABBIT_HOLE_DEV_USER", "").strip().lower() in {"1", "true", "yes"}
+
 
 def _bearer_token(authorization: Optional[str]) -> Optional[str]:
     if not authorization or not authorization.startswith("Bearer "):
@@ -72,13 +78,17 @@ def _from_supabase_user(token: str) -> CurrentUser | None:
 def get_current_user(authorization: Optional[str] = Header(default=None)) -> CurrentUser:
     """Return the authenticated user.
 
-    Local development intentionally falls back to one stable demo user when no
-    Supabase auth config is present. Production accepts a valid Supabase access
-    token by either local JWT verification or Supabase's /auth/v1/user endpoint.
+    Production accepts a valid Supabase access token via local JWT verification
+    or Supabase's /auth/v1/user endpoint. When no Supabase auth config is
+    present, requests are rejected unless RABBIT_HOLE_DEV_USER is explicitly set
+    (local development), so a misconfigured deploy fails closed rather than
+    serving every request as one shared account.
     """
     auth_configured = bool(SUPABASE_JWT_SECRET or (SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY))
     if not auth_configured:
-        return CurrentUser(id="dev-user", email="dev@rabbit-hole.local")
+        if ALLOW_DEV_USER:
+            return CurrentUser(id="dev-user", email="dev@rabbit-hole.local")
+        raise HTTPException(status_code=503, detail="Authentication is not configured")
 
     token = _bearer_token(authorization)
     if not token:
