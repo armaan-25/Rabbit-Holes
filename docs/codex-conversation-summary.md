@@ -1,279 +1,382 @@
-# Rabbit Holes Development Summary
+# Rabbit Holes: Development Summary
 
-## Project Overview
+## Executive Summary
 
-Rabbit Holes is a browser extension and web application that turns messy browsing sessions into structured investigations. Instead of treating browser history as a flat list of tabs, Rabbit Holes captures searches, pages, navigation paths, and session metadata, then clusters them into named “rabbit holes” with maps, timelines, summaries, and replayable research trails.
+Rabbit Holes is a browser extension and web application that transforms fragmented browsing history into structured research investigations. Instead of presenting browser history as a flat chronological list, Rabbit Holes captures searches, visited pages, tab activity, and navigation paths, then organizes that activity into coherent “rabbit holes” that users can revisit, inspect, summarize, and share.
 
-The product direction evolved toward a premium, minimal, editorial aesthetic: warm paper textures, dark-brown ink tones, watercolor rabbit-hole artwork, strong serif typography, and calm interface motion.
+The product is positioned as:
 
-## Core Product Goal
+> Smart browser history for your research.
 
-Build a smart browser history product that helps users answer:
+The project evolved from an early visual prototype into a functioning full-stack product with a Chrome extension, authenticated web app, production backend, Supabase-backed persistence, OAuth login, rate limiting, legal pages, and Chrome Web Store packaging preparation.
 
-- What was I researching?
-- How did I get from one page to another?
-- What pages, searches, and topics belonged together?
-- Can I return to a past investigation without reconstructing everything manually?
+The final product direction is intentionally premium, calm, and editorial: paper-like backgrounds, warm ink tones, strong serif typography, watercolor rabbit-hole artwork, restrained animation, and a minimal interface that emphasizes clarity over dashboard clutter.
 
-The extension is intended to behave like an always-on browser companion: quietly capturing useful research context in the background, then letting the user generate structured rabbit holes when needed.
+## Product Problem
 
-## Main Work Completed
+Modern browsing sessions often become scattered across tabs, searches, documents, papers, repositories, and articles. Browser history records individual events, but it does not explain the research thread behind them.
 
-### 1. Landing Page and Visual Direction
+Rabbit Holes addresses this gap by helping users understand:
 
-The initial landing page went through multiple iterations to establish the final brand feel.
+- What they were actually researching.
+- Which pages and searches belonged to the same investigation.
+- How one page led to another.
+- What key concepts, sources, and questions emerged.
+- How to return to an investigation days or weeks later without reconstructing it manually.
 
-Final direction:
+The goal is not to replace bookmarks, notes, or browser history. The goal is to create a structured memory layer for curiosity-driven browsing.
 
-- Premium editorial layout.
-- Large serif title treatment.
-- Off-white paper background with subtle texture.
-- Watercolor rabbit and rabbit-hole artwork.
-- Minimal navigation and CTA structure.
-- Support for light and dark modes.
-- Consistent tagline: `Smart history for your research.`
+## Product Vision
 
-Major visual decisions:
+Rabbit Holes should feel like an always-on browser companion that quietly records useful research context in the background. When the user is ready, they can generate a structured rabbit hole from their browsing session.
 
-- Removed distracting or inconsistent rabbit animations.
-- Replaced overly complex sprite-based rabbit motion with a cleaner static/watercolor visual direction.
-- Cleaned up buttons to avoid image thumbnails inside CTAs.
-- Standardized button labels to text-only where possible.
-- Simplified popup and app branding to use clean text rather than broken or crowded logo marks.
+A generated rabbit hole should include:
 
-### 2. Watercolor Asset Cleanup
+- A named investigation.
+- The searches that started or shaped it.
+- The pages visited during the investigation.
+- A visual map of how sources connect.
+- A chronological replay of the research journey.
+- A summary of key concepts, entities, links, and open questions.
+- A way to revisit or share the investigation.
 
-Several rabbit and rabbit-hole image directions were tested and replaced. The final implementation uses a single primary watercolor rabbit-hole hero image stored as a named asset.
+The intended feeling is closer to replaying a research journey than reading a raw browser-history log.
 
-Completed asset cleanup:
+## Design Direction
 
-- Removed unused duplicate rabbit images.
-- Moved active image assets into appropriate public/asset folders.
-- Renamed active assets clearly.
-- Replaced old inconsistent hole/rabbit compositions.
+The visual direction was refined through multiple iterations. Early versions included overly complex rabbit animations, inconsistent sprite sheets, and visual treatments that felt too cluttered or cartoonish. The final direction moved toward a more restrained and polished identity.
+
+### Final Visual Principles
+
+- Premium and editorial rather than playful or game-like.
+- Warm paper textures instead of flat white or generic dark UI.
+- Watercolor rabbit-hole artwork as the main visual motif.
+- Strong serif typography for brand distinction.
+- Minimal motion used only where it improves clarity.
+- Dark and light themes that feel part of the same system.
+- Buttons and controls that are text-first and visually streamlined.
+
+### Key Design Decisions
+
+- Removed excessive rabbit pose animations.
+- Removed inconsistent sprite rotations.
 - Removed image thumbnails from buttons.
-- Regenerated favicons using the watercolor rabbit asset.
+- Replaced broken or crowded logo treatments with clean text branding where appropriate.
+- Consolidated around a single primary watercolor rabbit-hole asset.
+- Reduced visual noise in the extension popup.
+- Improved dashboard spacing, hierarchy, and card styling.
+- Added a more polished loading state for rabbit-hole generation.
 
-### 3. Dashboard and App UI Polish
+## Core User Flow
 
-The dashboard and internal pages were cleaned up to reduce dead space and better match the product aesthetic.
+The intended user flow is now:
+
+1. The user installs the browser extension.
+2. The user signs into Rabbit Holes.
+3. The extension quietly captures browsing context while the user researches normally.
+4. The popup displays live session stats such as pages, searches, and tabs.
+5. The user can pause, resume, or stop capture.
+6. The user clicks `Build rabbit holes`.
+7. The extension flushes captured events to the backend.
+8. The backend clusters the session into rabbit holes.
+9. The web app displays the resulting investigations.
+10. The user can inspect maps, timelines, summaries, source pages, and related entities.
+
+## Frontend Work Completed
+
+### Landing Page
+
+The landing page was redesigned to communicate the product as a smart browser-history tool rather than a generic productivity app.
 
 Completed improvements:
 
-- Expanded and polished the left sidebar.
-- Added consistent dark-mode styling across app pages.
-- Cleaned up dashboard cards and empty states.
-- Added live session stats to match extension counters.
-- Added profile/account placement in the sidebar.
-- Improved settings page styling based on the desired reference layout.
-- Reduced clutter in the Chrome extension popup.
-- Added play, pause, and stop recording controls.
-- Made buttons align better with the dark/light theme system.
+- Added a premium editorial layout.
+- Added top-left branding.
+- Added clear install and sign-in calls to action.
+- Added browser-support messaging for Chromium browsers.
+- Added scrollable content explaining how the product works.
+- Added watercolor rabbit-hole artwork on the right side of the hero.
+- Removed confusing headline language and overly derivative copy.
+- Removed unnecessary glow effects and distracting decorative elements.
+- Added support for dark mode.
 
-### 4. Chrome Extension Popup
+### Dashboard
 
-The Chrome extension popup was rebuilt to match the web app’s visual language.
+The dashboard was refined into a more usable library view for generated investigations.
 
-Final popup behavior:
+Completed improvements:
 
-- Shows Rabbit Holes branding.
-- Displays current session stats:
-  - Pages
-  - Searches
-  - Tabs
-- Shows current capture state:
-  - Capturing
-  - Paused
-  - Stopped
-- Includes recording controls:
-  - Play/resume
-  - Pause
-  - Stop
-- Includes a `Build rabbit holes` action.
-- Includes sign-in and sign-out flows.
-- Opens the web dashboard from a compact top-right arrow button.
+- Reduced dead space.
+- Increased sidebar usability.
+- Added cleaner empty states.
+- Added dashboard stats that match the extension popup.
+- Added library search.
+- Added filtering by active, favorite, archived, and all holes.
+- Added sorting by recent activity, page count, and confidence.
+- Added favorite, archive, and delete actions.
+- Added bulk selection and bulk actions.
+- Improved card visual hierarchy.
 
-Important fixes:
+### Settings Page
 
-- Removed cluttered settings button from popup.
-- Replaced it with a cleaner dashboard/open action.
-- Fixed session-expired handling so the user is prompted to sign in again.
-- Improved popup theme consistency.
-- Removed image icons from buttons.
-- Fixed broken wordmark rendering in the popup.
+The settings page was redesigned to match the requested reference style: clean sections, large readable controls, and a premium paper-card feel.
 
-### 5. Authentication and Accounts
+Settings now includes sections for:
 
-Supabase authentication was added to support persistent user accounts.
+- Extension and privacy status.
+- Capture preferences.
+- Privacy preferences.
+- Data sources.
+- User data actions.
+- Account/profile controls.
 
-Implemented account features:
+### App Navigation
 
-- Supabase project connected.
-- Google OAuth configured.
-- Email/password account flow added.
-- Login page created.
-- Signup page created.
-- Auth callback routes added.
-- Settings/profile areas added.
-- Sidebar account card added.
-- Sign-in/sign-out transitions improved to reduce flashing and redirect glitches.
+Navigation was improved across desktop and mobile.
 
-Production OAuth work completed:
+Completed improvements:
 
-- Supabase redirect URLs configured for production Railway URL.
-- Google OAuth client configured.
-- App renamed consistently to `Rabbit Holes`.
+- Sidebar navigation refined for desktop.
+- Profile card moved to the bottom of the sidebar.
+- Live capture stats added to the sidebar.
+- Dark-mode toggle added.
+- Mobile bottom navigation added to cover smaller screens.
 
-### 6. Backend and Database Integration
+Mobile still needs a dedicated refinement pass, but the app is no longer without navigation on small screens.
 
-The backend was connected to Supabase Postgres through Railway environment variables.
+## Chrome Extension Work Completed
 
-Implemented backend work:
+The Chrome extension popup was rebuilt to feel consistent with the web app.
 
-- Added production database schema initialization.
-- Added persistent app user records.
-- Added sessions table.
-- Added events table.
-- Added rabbit holes table.
-- Added backend health endpoint reporting database status.
-- Added event ingestion from extension.
-- Added clustering endpoint.
-- Added backend stats endpoint.
-- Added export and clear endpoints.
+### Popup Features
 
-Production health result:
+The popup now includes:
 
-```json
-{"ok":true,"db":{"configured":true,"available":true,"disabled_reason":null}}
-```
+- Rabbit Holes branding.
+- Live page/search/tab counters.
+- Capture status display.
+- Play, pause, and stop controls.
+- A `Build rabbit holes` action.
+- Sign-in and sign-out states.
+- Dashboard open button.
+- Account email display.
 
-### 7. Session Capture and Rabbit Hole Generation
+### Popup Design Improvements
 
-The extension captures browsing events and sends them to the backend.
+Completed improvements:
 
-Captured event types include:
+- Reduced clutter.
+- Removed the settings button from the popup.
+- Made the dashboard button compact.
+- Standardized dark theme colors.
+- Removed decorative images from buttons.
+- Fixed broken wordmark rendering.
+- Simplified the popup logo to readable text.
+- Improved session-expired messaging.
+
+### Extension Behavior
+
+The extension captures browsing events and stores them locally before flushing to the backend.
+
+Captured data includes:
 
 - Page visits.
-- Search events.
+- Search queries.
 - Page titles.
 - Tab opens.
 - Tab closes.
 - Navigation/referrer metadata.
+- Session timing metadata.
 
-Rabbit hole generation flow:
+The popup can now trigger clustering by sending captured context to the backend.
 
-1. User browses normally.
-2. Extension captures pages/searches/tabs.
-3. User clicks `Build rabbit holes`.
-4. Extension flushes queued events.
-5. Backend clusters the session.
-6. Web dashboard displays generated rabbit holes.
-7. User can inspect maps, timelines, summaries, and related pages.
+## Backend Work Completed
 
-Important fix:
+The backend was expanded from a basic API into a production-connected service with persistence, authentication, health checks, and rate limits.
 
-Duplicate detection was moved beyond frontend-only `localStorage`. The backend now stores source signatures so repeat clustering can detect when there is no meaningful new browsing context.
+### Backend Capabilities
 
-### 8. Rabbit Hole Library Management
+Implemented endpoints and capabilities include:
 
-The dashboard library was expanded with controls for managing generated holes.
+- User session creation.
+- Event ingestion.
+- Rabbit-hole clustering.
+- Live stats.
+- Data export.
+- Data clearing.
+- Rabbit-hole listing.
+- Rabbit-hole metadata updates.
+- Bulk rabbit-hole actions.
+- Backend health checks.
 
-Implemented features:
+### Important Endpoints
 
-- Search rabbit holes.
-- Filter by:
-  - Active
-  - Favorites
-  - Archived
-  - All
-- Sort by:
-  - Recent
-  - Pages
-  - Confidence
-- Favorite rabbit holes.
-- Archive rabbit holes.
-- Delete rabbit holes.
-- Bulk select multiple holes.
-- Bulk favorite/archive/delete actions.
+```text
+GET    /health
+GET    /me
+POST   /sessions
+POST   /events
+POST   /cluster
+GET    /signals
+GET    /stats
+GET    /export
+POST   /clear
+GET    /holes
+PATCH  /holes/{client_id}
+POST   /holes/bulk
+```
 
-Backend persistence added:
+### Duplicate Detection
 
-- `GET /holes`
-- `PATCH /holes/{client_id}`
-- `POST /holes/bulk`
+Duplicate rabbit-hole generation was initially handled locally in the frontend through `localStorage`. This was strengthened by adding backend-side source signatures.
 
-Persistent metadata fields added:
+The backend now computes a deterministic signature from captured pages and searches. If the user has not generated any meaningful new browsing context, the backend can return `no_change` instead of generating duplicate rabbit holes.
+
+This improves reliability because duplicate detection is no longer only tied to a single browser’s local state.
+
+## Database Work Completed
+
+Supabase Postgres is connected through Railway environment variables.
+
+### Tables Added
+
+The backend initializes the core schema for:
+
+- `app_users`
+- `sessions`
+- `events`
+- `rabbit_holes`
+
+### Rabbit-Hole Persistence Fields
+
+Additional fields were added to support library management:
 
 - `client_id`
 - `favorite`
 - `archived`
 - `deleted_at`
+- `source_signature`
 
-### 9. Map, Timeline, Replay, and Summary Views
+### Persistence Status
 
-Several product views were implemented or improved to make Rabbit Holes feel like more than a history list.
+The backend now persists:
 
-Implemented or improved views:
+- Users.
+- Sessions.
+- Raw browsing events.
+- Rabbit-hole records.
+- Favorite/archive/delete state.
+- Source signatures for duplicate detection.
 
-- Dashboard.
-- Map page.
-- Timeline page.
-- Heatmap page.
-- Settings page.
-- Individual rabbit hole detail pages.
-- Shareable rabbit hole pages.
-- Discovery/replay-style components.
+A future improvement is to persist the complete enriched frontend rabbit-hole object so users can fully rehydrate all maps, summaries, timelines, and generated UI state across devices.
+
+## Authentication Work Completed
+
+Supabase authentication was added for persistent accounts.
+
+Implemented auth features:
+
+- Google OAuth login.
+- Email/password signup.
+- Login page.
+- Signup page.
+- Auth callback handling.
+- Extension auth relay flow.
+- Sidebar account card.
+- Sign-in/sign-out handling.
+- Production redirect URL configuration.
+
+The app name was standardized as `Rabbit Holes` across the web app, extension, and OAuth setup.
+
+## AI and Clustering Flow
+
+The app clusters browsing context into investigations.
+
+The clustering flow is:
+
+1. Extension captures browsing events.
+2. Events are flushed to the backend.
+3. Backend deduplicates and organizes pages/searches.
+4. Backend sends structured context to the clustering layer.
+5. Clustering returns one or more rabbit-hole objects.
+6. Rabbit holes are saved and rendered in the web app.
+
+Rabbit-hole objects include:
+
+- Title.
+- Description.
+- Topics.
+- Questions.
+- Entities.
+- Assigned page IDs.
+- Confidence score.
+
+The frontend then turns those cluster results into richer UI objects with pages, searches, graph nodes, edges, timelines, summaries, and display metadata.
+
+## Map, Timeline, Summary, and Replay Work
+
+The app now includes several investigation views intended to make Rabbit Holes more than a history list.
+
+Implemented or improved areas:
+
+- Map view.
+- Timeline view.
+- Heatmap view.
+- Individual rabbit-hole pages.
+- Shareable rabbit-hole pages.
+- Discovery path panels.
+- Investigation replay components.
+- Summary cards.
+- Session DNA-style analysis cards.
 - “You Are Here” floating context component.
 
-Product concepts implemented:
+These features establish the core product concept: a user should be able to see how a research thread developed, not just what pages they opened.
 
-- Rabbit Hole Maps.
-- Discovery chains.
-- Investigation replay.
-- End-of-hole style summaries.
-- Session DNA-style stats cards.
-- Curiosity heatmap.
-- Shareable rabbit hole pages.
-- Persistent browsing context indicator.
+## Loading and Interaction Polish
 
-### 10. Loading and Discovery Overlay
+The rabbit-hole generation loading state was redesigned to feel premium and intentional.
 
-The rabbit-hole generation loading screen was redesigned.
+Final loading state includes:
 
-Final direction:
+- Darkened background overlay.
+- Defined centered card.
+- Watercolor rabbit-hole image.
+- Subtle word motion toward the hole.
+- Strong bottom title panel.
+- Progress accent bar.
 
-- Darker backdrop.
-- Defined premium card instead of washed-out full-screen haze.
-- Larger centered watercolor rabbit-hole image.
-- Words flow subtly toward the hole.
-- Strong bottom panel with title and subtitle.
-- Cleaner progress accent.
+This replaced an earlier washed-out full-screen overlay that made the app hard to read.
 
-Removed from buttons:
+## Deployment Work Completed
 
-- Rabbit-hole image thumbnails.
-- Decorative image icons.
-- Broken rabbit-ear logo usage in button text.
+The project is deployed through Railway.
 
-### 11. Deployment and Infrastructure
+Production services:
 
-The app was deployed through Railway.
+```text
+Web app:     https://web-production-bde52.up.railway.app
+Backend API: https://rabbit-holes-production.up.railway.app
+```
 
-Production URLs:
+Backend production health was verified:
 
-- Web app: `https://web-production-bde52.up.railway.app`
-- Backend API: `https://rabbit-holes-production.up.railway.app`
+```json
+{"ok":true,"db":{"configured":true,"available":true,"disabled_reason":null}}
+```
 
-Railway configuration completed:
+### Security and Build Fixes
 
-- Backend service configured.
-- Web service configured.
-- Database URL added.
-- Environment variables updated.
-- Backend health verified.
-- Rate-limit variables added.
+Railway initially blocked deployment because the project used an outdated Next.js version with known high-severity CVEs.
 
-Rate limits configured:
+Completed fix:
+
+- Updated Next.js from `14.2.5` to `^14.2.35`.
+- Regenerated `package-lock.json`.
+- Confirmed production build passes.
+
+### Rate Limits
+
+Rate limits were configured through Railway environment variables:
 
 ```text
 RATE_LIMIT_EVENTS_PER_MIN=240
@@ -282,53 +385,85 @@ RATE_LIMIT_AI_PER_HOUR=60
 RATE_LIMIT_READS_PER_MIN=120
 ```
 
-Security/build fix:
+These limits are intended to protect the backend from excessive event ingestion, repeated clustering calls, and high-frequency AI requests.
 
-- Updated Next.js from `14.2.5` to `^14.2.35` to address Railway vulnerability scanner failures.
-- Regenerated lockfile.
-- Confirmed production build passes.
+## Legal, Privacy, and Support Work
 
-### 12. Legal and Launch Readiness
-
-Basic legal/support pieces were added.
+Basic launch-support materials were added.
 
 Completed:
 
-- Terms page.
 - Privacy page.
+- Terms page.
 - Support email added: `aa5851@columbia.edu`.
-- Chrome Web Store checklist added.
-- Extension packaging script added.
+- Chrome Web Store checklist.
+- Permission justifications.
+- Privacy disclosure notes.
 
-Chrome packaging:
+The privacy positioning is especially important because the extension captures browsing-related data. The product should clearly communicate what is captured and why.
+
+Captured data includes:
+
+- URLs.
+- Page titles.
+- Search queries.
+- Timestamps.
+- Tab/session metadata.
+- Navigation/referrer relationships.
+
+## Chrome Web Store Preparation
+
+A packaging script and submission checklist were added.
+
+Packaging command:
 
 ```bash
 ./scripts/package-extension.sh
 ```
 
-Output:
+Generated output:
 
 ```text
 dist/rabbit-holes-chrome-extension.zip
 ```
 
-Chrome Web Store documentation created:
+Documentation added:
 
 ```text
 docs/chrome-web-store.md
 ```
 
-Includes:
+The checklist includes:
 
-- Listing copy.
+- Store listing copy.
 - Permission justifications.
 - Privacy disclosures.
-- Manual submission checklist.
+- Required assets.
+- Manual submission steps.
 - Pre-submit smoke test.
 
-## Key Technical Files Changed
+## Validation Completed
 
-Major frontend areas:
+The following checks were run repeatedly during development:
+
+```bash
+npm run build --prefix web
+python3 -m py_compile backend/app/*.py
+./scripts/package-extension.sh
+curl https://rabbit-holes-production.up.railway.app/health
+```
+
+Confirmed:
+
+- Frontend production build passes.
+- Backend Python files compile.
+- Extension package builds.
+- Production backend reports healthy database connectivity.
+- Changes were committed and pushed to GitHub.
+
+## Important Files and Areas Changed
+
+### Web App
 
 ```text
 web/app/page.tsx
@@ -344,20 +479,21 @@ web/components/Logo.tsx
 web/lib/api.ts
 web/lib/discovery.ts
 web/lib/store.ts
+web/hooks/useSessionStats.ts
 ```
 
-Major backend areas:
+### Backend
 
 ```text
 backend/app/main.py
 backend/app/db.py
 backend/app/store.py
 backend/app/schemas.py
+backend/app/auth.py
 backend/app/rate_limit.py
-backend/.env
 ```
 
-Extension areas:
+### Browser Extension
 
 ```text
 extension/manifest.json
@@ -369,88 +505,76 @@ extension/auth-relay.js
 extension/stats-bridge.js
 ```
 
-Docs/scripts added:
+### Documentation and Scripts
 
 ```text
 docs/chrome-web-store.md
+docs/codex-conversation-summary.md
 scripts/package-extension.sh
 ```
 
-## Validation Completed
+## Current Product Status
 
-Repeated checks were run throughout development.
-
-Successful checks included:
-
-```bash
-npm run build --prefix web
-python3 -m py_compile backend/app/*.py
-./scripts/package-extension.sh
-curl https://rabbit-holes-production.up.railway.app/health
-```
-
-Confirmed:
-
-- Frontend production build passes.
-- Backend Python compile passes.
-- Extension package builds.
-- Production backend health endpoint reports database available.
-- GitHub commits pushed to `main`.
-
-## Current Status
-
-Rabbit Holes now has:
+Rabbit Holes currently has:
 
 - A polished landing page.
-- A functioning web app dashboard.
-- Supabase authentication.
-- Google OAuth.
-- A connected production backend.
-- Database-backed event/session storage.
-- Chrome extension popup and capture flow.
-- Rabbit hole generation flow.
+- A functioning authenticated web app.
+- A Chrome extension popup.
+- Browser-event capture.
+- Production backend deployment.
+- Supabase-backed database persistence.
+- Google OAuth and email/password authentication.
+- Rabbit-hole generation flow.
 - Dashboard library management.
-- Map/timeline/settings/detail/share pages.
+- Map, timeline, heatmap, settings, detail, and share pages.
 - Legal pages.
-- Chrome packaging docs and script.
+- Rate limits.
+- Chrome extension packaging preparation.
+
+The product is now in a credible pre-launch state, with the main remaining work concentrated around submission, packaging, cross-device rehydration, and final QA.
 
 ## Remaining Launch Blockers
 
 ### 1. Chrome Web Store Submission
 
-Still manual:
+This is still manual.
 
-- Create/open Chrome Web Store Developer account.
-- Pay developer registration fee if needed.
-- Upload packaged extension zip.
-- Add screenshots.
-- Fill privacy and permissions declarations.
+Required steps:
+
+- Create or open a Chrome Web Store Developer account.
+- Pay the developer registration fee if needed.
+- Upload the packaged extension zip.
+- Add final screenshots.
+- Fill privacy/data-use declarations.
+- Explain permissions.
 - Submit for review.
 
-### 2. Store Screenshots and Promotional Assets
+### 2. Store Assets
 
-Need final screenshots of:
+Still needed:
 
-- Chrome popup.
-- Dashboard.
-- Map page.
-- Generated rabbit hole detail.
-- Settings page.
+- Final popup screenshot.
+- Dashboard screenshot.
+- Map screenshot.
+- Rabbit-hole detail screenshot.
+- Optional promotional tile.
+- Optional short demo video or GIF.
 
-Optional but useful:
+### 3. Complete Cross-Device Rehydration
 
-- Promotional tile.
-- Short demo GIF/video.
+The backend persists core events and rabbit-hole metadata, but the frontend still relies heavily on locally generated rich rabbit-hole objects.
 
-### 3. Cross-Device Hole Rehydration
+Future work:
 
-Backend now persists hole metadata and event data, but the frontend still primarily uses locally generated hole objects for rich rendering. The next backend step is to persist and rehydrate complete rabbit hole objects, including pages, searches, maps, summaries, and timeline data.
+- Persist full generated rabbit-hole objects.
+- Rehydrate pages, searches, graph data, summaries, timelines, and source relationships from the backend.
+- Make a signed-in user’s library consistent across devices.
 
-### 4. Browser Support Beyond Chrome
+### 4. Browser Support Beyond Chromium
 
-Current packaged path is Chrome/Chromium.
+Current package path targets Chrome and Chromium-based browsers.
 
-Supported or near-supported:
+Currently practical:
 
 - Chrome.
 - Edge.
@@ -458,38 +582,52 @@ Supported or near-supported:
 - Arc.
 - Opera.
 
-Still future work:
+Future work:
 
 - Firefox extension packaging.
 - Safari extension packaging.
+- Browser-specific permission review.
 
-### 5. Mobile Navigation Polish
+### 5. Mobile UX Pass
 
-A mobile bottom nav was added, but a dedicated mobile UX pass is still needed for:
+Mobile navigation exists, but the app still needs a dedicated mobile polish pass for:
 
 - Dashboard density.
 - Map interactions.
-- Sidebar replacement.
-- Settings/account layout.
+- Timeline readability.
+- Settings layout.
+- Account controls.
 
-### 6. Production Domain Setup
+### 6. Custom Domain Setup
 
-If a custom domain is purchased, update:
+If a custom domain is purchased, the following must be updated:
 
 - Railway web domain.
-- Railway backend CORS/env vars.
+- Railway backend CORS configuration.
 - Supabase Site URL.
-- Supabase Redirect URLs.
+- Supabase redirect URLs.
 - Google OAuth authorized origins.
 - Google OAuth redirect URLs.
-- Extension manifest externally connectable URLs.
-- Extension content script matches.
+- Extension manifest URLs.
+- Extension content-script match patterns.
+- Extension externally-connectable origins.
 - Chrome Web Store listing URLs.
 
-## Final Product Positioning
+## Recommended Next Steps
 
-Rabbit Holes should be pitched as:
+1. Perform one full manual QA pass with the unpacked Chrome extension.
+2. Capture final Chrome Web Store screenshots.
+3. Submit the Chrome extension for review.
+4. Add full backend rehydration for generated rabbit holes.
+5. Run a dedicated mobile UI pass.
+6. Prepare a short launch demo showing a search session becoming a rabbit hole.
 
-> Smart browser history for your research.
+## Final Positioning
 
-It is not just a bookmarking tool or browser history viewer. It is a structured memory layer for curiosity, turning scattered sessions into coherent investigations that users can revisit, understand, and share.
+Rabbit Holes is best described as a structured memory layer for research browsing.
+
+It is not simply a bookmarking tool. It is not a traditional analytics dashboard. It is a way to turn curiosity into a navigable, replayable, and reusable investigation.
+
+The simplest product pitch is:
+
+> Rabbit Holes turns your browsing into research trails you can actually understand later.
