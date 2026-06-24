@@ -17,6 +17,7 @@ export function YouAreHere() {
     pathname === "/" ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/signup") ||
+    pathname.startsWith("/holes/") ||
     pathname.startsWith("/settings") ||
     pathname.startsWith("/extension-auth") ||
     pathname.startsWith("/rabbit-auth") ||

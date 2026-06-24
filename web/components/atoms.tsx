@@ -18,8 +18,8 @@ export function EntityChip({ name, kind }: { name: string; kind: EntityKind }) {
   const m = ENTITY_META[kind];
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full border bg-white px-2.5 py-1 text-[12px]"
-      style={{ borderColor: `${m.color}33`, color: "#5a4a38" }}
+      className="inline-flex items-center gap-1.5 rounded-full border bg-[var(--rh-surface-2)] px-2.5 py-1 text-[12px] text-[var(--rh-ink-soft)]"
+      style={{ borderColor: `${m.color}33` }}
     >
       <span className="h-1.5 w-1.5 rounded-full" style={{ background: m.color }} />
       {name}
