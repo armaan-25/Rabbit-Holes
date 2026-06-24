@@ -1,7 +1,13 @@
 import type { GraphNode, PageVisit, RabbitHole } from "@/lib/types";
 
 export function minutesSpent(hole: RabbitHole): number {
-  return Math.round(hole.pages.reduce((sum, page) => sum + page.dwellSeconds, 0) / 60);
+  const dwellSeconds = hole.pages.reduce((sum, page) => sum + page.dwellSeconds, 0);
+  if (dwellSeconds > 0) return Math.max(1, Math.round(dwellSeconds / 60));
+
+  // Extension-generated cluster pages do not always have active dwell time yet.
+  // Use a conservative estimate so summaries/heatmaps do not render as "0m"
+  // after a valid browsing session.
+  return Math.max(1, hole.pages.length * 2 + hole.searches.length);
 }
 
 export function getGraphNode(hole: RabbitHole, id: string): GraphNode | undefined {
@@ -103,7 +109,7 @@ export function heatmapDays(holes: RabbitHole[]) {
       const key = date.toISOString().slice(0, 10);
       const current = days.get(key) ?? { date, holes: new Set<string>(), minutes: 0, topic: hole.title };
       current.holes.add(hole.title);
-      current.minutes += Math.round(page.dwellSeconds / 60);
+      current.minutes += page.dwellSeconds > 0 ? Math.max(1, Math.round(page.dwellSeconds / 60)) : 2;
       current.topic = hole.title;
       days.set(key, current);
     }
