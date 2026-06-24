@@ -7,7 +7,7 @@ import type { User } from "@supabase/supabase-js";
 import { ACCENTS, STATUS_META } from "@/lib/ui";
 import { useApp } from "@/lib/store";
 import { useHoles } from "@/hooks/useHoles";
-import { formatElapsed, setExtensionCapture, useSessionStats, type SessionStats } from "@/hooks/useSessionStats";
+import { formatElapsed, setExtensionCapture, useSessionStats, type CaptureState, type SessionStats } from "@/hooks/useSessionStats";
 import { ThemeToggle } from "./ThemeToggle";
 import { Wordmark } from "./Logo";
 import { supabase } from "@/lib/supabase/client";
@@ -144,10 +144,16 @@ export function MobileNav() {
 }
 
 function CaptureCard({ stats }: { readonly stats: SessionStats }) {
-  const recording = stats.captureState === "recording";
-  const statusLabel = recording ? "Capturing" : stats.captureState === "paused" ? "Paused" : "Stopped";
+  const [localState, setLocalState] = useState<CaptureState | null>(null);
+  const effectiveState = localState ?? stats.captureState;
+  const recording = effectiveState === "recording";
+  const statusLabel = recording ? "Capturing" : effectiveState === "paused" ? "Paused" : "Stopped";
   const controllable = stats.source === "extension";
   const hasTimer = typeof stats.elapsedMs === "number";
+
+  useEffect(() => {
+    setLocalState(null);
+  }, [stats.captureState]);
 
   // The polled stats only refresh every ~2s; tick the clock locally each second
   // so the timer counts smoothly instead of jumping.
@@ -164,10 +170,12 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
   }, [stats.elapsedMs, recording]);
 
   const [pending, setPending] = useState(false);
-  async function send(next: "recording" | "paused" | "stopped") {
+  async function send(next: CaptureState) {
     if (pending) return;
     setPending(true);
-    await setExtensionCapture(next);
+    setLocalState(next);
+    const ok = await setExtensionCapture(next);
+    if (!ok) setLocalState(null);
     setPending(false);
   }
 
@@ -186,18 +194,20 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
           {hasTimer && <span className="tabular-nums"> · {formatElapsed(elapsed)}</span>}
         </span>
         {controllable && (
-          <div className="flex items-center gap-1.5">
+          <div className="flex shrink-0 items-center gap-1.5">
             <CaptureButton
               onClick={() => send(recording ? "paused" : "recording")}
               disabled={pending}
               title={recording ? "Pause capture" : "Resume capture"}
-              label={recording ? "❚❚" : "▶"}
+              label={recording ? "Pause" : "Play"}
+              active={recording}
             />
             <CaptureButton
               onClick={() => send("stopped")}
-              disabled={pending || stats.captureState === "stopped"}
+              disabled={pending || effectiveState === "stopped"}
               title="Stop & clear session"
-              label="■"
+              label="Stop"
+              active={effectiveState === "stopped"}
             />
           </div>
         )}
@@ -211,14 +221,18 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
   );
 }
 
-function CaptureButton({ onClick, disabled, title, label }: { readonly onClick: () => void; readonly disabled: boolean; readonly title: string; readonly label: string }) {
+function CaptureButton({ onClick, disabled, title, label, active }: { readonly onClick: () => void; readonly disabled: boolean; readonly title: string; readonly label: string; readonly active?: boolean }) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       title={title}
       aria-label={title}
-      className="rh-surface grid h-7 w-7 place-items-center rounded-[8px] border text-[11px] rh-muted transition hover:text-[var(--rh-ink)] disabled:opacity-40"
+      className={`grid h-8 min-w-[54px] place-items-center rounded-[9px] border px-2 text-[11px] font-semibold transition disabled:opacity-40 ${
+        active
+          ? "bg-[var(--rh-primary)] text-[var(--rh-primary-text)]"
+          : "rh-surface text-[var(--rh-muted)] hover:text-[var(--rh-ink)]"
+      }`}
     >
       {label}
     </button>
