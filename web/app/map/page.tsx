@@ -74,7 +74,7 @@ function FlowNode({ data }: NodeProps<FlowNodeData>) {
         )}
         <span className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: dark ? "#b69b77" : "#9b825f" }}>{KIND_LABEL[node.kind]}</span>
       </div>
-      <div className="rh-display line-clamp-2 text-[18px] font-semibold leading-tight">{node.label.replace(/^Search: /, "")}</div>
+      <div className="rh-display line-clamp-2 break-words text-[18px] font-semibold leading-tight">{node.label.replace(/^Search: /, "")}</div>
       {domain ? <div className="mt-2 truncate text-[12px]" style={{ color: dark ? "#b7a487" : "#7a6954" }}>{domain}</div> : null}
     </button>
   );
@@ -186,7 +186,7 @@ export default function MapPage() {
                     setHoleId(item.id);
                     setSelectedId(item.graph.nodes[0]?.id ?? "");
                   }}
-                  className="rounded-full border px-4 py-2 text-[13px] font-semibold transition"
+                  className="max-w-[240px] truncate rounded-full border px-4 py-2 text-[13px] font-semibold transition"
                   style={{
                     background: active ? "var(--rh-primary)" : "var(--rh-surface)",
                     borderColor: active ? "var(--rh-primary)" : "var(--rh-line-strong)",
@@ -222,9 +222,9 @@ export default function MapPage() {
 
           <aside className="rh-map-panel rounded-[28px] border p-6 shadow-[0_18px_50px_rgba(70,45,20,.10)]">
             <div className="rh-faint text-[11px] font-semibold uppercase tracking-[0.2em]">Selected node</div>
-            <h2 className="rh-display rh-ink mt-3 text-[31px] font-semibold leading-tight">{insight?.title}</h2>
-            <div className="mt-2 text-[13px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--rh-faint)" }}>{insight?.eyebrow}</div>
-            <p className="rh-muted mt-4 text-[15px] leading-6">{insight?.detail}</p>
+            <h2 className="rh-display rh-ink mt-3 line-clamp-3 break-words text-[31px] font-semibold leading-tight">{insight?.title}</h2>
+            <div className="mt-2 truncate text-[13px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--rh-faint)" }}>{insight?.eyebrow}</div>
+            <p className="rh-muted mt-4 line-clamp-5 text-[15px] leading-6">{insight?.detail}</p>
             <div className="rh-surface-2 mt-5 rounded-2xl border p-4 text-[14px] font-semibold">
               {insight?.flow}
             </div>

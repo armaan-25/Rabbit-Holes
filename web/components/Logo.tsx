@@ -37,7 +37,7 @@ export function RabbitEars({ className = "" }: { className?: string }) {
 /** Pure-text "Rabbit Holes" wordmark with the bunny standing in for the "o". */
 export function Wordmark({ className = "" }: { className?: string }) {
   return (
-    <span className={`rh-display font-semibold leading-none text-[#2a2018] ${className}`}>
+    <span className={`rh-display rh-ink inline-flex items-baseline whitespace-nowrap font-semibold leading-none ${className}`}>
       Rabbit&nbsp;H<BunnyO />les
     </span>
   );

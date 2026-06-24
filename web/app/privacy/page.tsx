@@ -30,23 +30,23 @@ const SECTIONS = [
 
 export default function PrivacyPage() {
   return (
-    <main className="rh-paper min-h-screen px-6 py-12 text-[#2a2018]">
+    <main className="rh-paper min-h-screen px-6 py-12 text-[var(--rh-ink)]">
       <div className="mx-auto max-w-[860px]">
         <Link href="/" className="no-underline"><Wordmark className="text-[24px]" /></Link>
-        <div className="mt-12 text-[12px] font-bold uppercase tracking-[0.24em] text-[#a8967d]">Privacy</div>
-        <h1 className="rh-display mt-3 text-[52px] font-semibold leading-none">Privacy Policy</h1>
-        <p className="mt-5 text-[18px] leading-8 text-[#5a4a38]">
+        <div className="rh-faint mt-12 text-[12px] font-bold uppercase tracking-[0.24em]">Privacy</div>
+        <h1 className="rh-display rh-ink mt-3 text-[52px] font-semibold leading-none">Privacy Policy</h1>
+        <p className="rh-muted mt-5 text-[18px] leading-8">
           Rabbit Holes is a browser-history research tool. This policy explains the browsing data the product needs, how it is used, and the controls users have.
         </p>
         <div className="mt-10 space-y-4">
           {SECTIONS.map((section) => (
-            <section key={section.title} className="rounded-[20px] border border-[#785a3224] bg-[#fbf6ec] p-6">
-              <h2 className="rh-display text-[25px] font-semibold">{section.title}</h2>
-              <p className="mt-3 text-[16px] leading-7 text-[#6a5a48]">{section.body}</p>
+            <section key={section.title} className="rh-surface rounded-[20px] border p-6">
+              <h2 className="rh-display rh-ink text-[25px] font-semibold">{section.title}</h2>
+              <p className="rh-muted mt-3 text-[16px] leading-7">{section.body}</p>
             </section>
           ))}
         </div>
-        <p className="mt-8 text-[13px] text-[#8a7860]">
+        <p className="rh-muted mt-8 text-[13px]">
           Last updated: June 22, 2026 · Support: <a className="underline" href="mailto:aa5851@columbia.edu">aa5851@columbia.edu</a>
         </p>
       </div>

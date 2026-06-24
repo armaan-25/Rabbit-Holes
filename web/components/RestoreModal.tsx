@@ -36,22 +36,22 @@ export function RestoreModal({ hole, open, onClose }: { hole: RabbitHole; open: 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.98 }}
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            className="relative z-10 flex max-h-[86vh] w-full max-w-[620px] flex-col overflow-hidden rounded-[22px] border border-[#785a3233] bg-[#fbf6ec] shadow-[0_30px_80px_rgba(42,32,24,.34)]"
+            className="rh-surface relative z-10 flex max-h-[86vh] w-full max-w-[620px] flex-col overflow-hidden rounded-[22px] border shadow-[0_30px_80px_rgba(42,32,24,.34)]"
           >
-            <div className="flex items-start justify-between gap-4 border-b border-[#785a3221] px-7 pb-5 pt-6">
-              <div>
-                <div className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#a8967d]">Resume rabbit hole</div>
-                <h2 className="rh-display mt-1 text-[27px] font-semibold leading-tight text-[#2a2018]">{hole.title}</h2>
+            <div className="flex items-start justify-between gap-4 border-b border-[var(--rh-line)] px-7 pb-5 pt-6">
+              <div className="min-w-0">
+                <div className="rh-faint text-[12px] font-semibold uppercase tracking-[0.18em]">Resume rabbit hole</div>
+                <h2 className="rh-display rh-ink mt-1 line-clamp-2 text-[27px] font-semibold leading-tight">{hole.title}</h2>
               </div>
-              <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full text-[18px] text-[#9c8b75] transition hover:bg-[#785a3214] hover:text-[#2a2018]">×</button>
+              <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-[18px] text-[var(--rh-muted)] transition hover:bg-[var(--rh-line)] hover:text-[var(--rh-ink)]">×</button>
             </div>
 
             <div className="overflow-y-auto px-7 py-6">
-              <div className="rounded-[16px] border border-[#785a3221] bg-[#f6efe1] p-5">
-                <div className="mb-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-[#a8967d]">Where you left off</div>
-                <p className="text-[15.5px] leading-[1.55] text-[#5a4a38]">{whereYouLeftOff}</p>
+              <div className="rounded-[16px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] p-5">
+                <div className="rh-faint mb-2 text-[12px] font-semibold uppercase tracking-[0.14em]">Where you left off</div>
+                <p className="rh-muted text-[15.5px] leading-[1.55]">{whereYouLeftOff}</p>
                 {openQuestion && (
-                  <div className="mt-4 flex items-start gap-2 border-t border-[#785a3221] pt-4 text-[15px] leading-snug text-[#3a2f25]">
+                  <div className="mt-4 flex items-start gap-2 border-t border-[var(--rh-line)] pt-4 text-[15px] leading-snug text-[var(--rh-ink-soft)]">
                     <span className="text-[#c2703f]">↳</span>
                     <span><span className="font-semibold">Open question:</span> {openQuestion}</span>
                   </div>
@@ -59,7 +59,7 @@ export function RestoreModal({ hole, open, onClose }: { hole: RabbitHole; open: 
               </div>
 
               <div className="mb-3 mt-6 flex items-baseline justify-between">
-                <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#a8967d]">Reopen the trail · {ordered.length} pages</div>
+                <div className="rh-faint text-[12px] font-semibold uppercase tracking-[0.14em]">Reopen the trail · {ordered.length} pages</div>
               </div>
               <div className="space-y-2">
                 {ordered.map((p, i) => {
@@ -70,15 +70,15 @@ export function RestoreModal({ hole, open, onClose }: { hole: RabbitHole; open: 
                       href={p.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-3 rounded-[12px] border border-[#785a3221] bg-white/70 px-3.5 py-2.5 transition hover:border-[#785a3240] hover:bg-white"
+                      className="flex items-center gap-3 rounded-[12px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-3.5 py-2.5 transition hover:border-[var(--rh-line-strong)]"
                     >
-                      <span className="w-4 text-[12px] tabular-nums text-[#b6a488]">{i + 1}</span>
-                      <span className="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-[8px] border border-[#785a3224] bg-white text-[12px] font-semibold" style={{ color: meta.color }}>
+                      <span className="w-4 text-[12px] tabular-nums text-[var(--rh-faint)]">{i + 1}</span>
+                      <span className="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-[8px] border border-[var(--rh-line)] bg-[var(--rh-surface)] text-[12px] font-semibold" style={{ color: meta.color }}>
                         {p.domain ? <img src={faviconFor(p.domain)} alt="" className="h-4 w-4 rounded" /> : meta.glyph}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[14.5px] font-medium text-[#2a2018]">{p.title}</span>
-                        <span className="block truncate text-[12px] text-[#9c8b75]">{p.domain}</span>
+                        <span className="block truncate text-[14.5px] font-medium text-[var(--rh-ink)]">{p.title}</span>
+                        <span className="block truncate text-[12px] text-[var(--rh-muted)]">{p.domain}</span>
                       </span>
                       <span className="shrink-0 text-[15px] text-[#c3b49b]">↗</span>
                     </a>
@@ -87,11 +87,11 @@ export function RestoreModal({ hole, open, onClose }: { hole: RabbitHole; open: 
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-3 border-t border-[#785a3221] bg-[#f6efe1] px-7 py-4">
-              <button onClick={onClose} className="text-[14px] font-medium text-[#8a7860] transition hover:text-[#2a2018]">Cancel</button>
+            <div className="flex items-center justify-between gap-3 border-t border-[var(--rh-line)] bg-[var(--rh-surface-2)] px-7 py-4">
+              <button onClick={onClose} className="text-[14px] font-medium text-[var(--rh-muted)] transition hover:text-[var(--rh-ink)]">Cancel</button>
               <button
                 onClick={openAll}
-                className="rounded-[12px] bg-[#2a2018] px-5 py-3 text-[14.5px] font-semibold text-[#f3e8d4] shadow-[0_10px_28px_rgba(42,32,24,.2)] transition hover:-translate-y-0.5"
+                className="rh-primary rounded-[12px] px-5 py-3 text-[14.5px] font-semibold shadow-[0_10px_28px_rgba(42,32,24,.2)] transition hover:-translate-y-0.5"
               >
                 Open all {ordered.length} in order ↗
               </button>

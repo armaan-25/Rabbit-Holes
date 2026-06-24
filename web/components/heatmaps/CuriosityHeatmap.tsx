@@ -35,18 +35,18 @@ export function CuriosityHeatmap({ holes }: { holes: RabbitHole[] }) {
   const totals = useMemo(() => summarize(holes, rawDays), [holes, rawDays]);
 
   return (
-    <section className="overflow-hidden rounded-[28px] border border-[#785a3224] bg-[#fbf6ec] shadow-[0_2px_18px_rgba(70,45,20,.07)]">
+    <section className="rh-surface overflow-hidden rounded-[28px] border shadow-[0_2px_18px_rgba(70,45,20,.07)]">
       <div className="grid gap-0 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="p-5 sm:p-7">
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div>
-              <div className="text-[12px] font-semibold uppercase tracking-[0.2em] text-[#a8967d]">Curiosity heatmap</div>
-              <h2 className="rh-display mt-1 text-[34px] font-semibold leading-none text-[#2a2018]">Your recent rhythm</h2>
-              <p className="mt-2 max-w-[58ch] text-[15px] leading-6 text-[#6a5a48]">
+              <div className="rh-faint text-[12px] font-semibold uppercase tracking-[0.2em]">Curiosity heatmap</div>
+              <h2 className="rh-display rh-ink mt-1 text-[34px] font-semibold leading-none">Your recent rhythm</h2>
+              <p className="rh-muted mt-2 max-w-[58ch] text-[15px] leading-6">
                 Each square is a day. Darker days mean more active reading time; the color follows the dominant rabbit hole.
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-2 rounded-[18px] border border-[#785a321f] bg-[#f6efe1] p-2">
+            <div className="grid grid-cols-3 gap-2 rounded-[18px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] p-2">
               <MiniMetric value={`${totals.totalMinutes}m`} label="active" />
               <MiniMetric value={String(rawDays.length)} label="days" />
               <MiniMetric value={String(holes.length)} label="holes" />
@@ -55,7 +55,7 @@ export function CuriosityHeatmap({ holes }: { holes: RabbitHole[] }) {
 
           <div className="mt-8 overflow-x-auto pb-2">
             <div className="min-w-[720px]">
-              <div className="mb-2 grid grid-cols-[42px_repeat(5,minmax(0,1fr))] gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#a8967d]">
+              <div className="rh-faint mb-2 grid grid-cols-[42px_repeat(5,minmax(0,1fr))] gap-2 text-[11px] font-semibold uppercase tracking-[0.12em]">
                 <span />
                 {Array.from({ length: WEEK_COUNT }, (_, week) => {
                   const date = new Date(start.getTime() + week * 7 * DAY_MS);
@@ -65,7 +65,7 @@ export function CuriosityHeatmap({ holes }: { holes: RabbitHole[] }) {
               <div className="grid grid-cols-[42px_repeat(5,minmax(0,1fr))] gap-2">
                 <div className="grid grid-rows-7 gap-2 py-1">
                   {DAY_LABELS.map((label, i) => (
-                    <div key={`${label}-${i}`} className="grid h-[54px] place-items-center text-[12px] font-semibold text-[#a8967d]">
+                    <div key={`${label}-${i}`} className="rh-faint grid h-[54px] place-items-center text-[12px] font-semibold">
                       {label}
                     </div>
                   ))}
@@ -88,15 +88,15 @@ export function CuriosityHeatmap({ holes }: { holes: RabbitHole[] }) {
             </div>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#785a3217] pt-5">
-            <div className="flex items-center gap-2 text-[12.5px] text-[#8a7860]">
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--rh-line)] pt-5">
+            <div className="rh-muted flex items-center gap-2 text-[12.5px]">
               <span>Less</span>
               {[0.1, 0.28, 0.48, 0.68, 0.9].map((level) => (
-                <span key={level} className="h-4 w-4 rounded-[5px] border border-[#785a321f]" style={{ background: `rgba(95, 138, 92, ${level})` }} />
+                <span key={level} className="h-4 w-4 rounded-[5px] border border-[var(--rh-line)]" style={{ background: `rgba(95, 138, 92, ${level})` }} />
               ))}
               <span>More</span>
             </div>
-            <div className="text-[13px] italic text-[#9c8b75]">Five-week view based on active dwell time.</div>
+            <div className="rh-muted text-[13px] italic">Five-week view based on active dwell time.</div>
           </div>
         </div>
 
@@ -138,14 +138,14 @@ function HeatCell({ cell, max, selected, holes, onSelect }: { readonly cell: Cel
   const accent = hole ? ACCENTS[hole.accent].hex : "#d9ccb6";
   const intensity = day ? Math.max(0.18, day.minutes / max) : 0;
   const background = day
-    ? `linear-gradient(145deg, ${hexWithAlpha(accent, 0.28 + intensity * 0.6)}, ${hexWithAlpha(accent, 0.12 + intensity * 0.22)}), #f4ead7`
-    : "#f4ead7";
+    ? `linear-gradient(145deg, ${hexWithAlpha(accent, 0.28 + intensity * 0.6)}, ${hexWithAlpha(accent, 0.12 + intensity * 0.22)}), var(--rh-surface-2)`
+    : "var(--rh-surface-2)";
 
   return (
     <button
       type="button"
       onClick={onSelect}
-      className={`group relative h-[54px] rounded-[14px] border p-2 text-left transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(70,45,20,.12)] ${selected ? "border-[#2a2018] ring-2 ring-[#2a201824]" : "border-[#785a321f]"}`}
+      className={`group relative h-[54px] rounded-[14px] border p-2 text-left transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(70,45,20,.12)] ${selected ? "border-[var(--rh-ink)] ring-2 ring-[var(--rh-line-strong)]" : "border-[var(--rh-line)]"}`}
       style={{ background, opacity: day ? 1 : 0.52 }}
       title={`${cell.date.toLocaleDateString()}${day ? ` · ${day.minutes}m` : " · no activity"}`}
     >
@@ -187,9 +187,9 @@ function DayInspector({ day, holes }: { readonly day: HeatDay; readonly holes: R
 
 function MiniMetric({ value, label }: { readonly value: string; readonly label: string }) {
   return (
-    <div className="min-w-[76px] rounded-[13px] bg-[#fbf6ec] px-3 py-2 text-center">
-      <div className="rh-display text-[23px] font-semibold leading-none text-[#2a2018]">{value}</div>
-      <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#a8967d]">{label}</div>
+    <div className="min-w-[76px] rounded-[13px] bg-[var(--rh-surface)] px-3 py-2 text-center">
+      <div className="rh-display rh-ink text-[23px] font-semibold leading-none">{value}</div>
+      <div className="rh-faint mt-1 text-[10px] font-semibold uppercase tracking-[0.12em]">{label}</div>
     </div>
   );
 }

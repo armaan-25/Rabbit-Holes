@@ -38,9 +38,9 @@ export default function ExtensionAuthPage() {
 
   return (
     <main className="rh-paper grid min-h-screen place-items-center px-5 text-center">
-      <div className="max-w-[480px] rounded-[28px] border border-[#785a3224] bg-[#fbf6ec] p-8 shadow-[0_18px_60px_rgba(70,45,20,.13)]">
-        <h1 className="rh-display text-[34px] font-semibold text-[#2a2018]"><Wordmark className="text-[34px]" /> extension</h1>
-        <p className="mt-4 text-[16px] leading-6 text-[#6a5a48]">{status}</p>
+      <div className="rh-surface max-w-[480px] rounded-[28px] border p-8 shadow-[0_18px_60px_rgba(70,45,20,.13)]">
+        <h1 className="rh-display rh-ink text-[34px] font-semibold"><Wordmark className="text-[34px]" /> extension</h1>
+        <p className="rh-muted mt-4 text-[16px] leading-6">{status}</p>
       </div>
     </main>
   );

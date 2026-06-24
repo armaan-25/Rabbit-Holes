@@ -43,7 +43,7 @@ export function HoleCard({
       transition={{ delay: index * 0.06, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
       <Link href={`/holes/${hole.id}`} className="group block">
-        <div className={`relative min-h-[292px] overflow-hidden rounded-[20px] border bg-[#fbf6ec] p-6 text-left shadow-[0_2px_18px_rgba(70,45,20,.06)] transition duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_16px_36px_rgba(70,45,20,.14)] ${selected ? "border-[#5f8a5c] ring-2 ring-[#5f8a5c33]" : "border-[#785a3224]"}`}>
+        <div className={`rh-surface relative min-h-[292px] overflow-hidden rounded-[20px] border p-6 text-left shadow-[0_2px_18px_rgba(70,45,20,.06)] transition duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_16px_36px_rgba(70,45,20,.14)] ${selected ? "border-[#5f8a5c] ring-2 ring-[#5f8a5c33]" : ""}`}>
           {hole.status === "active" && (
             <>
               <div className="pointer-events-none absolute inset-0 rounded-[20px] shadow-[0_0_0_1px_rgba(95,138,92,.24),0_12px_34px_rgba(95,138,92,.12)]" />
@@ -62,12 +62,12 @@ export function HoleCard({
                       e.preventDefault();
                       onSelect(hole.id, !selected);
                     }}
-                    className={`grid h-7 w-7 place-items-center rounded-full border text-[13px] transition ${selected ? "border-[#5f8a5c66] bg-[#e5efe0] text-[#37502f]" : "border-[#785a3224] bg-[#f6efe1] text-[#8a7860]"}`}
+                    className={`grid h-7 w-7 place-items-center rounded-full border text-[13px] transition ${selected ? "border-[#5f8a5c66] bg-[#e5efe0] text-[#37502f]" : "rh-surface-2 text-[var(--rh-muted)]"}`}
                   >
                     {selected ? "✓" : ""}
                   </button>
                 )}
-                <span className="text-[13px] text-[#a8967d]">{relativeTime(hole.lastActive)}</span>
+                <span className="rh-faint text-[13px]">{relativeTime(hole.lastActive)}</span>
                 {(onFavorite || onArchive || onDelete) && (
                   <div className="flex items-center gap-1 opacity-80 transition group-hover:opacity-100">
                     {onFavorite && (
@@ -78,7 +78,7 @@ export function HoleCard({
                           e.preventDefault();
                           onFavorite(hole.id);
                         }}
-                        className="grid h-7 w-7 place-items-center rounded-full border border-[#785a3224] bg-[#f6efe1] text-[13px] text-[#8a7860] transition hover:text-[#c2703f]"
+                        className="rh-surface-2 grid h-7 w-7 place-items-center rounded-full border text-[13px] text-[var(--rh-muted)] transition hover:text-[#c2703f]"
                       >
                         {hole.favorite ? "★" : "☆"}
                       </button>
@@ -91,7 +91,7 @@ export function HoleCard({
                           e.preventDefault();
                           onArchive(hole.id);
                         }}
-                        className="grid h-7 w-7 place-items-center rounded-full border border-[#785a3224] bg-[#f6efe1] text-[13px] text-[#8a7860] transition hover:text-[#2a2018]"
+                        className="rh-surface-2 grid h-7 w-7 place-items-center rounded-full border text-[13px] text-[var(--rh-muted)] transition hover:text-[var(--rh-ink)]"
                       >
                         {hole.archived ? "↥" : "⌄"}
                       </button>
@@ -104,7 +104,7 @@ export function HoleCard({
                           e.preventDefault();
                           if (window.confirm(`Delete "${hole.title}"?`)) onDelete(hole.id);
                         }}
-                        className="grid h-7 w-7 place-items-center rounded-full border border-[#b8795f33] bg-[#fff6f1] text-[13px] text-[#a8472a] transition hover:bg-[#fde8dc]"
+                        className="grid h-7 w-7 place-items-center rounded-full border border-[#b8795f33] bg-[#b8795f14] text-[13px] text-[#a8472a] transition hover:bg-[#b8795f20]"
                       >
                         ×
                       </button>
@@ -114,30 +114,30 @@ export function HoleCard({
               </div>
             </div>
 
-            <h3 className="rh-display text-[23px] font-semibold leading-[1.12] tracking-normal text-[#2a2018]">
+            <h3 className="rh-display rh-ink line-clamp-2 text-[23px] font-semibold leading-[1.12] tracking-normal">
               {hole.title}
             </h3>
-            <p className="mt-2 min-h-[46px] text-[15.5px] leading-[1.5] text-[#6a5a48]">
+            <p className="rh-muted mt-2 line-clamp-3 min-h-[46px] text-[15.5px] leading-[1.5]">
               {hole.description}
             </p>
 
             <div className="mt-5 flex items-center gap-3">
-              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#785a321f]">
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--rh-line)]">
                 <div
                   className="h-full rounded-full"
                   style={{ width: `${Math.round(hole.confidence * 100)}%`, background: `linear-gradient(90deg,${accent.hex},${accent.soft})` }}
                 />
               </div>
               <span className="text-[13.5px] font-semibold tabular-nums" style={{ color: accent.hex }}>
-                {Math.round(hole.confidence * 100)}<span className="font-normal text-[#a8967d]"> match</span>
+                {Math.round(hole.confidence * 100)}<span className="font-normal text-[var(--rh-faint)]"> match</span>
               </span>
             </div>
 
-            <div className="mt-5 flex flex-wrap gap-2 border-t border-[#785a321f] pt-4">
+            <div className="mt-5 flex flex-wrap gap-2 border-t border-[var(--rh-line)] pt-4">
               {counts.map((k) => (
-                <div key={k.label} className="inline-flex items-baseline gap-1 rounded-[9px] bg-[#f2e9d6] px-2.5 py-1.5">
-                  <span className="text-[15px] font-semibold tabular-nums text-[#2a2018]">{k.n}</span>
-                  <span className="text-[12.5px] text-[#8a7860]">{k.label}</span>
+                <div key={k.label} className="inline-flex items-baseline gap-1 rounded-[9px] bg-[var(--rh-surface-2)] px-2.5 py-1.5">
+                  <span className="text-[15px] font-semibold tabular-nums text-[var(--rh-ink)]">{k.n}</span>
+                  <span className="text-[12.5px] text-[var(--rh-muted)]">{k.label}</span>
                 </div>
               ))}
               <div className="ml-auto flex items-center gap-1">
@@ -147,7 +147,7 @@ export function HoleCard({
                     <span
                       key={p.id}
                       title={p.domain}
-                      className="grid h-6 w-6 place-items-center overflow-hidden rounded-[7px] border border-[#785a3229] bg-white text-[11px] font-semibold"
+                      className="grid h-6 w-6 place-items-center overflow-hidden rounded-[7px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] text-[11px] font-semibold"
                       style={{ color: meta.color }}
                     >
                       {p.domain && p.domain !== "unknown" ? (
@@ -164,10 +164,10 @@ export function HoleCard({
             <div className="mt-4 flex items-center justify-between">
               <div className="flex -space-x-2">
                 {hole.domains.slice(0, 4).map((d) => (
-                  <img key={d} src={faviconFor(d)} alt={d} className="h-7 w-7 rounded-full border border-[#fbf6ec] bg-white" />
+                  <img key={d} src={faviconFor(d)} alt={d} className="h-7 w-7 rounded-full border border-[var(--rh-surface)] bg-[var(--rh-surface-3)]" />
                 ))}
               </div>
-              <span className="text-[13px] text-[#6a5a48] opacity-0 transition group-hover:opacity-100">
+              <span className="rh-muted text-[13px] opacity-0 transition group-hover:opacity-100">
                 Open →
               </span>
             </div>

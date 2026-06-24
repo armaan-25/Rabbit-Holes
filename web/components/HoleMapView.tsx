@@ -36,20 +36,20 @@ function StepNode({ data }: NodeProps<StepData>) {
   return (
     <Tag
       {...(data.url ? { href: data.url, target: "_blank", rel: "noreferrer" } : {})}
-      className="flex max-w-[240px] items-center gap-2.5 rounded-[14px] border bg-[#fbf6ec] px-3.5 py-2.5 no-underline shadow-[0_8px_22px_rgba(70,45,20,.1)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(70,45,20,.16)]"
+      className="flex max-w-[240px] items-center gap-2.5 rounded-[14px] border bg-[var(--rh-surface)] px-3.5 py-2.5 no-underline shadow-[0_8px_22px_rgba(70,45,20,.1)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(70,45,20,.16)]"
       style={{ borderColor: data.dark ? "rgba(230,211,180,0.16)" : "#785a3233" }}
     >
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
       <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />
       <span
-        className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-[9px] border border-[#785a3224] bg-white text-[13px] font-semibold"
+        className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-[9px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] text-[13px] font-semibold"
         style={{ color: meta.color }}
       >
         {data.domain ? <img src={faviconFor(data.domain)} alt="" className="h-5 w-5 rounded" /> : meta.glyph}
       </span>
       <span className="min-w-0">
-        <span className="block truncate text-[13.5px] font-semibold leading-tight text-[#2a2018]">{data.label}</span>
-        <span className="block text-[11px] capitalize text-[#a8967d]">{meta.label}</span>
+        <span className="block truncate text-[13.5px] font-semibold leading-tight text-[var(--rh-ink)]">{data.label}</span>
+        <span className="block text-[11px] capitalize text-[var(--rh-faint)]">{meta.label}</span>
       </span>
     </Tag>
   );
@@ -107,9 +107,9 @@ export function HoleMapView({ id, embedded = false }: { id: string; embedded?: b
   if (!hole) {
     return (
       <div className="rh-paper flex min-h-screen items-center justify-center px-6">
-        <div className="max-w-md rounded-[20px] border border-[#785a3224] bg-[#fbf6ec] p-8 text-center">
-          <div className="rh-display text-[28px] font-semibold text-[#2a2018]">Rabbit hole not found</div>
-          <Link href="/map" className="mt-5 inline-flex rounded-[14px] bg-[#2a2018] px-5 py-3 text-[14px] font-semibold text-[#f6efe1]">← Back to the map</Link>
+        <div className="rh-surface max-w-md rounded-[20px] border p-8 text-center">
+          <div className="rh-display rh-ink text-[28px] font-semibold">Rabbit hole not found</div>
+          <Link href="/map" className="rh-primary mt-5 inline-flex rounded-[14px] px-5 py-3 text-[14px] font-semibold">← Back to the map</Link>
         </div>
       </div>
     );
@@ -122,18 +122,18 @@ export function HoleMapView({ id, embedded = false }: { id: string; embedded?: b
       {!embedded && (
         <div className="pointer-events-none absolute left-0 right-0 top-0 z-10 flex items-start justify-between gap-5 px-6 pt-7 sm:px-10">
           <div>
-            <Link href="/map" className="pointer-events-auto text-[13.5px] font-medium text-[#6a5a48] transition hover:text-[#a8472a]">← The map</Link>
+            <Link href="/map" className="rh-muted pointer-events-auto text-[13.5px] font-medium transition hover:text-[#a8472a]">← The map</Link>
             <div className="mt-2 flex items-center gap-2.5">
               <span className="h-2.5 w-2.5 rounded-full" style={{ background: accent.hex, boxShadow: `0 0 10px ${accent.ring}` }} />
-              <h1 className="rh-display text-[34px] font-semibold leading-none text-[#2a2018]">{hole.title}</h1>
+              <h1 className="rh-display rh-ink line-clamp-2 text-[34px] font-semibold leading-none">{hole.title}</h1>
             </div>
-            <p className="mt-2 max-w-[560px] text-[14.5px] leading-6 text-[#6a5a48]">
+            <p className="rh-muted mt-2 max-w-[560px] text-[14.5px] leading-6">
               How this investigation unfolded — {hole.graph.nodes.length} steps across {hole.domains.length} domains. Click a page to open it.
             </p>
           </div>
           <Link
             href={`/holes/${hole.id}`}
-            className="pointer-events-auto shrink-0 rounded-[12px] bg-[#2a2018] px-4 py-3 text-[14px] font-semibold text-[#f3e8d4] shadow-[0_10px_28px_rgba(42,32,24,.16)] transition hover:-translate-y-0.5"
+            className="rh-primary pointer-events-auto shrink-0 rounded-[12px] px-4 py-3 text-[14px] font-semibold shadow-[0_10px_28px_rgba(42,32,24,.16)] transition hover:-translate-y-0.5"
           >
             Open details ↗
           </Link>

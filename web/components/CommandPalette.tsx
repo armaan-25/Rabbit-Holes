@@ -117,15 +117,15 @@ export function CommandPalette() {
         >
           <div className="absolute inset-0 bg-[#1a100980] backdrop-blur-sm" />
           <motion.div
-            className="relative w-full max-w-[560px] overflow-hidden rounded-2xl border border-[#785a3233] bg-[#fbf6ec] shadow-[0_30px_80px_rgba(42,32,24,.34)]"
+            className="rh-surface relative w-full max-w-[560px] overflow-hidden rounded-2xl border shadow-[0_30px_80px_rgba(42,32,24,.34)]"
             initial={{ opacity: 0, y: -12, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ type: "spring", stiffness: 360, damping: 30 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-3 border-b border-[#785a3221] px-4 py-3.5">
-              <span className="text-[#a8967d]">⌕</span>
+            <div className="flex items-center gap-3 border-b border-[var(--rh-line)] px-4 py-3.5">
+              <span className="rh-faint">⌕</span>
               <input
                 autoFocus
                 value={q}
@@ -135,15 +135,15 @@ export function CommandPalette() {
                 }}
                 onKeyDown={onKeyDown}
                 placeholder="Jump to a rabbit hole or view…"
-                className="w-full bg-transparent text-[14px] text-[#2a2018] outline-none placeholder:text-[#a8967d]"
+                className="w-full bg-transparent text-[14px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)]"
               />
-              <kbd className="rounded border border-[#785a3224] bg-white px-1.5 py-0.5 font-mono text-[10px] text-[#8a7860]">
+              <kbd className="rounded border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-1.5 py-0.5 font-mono text-[10px] text-[var(--rh-muted)]">
                 esc
               </kbd>
             </div>
             <div className="max-h-[340px] overflow-y-auto p-1.5">
               {items.length === 0 && (
-                <div className="px-3 py-6 text-center text-[13px] text-[#9c8b75]">
+                <div className="rh-muted px-3 py-6 text-center text-[13px]">
                   Nothing matches “{q}”.
                 </div>
               )}
@@ -153,20 +153,20 @@ export function CommandPalette() {
                   onMouseEnter={() => setCursor(idx)}
                   onClick={() => go(i)}
                   className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition ${
-                    cursor === idx ? "bg-[#785a3214]" : ""
+                    cursor === idx ? "bg-[var(--rh-line)]" : ""
                   }`}
                 >
                   <span
-                    className="grid h-7 w-7 place-items-center rounded-md border border-[#785a3224] bg-white text-[13px]"
+                    className="grid h-7 w-7 place-items-center rounded-md border border-[var(--rh-line)] bg-[var(--rh-surface-3)] text-[13px]"
                     style={i.color ? { boxShadow: `inset 0 0 0 1px ${i.color}40` } : undefined}
                   >
                     {i.glyph}
                   </span>
                   <span className="flex-1">
-                    <span className="block text-[13.5px] text-[#2a2018]">{i.label}</span>
-                    <span className="block text-[11.5px] text-[#9c8b75]">{i.hint}</span>
+                    <span className="block truncate text-[13.5px] text-[var(--rh-ink)]">{i.label}</span>
+                    <span className="block truncate text-[11.5px] text-[var(--rh-muted)]">{i.hint}</span>
                   </span>
-                  <span className="text-[11px] text-[#b6a488]">↵</span>
+                  <span className="text-[11px] text-[var(--rh-faint)]">↵</span>
                 </button>
               ))}
             </div>

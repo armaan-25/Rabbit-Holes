@@ -14,11 +14,11 @@ export function EmptyHoles({
   readonly hint?: string;
 }) {
   return (
-    <div className="mx-auto w-full max-w-[560px] rounded-[28px] border border-dashed border-[#785a3224] bg-[#fbf6ec] px-8 py-14 text-center shadow-[0_2px_18px_rgba(70,45,20,.06)]">
-      <div className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-2xl border border-[#785a3224] bg-[#f2e9d6] text-[30px]">🕳️</div>
-      <div className="mb-2 text-[12px] font-semibold uppercase tracking-[0.22em] text-[#a8967d]">{eyebrow}</div>
-      <h2 className="rh-display text-[30px] font-semibold leading-tight text-[#2a2018]">{title}</h2>
-      <p className="mx-auto mt-3 max-w-[42ch] text-[16px] leading-[1.55] text-[#6a5a48]">
+    <div className="rh-surface mx-auto w-full max-w-[560px] rounded-[28px] border border-dashed px-8 py-14 text-center shadow-[0_2px_18px_rgba(70,45,20,.06)]">
+      <div className="rh-surface-2 mx-auto mb-5 grid h-16 w-16 place-items-center rounded-2xl border text-[30px]">⌾</div>
+      <div className="rh-faint mb-2 text-[12px] font-semibold uppercase tracking-[0.22em]">{eyebrow}</div>
+      <h2 className="rh-display rh-ink text-[30px] font-semibold leading-tight">{title}</h2>
+      <p className="rh-muted mx-auto mt-3 max-w-[42ch] text-[16px] leading-[1.55]">
         {hint ??
           "Install the extension and browse normally. As you go down a rabbit hole, your searches and pages get clustered into investigations that show up here."}
       </p>
@@ -26,13 +26,13 @@ export function EmptyHoles({
         <a
           href="/downloads/rabbit-holes-extension.zip"
           download
-          className="inline-flex rounded-full bg-[#2a2018] px-7 py-3.5 text-[15px] font-semibold text-[#f3e8d4] transition hover:-translate-y-0.5"
+          className="rh-primary inline-flex rounded-full px-7 py-3.5 text-[15px] font-semibold transition hover:-translate-y-0.5"
         >
           Download extension ↓
         </a>
         <Link
           href="/settings"
-          className="inline-flex rounded-full border border-[#785a3224] bg-[#f2e9d6] px-7 py-3.5 text-[15px] font-semibold text-[#2a2018] no-underline transition hover:-translate-y-0.5"
+          className="rh-surface-2 inline-flex rounded-full border px-7 py-3.5 text-[15px] font-semibold no-underline transition hover:-translate-y-0.5"
         >
           Settings
         </Link>

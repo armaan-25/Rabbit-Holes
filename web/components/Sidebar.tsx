@@ -35,8 +35,8 @@ export function Sidebar() {
 
   return (
     <aside className="rh-sidebar sticky top-0 z-20 hidden h-screen w-[352px] shrink-0 flex-col border-r px-7 py-8 md:flex">
-      <Link href="/" className="mb-8 block px-2 no-underline">
-        <Wordmark className="text-[22px]" />
+      <Link href="/" className="mb-8 block min-w-0 px-2 no-underline">
+        <Wordmark className="max-w-full text-[22px]" />
         <div className="rh-muted mt-1.5 text-[13px] italic">Smart history for your research.</div>
       </Link>
 
@@ -44,7 +44,7 @@ export function Sidebar() {
         onClick={togglePalette}
         className="rh-surface mb-7 flex items-center justify-between rounded-[13px] border px-5 py-4 text-[15px] transition"
       >
-        <span className="flex items-center gap-2">
+        <span className="flex min-w-0 items-center gap-2">
           <span className="text-[16px]">⌕</span> Quick jump
         </span>
         <kbd className="rh-surface-2 rounded border px-2 py-1 font-mono text-[11px] rh-muted">
@@ -257,20 +257,20 @@ function SidebarAccount() {
 
   if (!ready) {
     return (
-      <div className="mt-4 rounded-[16px] border border-[#785a3224] bg-[#fbf6ec] p-3 shadow-[0_2px_12px_rgba(70,45,20,.05)]">
-        <div className="h-10 rounded-[12px] bg-[#f2e9d6]" />
+        <div className="rh-surface mt-4 rounded-[16px] border p-3 shadow-[0_2px_12px_rgba(70,45,20,.05)]">
+        <div className="h-10 rounded-[12px] bg-[var(--rh-surface-2)]" />
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="mt-4 rounded-[16px] border border-[#785a3224] bg-[#fbf6ec] p-3 shadow-[0_2px_12px_rgba(70,45,20,.05)]">
-        <div className="mb-3 text-[12px] leading-5 text-[#8a7860]">Sign in to save sessions across devices.</div>
-        <Link href="/login?next=/dashboard" className="block rounded-[12px] bg-[#2a2018] px-4 py-2.5 text-center text-[14px] font-semibold text-[#f3e8d4]">
+      <div className="rh-surface mt-4 rounded-[16px] border p-3 shadow-[0_2px_12px_rgba(70,45,20,.05)]">
+        <div className="rh-muted mb-3 text-[12px] leading-5">Sign in to save sessions across devices.</div>
+        <Link href="/login?next=/dashboard" className="rh-primary block rounded-[12px] px-4 py-2.5 text-center text-[14px] font-semibold">
           Sign in
         </Link>
-        <Link href="/signup?next=/dashboard" className="mt-2 block rounded-[12px] border border-[#785a3224] bg-[#f2e9d6] px-4 py-2.5 text-center text-[14px] font-semibold text-[#5a4a38]">
+        <Link href="/signup?next=/dashboard" className="rh-surface-2 mt-2 block rounded-[12px] border px-4 py-2.5 text-center text-[14px] font-semibold">
           Create account
         </Link>
       </div>
@@ -281,17 +281,17 @@ function SidebarAccount() {
   const initial = email[0]?.toUpperCase() ?? "R";
 
   return (
-    <div className="mt-4 rounded-[16px] border border-[#785a3224] bg-[#fbf6ec] p-3 shadow-[0_2px_12px_rgba(70,45,20,.05)]">
+    <div className="rh-surface mt-4 rounded-[16px] border p-3 shadow-[0_2px_12px_rgba(70,45,20,.05)]">
       <div className="flex items-center gap-3">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#2a2018] text-[14px] font-semibold text-[#f3e8d4]">
+        <span className="rh-primary grid h-10 w-10 shrink-0 place-items-center rounded-full text-[14px] font-semibold">
           {initial}
         </span>
         <div className="min-w-0">
-          <div className="truncate text-[14px] font-semibold text-[#2a2018]">{email}</div>
-          <div className="text-[12px] text-[#8a7860]">Signed in</div>
+          <div className="truncate text-[14px] font-semibold text-[var(--rh-ink)]">{email}</div>
+          <div className="rh-muted text-[12px]">Signed in</div>
         </div>
       </div>
-      <button onClick={signOut} className="mt-3 w-full rounded-[11px] border border-[#785a3224] bg-[#fbf6ec] px-3 py-2 text-[13px] font-semibold text-[#a8472a]">
+      <button onClick={signOut} className="rh-surface-2 mt-3 w-full rounded-[11px] border px-3 py-2 text-[13px] font-semibold text-[#a8472a]">
         Log out
       </button>
     </div>

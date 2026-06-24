@@ -107,15 +107,15 @@ export default function Dashboard() {
       <div className="mx-auto w-full max-w-[1440px]">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <div className="mb-2 text-[12px] font-semibold uppercase tracking-[0.22em] text-[#a8967d]">
+            <div className="rh-faint mb-2 text-[12px] font-semibold uppercase tracking-[0.22em]">
               Your rabbit holes · {holes.length} total
             </div>
-            <h1 className="rh-display text-[42px] font-semibold leading-none tracking-normal text-[#2a2018]">
+            <h1 className="rh-display rh-ink text-[42px] font-semibold leading-none tracking-normal">
               Rabbit holes
             </h1>
           </div>
           <div className="flex items-center gap-3">
-            <div className="hidden items-center gap-5 rounded-xl border border-[#785a321f] bg-[#fbf6ec] px-4 py-2.5 shadow-[0_2px_16px_rgba(70,45,20,.06)] sm:flex">
+            <div className="rh-surface hidden items-center gap-5 rounded-xl border px-4 py-2.5 shadow-[0_2px_16px_rgba(70,45,20,.06)] sm:flex">
               <HeaderStat n={stats.pages} label="pages" />
               <HeaderStat n={stats.searches} label="searches" />
               <HeaderStat n={stats.tabs} label="tabs" accent />
@@ -136,7 +136,7 @@ export default function Dashboard() {
                   <span className={`absolute inset-0 rounded-full ${stats.captureState === "recording" ? "bg-[#5f8a5c] [animation:dash-pulse_2s_ease-in-out_infinite]" : "bg-[#c7ae84]"}`} />
                   {stats.captureState === "recording" && <span className="absolute inset-0 rounded-full bg-[#5f8a5c] [animation:dash-ring_2s_ease-out_infinite]" />}
                 </div>
-                <div className="text-[15.5px] text-[#3f5a3d]">
+                <div className="min-w-0 text-[15.5px] text-[#3f5a3d]">
                   <span className="font-semibold text-[#37502f]">{statusLabel}</span>
                   {typeof stats.elapsedMs === "number" ? <span className="font-semibold"> · {formatElapsed(stats.elapsedMs)}</span> : null}
                   {" "}— {stats.pages} pages · {stats.searches} searches · {stats.tabs} tabs
@@ -145,7 +145,7 @@ export default function Dashboard() {
               </div>
             )}
 
-            <div className="mt-7 rounded-[22px] border border-[#785a3224] bg-[#fbf6ec] p-4 shadow-[0_2px_16px_rgba(70,45,20,.05)]">
+            <div className="rh-surface mt-7 rounded-[22px] border p-4 shadow-[0_2px_16px_rgba(70,45,20,.05)]">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                   <h2 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#a8967d]">
@@ -160,15 +160,15 @@ export default function Dashboard() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search holes, domains, topics..."
-                    className="min-w-[240px] flex-1 rounded-[13px] border border-[#785a3224] bg-[#fffaf1] px-4 py-3 text-[14px] text-[#2a2018] outline-none placeholder:text-[#a8967d] focus:border-[#785a3255]"
+                    className="min-w-[220px] flex-1 rounded-[13px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-4 py-3 text-[14px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)] focus:border-[var(--rh-line-strong)]"
                   />
-                  <select value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} className="rounded-[13px] border border-[#785a3224] bg-[#f6efe1] px-3 py-3 text-[14px] text-[#5a4a38] outline-none">
+                  <select value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} className="rounded-[13px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] px-3 py-3 text-[14px] text-[var(--rh-ink-soft)] outline-none">
                     <option value="active">Active</option>
                     <option value="favorites">Favorites</option>
                     <option value="archived">Archived</option>
                     <option value="all">All</option>
                   </select>
-                  <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} className="rounded-[13px] border border-[#785a3224] bg-[#f6efe1] px-3 py-3 text-[14px] text-[#5a4a38] outline-none">
+                  <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} className="rounded-[13px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] px-3 py-3 text-[14px] text-[var(--rh-ink-soft)] outline-none">
                     <option value="recent">Recent</option>
                     <option value="pages">Most pages</option>
                     <option value="confidence">Confidence</option>
@@ -178,22 +178,22 @@ export default function Dashboard() {
             </div>
 
             {selectedIds.length > 0 && (
-              <div className="sticky top-4 z-10 mt-4 flex flex-wrap items-center gap-3 rounded-[18px] border border-[#5f8a5c42] bg-[#f4efe3]/95 px-4 py-3 shadow-[0_12px_34px_rgba(70,45,20,.12)] backdrop-blur">
+              <div className="sticky top-4 z-10 mt-4 flex flex-wrap items-center gap-3 rounded-[18px] border border-[#5f8a5c42] bg-[var(--rh-surface)]/95 px-4 py-3 shadow-[0_12px_34px_rgba(70,45,20,.12)] backdrop-blur">
                 <div className="mr-auto text-[14px] font-semibold text-[#37502f]">{selectedIds.length} selected</div>
-                <button onClick={() => bulk("favorite")} className="rounded-full border border-[#785a3224] bg-[#fbf6ec] px-4 py-2 text-[13px] font-semibold text-[#5a4a38]">Favorite</button>
-                <button onClick={() => bulk("archive")} className="rounded-full border border-[#785a3224] bg-[#fbf6ec] px-4 py-2 text-[13px] font-semibold text-[#5a4a38]">Archive</button>
+                <button onClick={() => bulk("favorite")} className="rh-surface-2 rounded-full border px-4 py-2 text-[13px] font-semibold">Favorite</button>
+                <button onClick={() => bulk("archive")} className="rh-surface-2 rounded-full border px-4 py-2 text-[13px] font-semibold">Archive</button>
                 <button onClick={() => bulk("delete")} className="rounded-full border border-[#b8795f33] bg-[#fff6f1] px-4 py-2 text-[13px] font-semibold text-[#a8472a]">Delete</button>
                 <button onClick={() => setSelectedIds([])} className="rounded-full px-4 py-2 text-[13px] font-semibold text-[#8a7860]">Clear</button>
               </div>
             )}
 
             {visibleHoles.length === 0 ? (
-              <div className="mt-6 rounded-[22px] border border-dashed border-[#785a3224] bg-[#fbf6ec] px-8 py-12 text-center">
-                <div className="rh-display text-[28px] font-semibold text-[#2a2018]">Nothing matches this view</div>
-                <p className="mx-auto mt-2 max-w-[46ch] text-[15px] leading-6 text-[#6a5a48]">
+              <div className="rh-surface mt-6 rounded-[22px] border border-dashed px-8 py-12 text-center">
+                <div className="rh-display rh-ink text-[28px] font-semibold">Nothing matches this view</div>
+                <p className="rh-muted mx-auto mt-2 max-w-[46ch] text-[15px] leading-6">
                   Clear the search, switch filters, or build a fresh rabbit hole after browsing something new.
                 </p>
-                <button onClick={() => { setQuery(""); setFilter("active"); }} className="mt-5 rounded-full bg-[#2a2018] px-5 py-3 text-[14px] font-semibold text-[#f3e8d4]">
+                <button onClick={() => { setQuery(""); setFilter("active"); }} className="rh-primary mt-5 rounded-full px-5 py-3 text-[14px] font-semibold">
                   Reset library view
                 </button>
               </div>
@@ -214,7 +214,7 @@ export default function Dashboard() {
               </div>
             )}
 
-            <p className="mt-8 text-center text-[13px] italic text-[#9c8b75]">
+            <p className="rh-muted mt-8 text-center text-[13px] italic">
               Smart history for your research.
             </p>
           </>
@@ -227,10 +227,10 @@ export default function Dashboard() {
 function HeaderStat({ n, label, accent }: { readonly n: number; readonly label: string; readonly accent?: boolean }) {
   return (
     <div className="flex flex-col">
-      <span className={`text-[19px] font-semibold tabular-nums ${accent ? "text-[#5f8a5c]" : "text-[#2a2018]"}`}>
+      <span className={`text-[19px] font-semibold tabular-nums ${accent ? "text-[#5f8a5c]" : "text-[var(--rh-ink)]"}`}>
         {n}
       </span>
-      <span className="text-[10px] uppercase tracking-[0.14em] text-[#a8967d]">{label}</span>
+      <span className="rh-faint text-[10px] uppercase tracking-[0.14em]">{label}</span>
     </div>
   );
 }

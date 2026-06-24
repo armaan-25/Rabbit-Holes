@@ -15,16 +15,16 @@ export function DiscoveryPathPanel({ hole }: { hole: RabbitHole }) {
   if (!selected) return null;
 
   return (
-    <section className="rounded-[20px] border border-[#785a3224] bg-[#fbf6ec] p-5 shadow-[0_2px_16px_rgba(70,45,20,.06)]">
+    <section className="rh-surface rounded-[20px] border p-5 shadow-[0_2px_16px_rgba(70,45,20,.06)]">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#a8967d]">How did I get here?</div>
-          <h2 className="rh-display mt-1 text-[25px] font-semibold text-[#2a2018]">Discovery chain</h2>
+          <div className="rh-faint text-[12px] font-semibold uppercase tracking-[0.18em]">How did I get here?</div>
+          <h2 className="rh-display rh-ink mt-1 text-[25px] font-semibold">Discovery chain</h2>
         </div>
         <select
           value={selected.id}
           onChange={(event) => setSelectedId(event.target.value)}
-          className="max-w-full rounded-[12px] border border-[#785a3224] bg-[#f6efe1] px-3 py-2 text-[14px] text-[#4c3927] outline-none"
+          className="max-w-full rounded-[12px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] px-3 py-2 text-[14px] text-[var(--rh-ink)] outline-none"
         >
           {hole.pages.map((page) => (
             <option key={page.id} value={page.id}>{page.title}</option>
@@ -33,7 +33,7 @@ export function DiscoveryPathPanel({ hole }: { hole: RabbitHole }) {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
-        <div className="rounded-[18px] border border-[#785a321c] bg-[#f6efe1] p-4">
+        <div className="rounded-[18px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] p-4">
           <div className="space-y-3">
             {path.map((step, index) => {
               const meta = KIND_META[step.kind];
@@ -45,13 +45,13 @@ export function DiscoveryPathPanel({ hole }: { hole: RabbitHole }) {
                   transition={{ delay: index * 0.05 }}
                   className="relative flex items-start gap-3"
                 >
-                  {index < path.length - 1 ? <span className="absolute left-4 top-9 h-[calc(100%+4px)] w-px bg-[#cdbb9e]" /> : null}
-                  <span className="relative z-10 grid h-8 w-8 shrink-0 place-items-center rounded-full border bg-[#fbf6ec] text-[13px]" style={{ borderColor: `${meta.color}66`, color: meta.color }}>
+                  {index < path.length - 1 ? <span className="absolute left-4 top-9 h-[calc(100%+4px)] w-px bg-[var(--rh-line-strong)]" /> : null}
+                  <span className="relative z-10 grid h-8 w-8 shrink-0 place-items-center rounded-full border bg-[var(--rh-surface)] text-[13px]" style={{ borderColor: `${meta.color}66`, color: meta.color }}>
                     {meta.glyph}
                   </span>
-                  <div className="min-w-0 rounded-[14px] border border-[#785a3217] bg-[#fbf6ec] px-4 py-3 shadow-[0_1px_8px_rgba(70,45,20,.04)]">
-                    <div className="truncate text-[15px] font-semibold text-[#2a2018]">{step.label.replace(/^Search: /, "")}</div>
-                    <div className="mt-1 text-[12.5px] text-[#8a7860]">{meta.label}{step.detail ? ` · ${step.detail}` : ""}</div>
+                  <div className="min-w-0 rounded-[14px] border border-[var(--rh-line)] bg-[var(--rh-surface)] px-4 py-3 shadow-[0_1px_8px_rgba(70,45,20,.04)]">
+                    <div className="truncate text-[15px] font-semibold text-[var(--rh-ink)]">{step.label.replace(/^Search: /, "")}</div>
+                    <div className="mt-1 truncate text-[12.5px] text-[var(--rh-muted)]">{meta.label}{step.detail ? ` · ${step.detail}` : ""}</div>
                   </div>
                 </motion.div>
               );

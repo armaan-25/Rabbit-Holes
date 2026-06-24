@@ -49,7 +49,7 @@ export function DiscoverButton() {
       <button
         onClick={discover}
         disabled={busy}
-        className="group relative overflow-hidden rounded-[14px] border border-[#8b6b3f33] bg-[#fbf6ec] px-4 py-2.5 text-[13px] font-semibold text-[#3a2a18] shadow-[0_4px_18px_rgba(70,45,20,.08)] transition hover:-translate-y-0.5 hover:shadow-[0_10px_26px_rgba(70,45,20,.13)] disabled:cursor-wait disabled:opacity-65"
+        className="rh-surface group relative overflow-hidden rounded-[14px] border px-4 py-2.5 text-[13px] font-semibold shadow-[0_4px_18px_rgba(70,45,20,.08)] transition hover:-translate-y-0.5 hover:shadow-[0_10px_26px_rgba(70,45,20,.13)] disabled:cursor-wait disabled:opacity-65"
       >
         <span className="pointer-events-none absolute inset-0 opacity-70 [background:radial-gradient(80%_120%_at_20%_20%,rgba(180,143,88,.26),transparent_55%),radial-gradient(90%_120%_at_90%_80%,rgba(95,138,92,.18),transparent_58%)]" />
         <span className="relative inline-flex items-center gap-2">{label}</span>

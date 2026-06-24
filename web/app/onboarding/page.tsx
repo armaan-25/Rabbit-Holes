@@ -31,7 +31,7 @@ const DEPTH = [
 
 export default function OnboardingPage() {
   return (
-    <Suspense fallback={<Shell><p className="text-center text-[15px] text-[#8a7860]">Loading...</p></Shell>}>
+    <Suspense fallback={<Shell><p className="rh-muted text-center text-[15px]">Loading...</p></Shell>}>
       <OnboardingFlow />
     </Suspense>
   );
@@ -95,7 +95,7 @@ function OnboardingFlow() {
   }
 
   if (!ready) {
-    return <Shell><p className="text-center text-[15px] text-[#8a7860]">Loading...</p></Shell>;
+    return <Shell><p className="rh-muted text-center text-[15px]">Loading...</p></Shell>;
   }
 
   const steps = [
@@ -109,7 +109,7 @@ function OnboardingFlow() {
           onChange={(e) => setName(e.target.value)}
           placeholder="Your name"
           autoFocus
-          className="w-full rounded-[14px] border border-[#785a3224] bg-[#fffaf1] px-4 py-3.5 text-[16px] text-[#2a2018] outline-none placeholder:text-[#a8967d]"
+          className="w-full rounded-[14px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-4 py-3.5 text-[16px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)]"
         />
       ),
     },
@@ -160,13 +160,13 @@ function OnboardingFlow() {
         {steps.map((_, i) => (
           <span
             key={i}
-            className={`h-1.5 flex-1 rounded-full ${i <= step ? "bg-[#2a2018]" : "bg-[#785a3224]"}`}
+            className={`h-1.5 flex-1 rounded-full ${i <= step ? "bg-[var(--rh-primary)]" : "bg-[var(--rh-line-strong)]"}`}
           />
         ))}
       </div>
 
-      <h1 className="rh-display text-[30px] font-semibold leading-tight text-[#2a2018]">{current.title}</h1>
-      <p className="mt-2 text-[15.5px] leading-[1.5] text-[#6a5a48]">{current.subtitle}</p>
+      <h1 className="rh-display rh-ink text-[30px] font-semibold leading-tight">{current.title}</h1>
+      <p className="rh-muted mt-2 text-[15.5px] leading-[1.5]">{current.subtitle}</p>
 
       <div className="mt-6">{current.body}</div>
 
@@ -176,14 +176,14 @@ function OnboardingFlow() {
         <button
           onClick={() => setStep((s) => Math.max(0, s - 1))}
           disabled={step === 0}
-          className="text-[14px] font-semibold text-[#8a7860] disabled:opacity-0"
+          className="rh-muted text-[14px] font-semibold disabled:opacity-0"
         >
           ← Back
         </button>
         <button
           onClick={() => (isLast ? void finish() : setStep((s) => s + 1))}
           disabled={!current.canAdvance || saving}
-          className="rounded-[14px] bg-[#2a2018] px-7 py-3 text-[15px] font-semibold text-[#f3e8d4] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
+          className="rh-primary rounded-[14px] px-7 py-3 text-[15px] font-semibold transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
         >
           {saving ? "Saving..." : isLast ? "Finish" : "Continue"}
         </button>
@@ -208,12 +208,12 @@ function Choice({
       onClick={onClick}
       className={`rounded-[15px] border px-4 py-3.5 text-left transition ${
         selected
-          ? "border-[#2a2018] bg-[#f2e9d6] shadow-[0_2px_12px_rgba(70,45,20,.08)]"
-          : "border-[#785a3224] bg-[#fffaf1] hover:border-[#785a3255]"
+          ? "border-[var(--rh-primary)] bg-[var(--rh-surface-2)] shadow-[0_2px_12px_rgba(70,45,20,.08)]"
+          : "border-[var(--rh-line)] bg-[var(--rh-surface-3)] hover:border-[var(--rh-line-strong)]"
       }`}
     >
-      <div className="text-[15px] font-semibold text-[#2a2018]">{title}</div>
-      {desc && <div className="mt-0.5 text-[13px] leading-snug text-[#8a7860]">{desc}</div>}
+      <div className="text-[15px] font-semibold text-[var(--rh-ink)]">{title}</div>
+      {desc && <div className="rh-muted mt-0.5 text-[13px] leading-snug">{desc}</div>}
     </button>
   );
 }
@@ -221,7 +221,7 @@ function Choice({
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <main className="rh-paper grid min-h-screen place-items-center px-5 py-10">
-      <div className="w-full max-w-[520px] rounded-[28px] border border-[#785a3224] bg-[#fbf6ec] p-8 shadow-[0_18px_60px_rgba(70,45,20,.13)]">
+      <div className="rh-surface w-full max-w-[520px] rounded-[28px] border p-8 shadow-[0_18px_60px_rgba(70,45,20,.13)]">
         <div className="mb-7 text-center">
           <Wordmark className="text-[32px]" />
         </div>

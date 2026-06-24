@@ -14,9 +14,9 @@ export default function SharePage({ params }: { params: { id: string } }) {
   if (!hole) {
     return (
       <div className="rh-paper flex min-h-screen items-center justify-center px-6">
-        <div className="rounded-[20px] border border-[#785a3224] bg-[#fbf6ec] p-8 text-center">
-          <div className="rh-display text-[30px] font-semibold text-[#2a2018]">Shared hole not found</div>
-          <Link href="/dashboard" className="mt-5 inline-flex rounded-full bg-[#2a2018] px-5 py-3 text-[#f3e8d4]">Open Rabbit Holes</Link>
+        <div className="rh-surface rounded-[20px] border p-8 text-center">
+          <div className="rh-display rh-ink text-[30px] font-semibold">Shared hole not found</div>
+          <Link href="/dashboard" className="rh-primary mt-5 inline-flex rounded-full px-5 py-3">Open Rabbit Holes</Link>
         </div>
       </div>
     );
@@ -27,13 +27,13 @@ export default function SharePage({ params }: { params: { id: string } }) {
       <div className="mx-auto w-full max-w-[1320px] space-y-8">
         <header className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <div className="mb-2 text-[12px] font-semibold uppercase tracking-[0.22em] text-[#a8967d]">Rabbit Holes</div>
-            <h1 className="rh-display text-[46px] font-semibold leading-none text-[#2a2018]">How I learned {hole.title}</h1>
+            <div className="rh-faint mb-2 text-[12px] font-semibold uppercase tracking-[0.22em]">Rabbit Holes</div>
+            <h1 className="rh-display rh-ink max-w-[18ch] break-words text-[46px] font-semibold leading-none">How I learned {hole.title}</h1>
           </div>
-          <Link href="/" className="rounded-full bg-[#2a2018] px-5 py-3 text-[14px] font-semibold text-[#f3e8d4] no-underline">Make your own</Link>
+          <Link href="/" className="rh-primary rounded-full px-5 py-3 text-[14px] font-semibold no-underline">Make your own</Link>
         </header>
         <HoleSummaryCard hole={hole} publicMode />
-        <div className="h-[720px] overflow-hidden rounded-[24px] border border-[#785a3224] bg-[#fbf6ec]">
+        <div className="rh-surface h-[720px] overflow-hidden rounded-[24px] border">
           <HoleMapView id={hole.id} embedded />
         </div>
         <InvestigationReplay hole={hole} />

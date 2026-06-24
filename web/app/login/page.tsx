@@ -8,7 +8,7 @@ import { Wordmark } from "@/components/Logo";
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<LoginShell><p className="text-center text-[14px] text-[#8a7860]">Loading sign in...</p></LoginShell>}>
+    <Suspense fallback={<LoginShell><p className="rh-muted text-center text-[14px]">Loading sign in...</p></LoginShell>}>
       <LoginForm />
     </Suspense>
   );
@@ -48,24 +48,24 @@ function LoginForm() {
 
   return (
     <LoginShell>
-      <button onClick={google} className="w-full rounded-[15px] bg-[#2a2018] px-5 py-3.5 text-[15px] font-semibold text-[#f3e8d4] shadow-[0_10px_28px_rgba(42,32,24,.18)]">
+      <button onClick={google} className="rh-primary w-full rounded-[15px] px-5 py-3.5 text-[15px] font-semibold shadow-[0_10px_28px_rgba(42,32,24,.18)]">
         Continue with Google
       </button>
 
-      <div className="my-5 flex items-center gap-3 text-[12px] uppercase tracking-[0.16em] text-[#a8967d]"><span className="h-px flex-1 bg-[#785a3224]" />or<span className="h-px flex-1 bg-[#785a3224]" /></div>
+      <div className="rh-faint my-5 flex items-center gap-3 text-[12px] uppercase tracking-[0.16em]"><span className="h-px flex-1 bg-[var(--rh-line)]" />or<span className="h-px flex-1 bg-[var(--rh-line)]" /></div>
 
       <form onSubmit={submit} className="space-y-3">
-        <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="Email" className="w-full rounded-[14px] border border-[#785a3224] bg-[#fffaf1] px-4 py-3 text-[15px] text-[#2a2018] outline-none placeholder:text-[#a8967d]" />
-        <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required minLength={6} placeholder="Password" className="w-full rounded-[14px] border border-[#785a3224] bg-[#fffaf1] px-4 py-3 text-[15px] text-[#2a2018] outline-none placeholder:text-[#a8967d]" />
-        <button type="submit" className="w-full rounded-[15px] border border-[#785a3224] bg-[#f2e9d6] px-5 py-3.5 text-[15px] font-semibold text-[#2a2018]">
+        <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="Email" className="w-full rounded-[14px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-4 py-3 text-[15px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)]" />
+        <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required minLength={6} placeholder="Password" className="w-full rounded-[14px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-4 py-3 text-[15px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)]" />
+        <button type="submit" className="rh-surface-2 w-full rounded-[15px] border px-5 py-3.5 text-[15px] font-semibold">
           Sign in
         </button>
       </form>
 
-      <Link href={`/signup?next=${encodeURIComponent(next)}`} className="mt-4 block text-center text-[14px] text-[#6a5a48] underline-offset-4 hover:underline">
+      <Link href={`/signup?next=${encodeURIComponent(next)}`} className="rh-muted mt-4 block text-center text-[14px] underline-offset-4 hover:underline">
         Need an account? Create one
       </Link>
-      {status && <p className="mt-4 rounded-[13px] bg-[#f2e9d6] px-4 py-3 text-[14px] text-[#6a5a48]">{status}</p>}
+      {status && <p className="rh-surface-2 mt-4 rounded-[13px] px-4 py-3 text-[14px]">{status}</p>}
     </LoginShell>
   );
 }
@@ -73,10 +73,10 @@ function LoginForm() {
 function LoginShell({ children }: { children: React.ReactNode }) {
   return (
     <main className="rh-paper grid min-h-screen place-items-center px-5 py-10">
-      <div className="w-full max-w-[440px] rounded-[28px] border border-[#785a3224] bg-[#fbf6ec] p-8 shadow-[0_18px_60px_rgba(70,45,20,.13)]">
+      <div className="rh-surface w-full max-w-[440px] rounded-[28px] border p-8 shadow-[0_18px_60px_rgba(70,45,20,.13)]">
         <div className="mb-7 text-center">
           <Wordmark className="text-[40px]" />
-          <p className="mt-3 text-[16px] italic text-[#8a7860]">Smart history for your research.</p>
+          <p className="rh-muted mt-3 text-[16px] italic">Smart history for your research.</p>
         </div>
         {children}
       </div>

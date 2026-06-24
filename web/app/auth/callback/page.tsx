@@ -52,5 +52,5 @@ function AuthCallbackBody() {
 }
 
 function CallbackShell({ message }: { message: string }) {
-  return <main className="rh-paper grid min-h-screen place-items-center text-[#2a2018]"><div className="rh-display text-[32px] font-semibold">{message}</div></main>;
+  return <main className="rh-paper grid min-h-screen place-items-center text-[var(--rh-ink)]"><div className="rh-display rh-ink text-[32px] font-semibold">{message}</div></main>;
 }

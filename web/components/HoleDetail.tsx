@@ -32,10 +32,10 @@ export function HoleDetail({ hole }: { hole: RabbitHole }) {
   return (
     <div className="rh-paper min-h-screen px-5 py-8 sm:px-8 xl:px-12">
       <div className="mx-auto w-full max-w-[1320px]">
-        <div className="mb-6 flex items-center gap-2 text-[14px] text-[#a8967d]">
-          <Link href="/dashboard" className="text-[#6a5a48] transition hover:text-[#a8472a]">← Rabbit holes</Link>
+        <div className="rh-faint mb-6 flex items-center gap-2 text-[14px]">
+          <Link href="/dashboard" className="rh-muted transition hover:text-[#a8472a]">← Rabbit holes</Link>
           <span>/</span>
-          <span className="text-[#6a5a48]">{hole.title}</span>
+          <span className="rh-muted truncate">{hole.title}</span>
         </div>
 
         <header className="flex flex-wrap items-start justify-between gap-6">
@@ -44,10 +44,10 @@ export function HoleDetail({ hole }: { hole: RabbitHole }) {
               <span className="h-2 w-2 rounded-full" style={{ background: status.dot }} />
               <span className="text-[12.5px] font-semibold text-[#4d7049]">{status.label} · {relativeTime(hole.lastActive)}</span>
             </div>
-            <h1 className="rh-display max-w-[14ch] text-[46px] font-semibold leading-[1.02] text-[#2a2018]">{hole.title}</h1>
-            <p className="mt-4 max-w-[62ch] text-[18px] leading-[1.55] text-[#5a4a38]">{hole.description}</p>
+            <h1 className="rh-display rh-ink max-w-[14ch] break-words text-[46px] font-semibold leading-[1.02]">{hole.title}</h1>
+            <p className="rh-muted mt-4 max-w-[62ch] text-[18px] leading-[1.55]">{hole.description}</p>
           </div>
-          <button onClick={() => setRestoreOpen(true)} className="rounded-[12px] bg-[#2a2018] px-5 py-3 text-[15px] font-medium text-[#f3e8d4] shadow-[0_8px_24px_rgba(42,32,24,.18)] transition hover:-translate-y-0.5">
+          <button onClick={() => setRestoreOpen(true)} className="rh-primary rounded-[12px] px-5 py-3 text-[15px] font-medium shadow-[0_8px_24px_rgba(42,32,24,.18)] transition hover:-translate-y-0.5">
             ↻ Resume rabbit hole
           </button>
         </header>
@@ -81,7 +81,7 @@ export function HoleDetail({ hole }: { hole: RabbitHole }) {
               <SectionHeader title="Threads you pulled" />
               <div className="flex flex-wrap gap-2.5">
                 {hole.searches.map((s) => (
-                  <div key={s.id} className="inline-flex items-center gap-2 rounded-full border border-[#785a3221] bg-[#f2e9d6] px-4 py-2 text-[14.5px] text-[#5a4a38]">
+                  <div key={s.id} className="inline-flex max-w-full items-center gap-2 rounded-full border border-[var(--rh-line)] bg-[var(--rh-surface-2)] px-4 py-2 text-[14.5px] text-[var(--rh-ink-soft)]">
                     <span className="text-[13px] text-[#b89b6f]">⌕</span>{s.query}
                   </div>
                 ))}
@@ -90,15 +90,15 @@ export function HoleDetail({ hole }: { hole: RabbitHole }) {
 
             <section>
               <SectionHeader title="Recent activity" />
-              <div className="relative ml-1 space-y-4 border-l-2 border-[#785a3229] pl-6">
+              <div className="relative ml-1 space-y-4 border-l-2 border-[var(--rh-line)] pl-6">
                 {activity.map((a) => {
                   const meta = KIND_META[a.kind];
                   return (
                     <div key={a.id} className="relative">
-                      <div className="absolute -left-[34px] top-1 h-[13px] w-[13px] rounded-full border-[3px] bg-[#f4ead7]" style={{ borderColor: meta.color }} />
-                      <div className="mb-1 text-[13px] text-[#a8967d]">{clockTime(a.at)}</div>
-                      <div className="text-[15.5px] leading-[1.4] text-[#3a2f25]">{a.title}</div>
-                      {a.detail && <div className="mt-0.5 text-[13px] text-[#9c8b75]">{a.detail}</div>}
+                      <div className="absolute -left-[34px] top-1 h-[13px] w-[13px] rounded-full border-[3px] bg-[var(--rh-surface)]" style={{ borderColor: meta.color }} />
+                      <div className="mb-1 text-[13px] text-[var(--rh-faint)]">{clockTime(a.at)}</div>
+                      <div className="line-clamp-2 text-[15.5px] leading-[1.4] text-[var(--rh-ink-soft)]">{a.title}</div>
+                      {a.detail && <div className="mt-0.5 line-clamp-2 text-[13px] text-[var(--rh-muted)]">{a.detail}</div>}
                     </div>
                   );
                 })}
@@ -107,7 +107,7 @@ export function HoleDetail({ hole }: { hole: RabbitHole }) {
           </main>
 
           <aside className="space-y-5 lg:sticky lg:top-8">
-            <div className="overflow-hidden rounded-[18px] border border-[#785a3224] bg-[#fbf6ec] px-6 pb-6 pt-3 shadow-[0_2px_16px_rgba(70,45,20,.06)]">
+            <div className="rh-surface overflow-hidden rounded-[18px] border px-6 pb-6 pt-3 shadow-[0_2px_16px_rgba(70,45,20,.06)]">
               <div className="-mx-6 mb-2 flex h-[88px] items-end justify-center bg-[radial-gradient(120%_120%_at_50%_120%,rgba(95,138,92,.18),transparent_70%)]">
                 <img src="/assets/images/rabbit-hole-hero.png" alt="" className="h-[82px] w-[110px] object-contain" />
               </div>
@@ -115,12 +115,12 @@ export function HoleDetail({ hole }: { hole: RabbitHole }) {
                 <div className="rh-display text-[42px] font-semibold leading-none" style={{ color: accent.hex }}>{Math.round(hole.confidence * 100)}%</div>
                 <div className="mt-1 text-[12px] uppercase tracking-[0.14em] text-[#a8967d]">match confidence</div>
               </div>
-              <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#785a321f]"><div className="h-full rounded-full" style={{ width: `${Math.round(hole.confidence * 100)}%`, background: `linear-gradient(90deg,${accent.hex},#e0865a)` }} /></div>
-              <div className="mt-5 divide-y divide-[#785a321a]">
+              <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[var(--rh-line)]"><div className="h-full rounded-full" style={{ width: `${Math.round(hole.confidence * 100)}%`, background: `linear-gradient(90deg,${accent.hex},#e0865a)` }} /></div>
+              <div className="mt-5 divide-y divide-[var(--rh-line)]">
                 {counts.map((k) => (
                   <div key={k.label} className="flex items-center justify-between py-2.5">
-                    <span className="text-[14.5px] capitalize text-[#6a5a48]">{k.label}</span>
-                    <span className="text-[15px] font-semibold tabular-nums text-[#2a2018]">{k.n}</span>
+                    <span className="rh-muted text-[14.5px] capitalize">{k.label}</span>
+                    <span className="rh-ink text-[15px] font-semibold tabular-nums">{k.n}</span>
                   </div>
                 ))}
               </div>
@@ -135,8 +135,8 @@ export function HoleDetail({ hole }: { hole: RabbitHole }) {
               </div>
             </div>
 
-            <div className="rounded-[18px] border border-[#785a3224] bg-[#fbf6ec] p-5 shadow-[0_2px_16px_rgba(70,45,20,.06)]">
-              <div className="mb-3 text-[12px] font-semibold uppercase tracking-[0.16em] text-[#a8967d]">Entities</div>
+            <div className="rh-surface rounded-[18px] border p-5 shadow-[0_2px_16px_rgba(70,45,20,.06)]">
+              <div className="rh-faint mb-3 text-[12px] font-semibold uppercase tracking-[0.16em]">Entities</div>
               <div className="flex flex-wrap gap-2">
                 {[...hole.entities].sort((a, b) => b.mentions - a.mentions).slice(0, 10).map((e) => <EntityChip key={e.id} name={e.name} kind={e.kind} />)}
               </div>
@@ -153,8 +153,8 @@ export function HoleDetail({ hole }: { hole: RabbitHole }) {
 function SectionHeader({ title, note }: { title: string; note?: string }) {
   return (
     <div className="mb-4 flex items-baseline justify-between gap-4">
-      <h2 className="rh-display text-[23px] font-semibold text-[#2a2018]">{title}</h2>
-      {note && <span className="text-[13px] text-[#a8967d]">{note}</span>}
+      <h2 className="rh-display rh-ink text-[23px] font-semibold">{title}</h2>
+      {note && <span className="rh-faint text-[13px]">{note}</span>}
     </div>
   );
 }
@@ -162,11 +162,11 @@ function SectionHeader({ title, note }: { title: string; note?: string }) {
 function ResourceRow({ page, accent }: { page: PageVisit; accent: string }) {
   const meta = KIND_META[page.kind];
   return (
-    <a href={page.url} target="_blank" rel="noreferrer" className="flex items-center gap-4 rounded-[14px] border border-[#785a3224] bg-[#fbf6ec] px-4 py-3.5 shadow-[0_2px_12px_rgba(70,45,20,.05)] transition hover:translate-x-1 hover:shadow-[0_6px_18px_rgba(70,45,20,.1)]">
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[10px] border border-[#785a3229] bg-white text-[15px] font-semibold" style={{ color: meta.color }}>{meta.glyph}</span>
+    <a href={page.url} target="_blank" rel="noreferrer" className="rh-surface flex items-center gap-4 rounded-[14px] border px-4 py-3.5 shadow-[0_2px_12px_rgba(70,45,20,.05)] transition hover:translate-x-1 hover:shadow-[0_6px_18px_rgba(70,45,20,.1)]">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[10px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] text-[15px] font-semibold" style={{ color: meta.color }}>{meta.glyph}</span>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[16px] font-semibold leading-tight text-[#2a2018]">{page.title}</div>
-        <div className="mt-1 flex items-center gap-2 text-[13px] text-[#9c8b75]"><img src={faviconFor(page.domain)} alt="" className="h-3.5 w-3.5 rounded" />{page.domain} · {Math.round(page.dwellSeconds / 60)}m active</div>
+        <div className="truncate text-[16px] font-semibold leading-tight text-[var(--rh-ink)]">{page.title}</div>
+        <div className="mt-1 flex min-w-0 items-center gap-2 text-[13px] text-[var(--rh-muted)]"><img src={faviconFor(page.domain)} alt="" className="h-3.5 w-3.5 shrink-0 rounded" /><span className="truncate">{page.domain} · {Math.round(page.dwellSeconds / 60)}m active</span></div>
       </div>
       <span className="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.04em]" style={{ color: accent, background: `${accent}17` }}>{page.kind}</span>
       <span className="shrink-0 text-[18px] text-[#c3b49b]">↗</span>
