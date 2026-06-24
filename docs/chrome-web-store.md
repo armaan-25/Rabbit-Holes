@@ -12,7 +12,7 @@ Upload `dist/rabbit-holes-chrome-extension.zip` in the Chrome Web Store develope
 
 ## Current production URLs
 
-- Web app: `https://web-production-bde52.up.railway.app`
+- Web app: `https://userabbitholes.com`
 - Backend API: `https://rabbit-holes-production.up.railway.app`
 - Supabase project: `xlxjzxnlcplqmdoedhqm`
 

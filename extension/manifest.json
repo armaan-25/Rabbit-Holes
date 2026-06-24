@@ -17,12 +17,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://web-production-bde52.up.railway.app/rabbit-auth*"],
+      "matches": ["https://userabbitholes.com/rabbit-auth*", "https://web-production-bde52.up.railway.app/rabbit-auth*"],
       "js": ["auth-relay.js"],
       "run_at": "document_start"
     },
     {
-      "matches": ["https://web-production-bde52.up.railway.app/*", "http://localhost:3000/*"],
+      "matches": ["https://userabbitholes.com/*", "https://web-production-bde52.up.railway.app/*", "http://localhost:3000/*"],
       "js": ["stats-bridge.js"],
       "run_at": "document_idle"
     }
@@ -38,6 +38,6 @@
     }
   },
   "externally_connectable": {
-    "matches": ["https://web-production-bde52.up.railway.app/*", "https://xlxjzxnlcplqmdoedhqm.supabase.co/*"]
+    "matches": ["https://userabbitholes.com/*", "https://web-production-bde52.up.railway.app/*", "https://xlxjzxnlcplqmdoedhqm.supabase.co/*"]
   }
 }

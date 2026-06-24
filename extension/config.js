@@ -1,6 +1,6 @@
 // Production endpoints for the unpacked Chrome extension.
 // Keep these in sync with Railway service domains.
-export const WEB_URL = "https://web-production-bde52.up.railway.app";
+export const WEB_URL = "https://userabbitholes.com";
 export const BACKEND_URL = "https://rabbit-holes-production.up.railway.app";
 
 // Supabase project (publishable anon key — same one shipped in the web bundle,
