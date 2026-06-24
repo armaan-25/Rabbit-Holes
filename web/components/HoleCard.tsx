@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import type { RabbitHole } from "@/lib/types";
 import { ACCENTS, KIND_META, faviconFor } from "@/lib/ui";
 import { relativeTime } from "@/lib/format";
@@ -9,7 +8,6 @@ import { StatusBadge } from "./atoms";
 
 export function HoleCard({
   hole,
-  index,
   onFavorite,
   onArchive,
   onDelete,
@@ -17,7 +15,6 @@ export function HoleCard({
   onSelect,
 }: {
   hole: RabbitHole;
-  index: number;
   onFavorite?: (id: string) => void;
   onArchive?: (id: string) => void;
   onDelete?: (id: string) => void;
@@ -37,13 +34,9 @@ export function HoleCard({
   ].filter(Boolean) as { n: number; label: string }[];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.06, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-    >
+    <div>
       <Link href={`/holes/${hole.id}`} className="group block">
-        <div className={`rh-surface relative min-h-[292px] overflow-hidden rounded-[20px] border p-6 text-left shadow-[0_2px_18px_rgba(70,45,20,.06)] transition duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_16px_36px_rgba(70,45,20,.14)] ${selected ? "border-[#5f8a5c] ring-2 ring-[#5f8a5c33]" : ""}`}>
+        <div className={`rh-surface relative min-h-[292px] overflow-hidden rounded-[20px] border p-6 text-left shadow-[0_2px_18px_rgba(70,45,20,.06)] transition duration-200 group-hover:border-[var(--rh-line-strong)] ${selected ? "border-[#5f8a5c] ring-2 ring-[#5f8a5c33]" : ""}`}>
           {hole.status === "active" && (
             <>
               <div className="pointer-events-none absolute inset-0 rounded-[20px] shadow-[0_0_0_1px_rgba(95,138,92,.24),0_12px_34px_rgba(95,138,92,.12)]" />
@@ -167,13 +160,13 @@ export function HoleCard({
                   <img key={d} src={faviconFor(d)} alt={d} className="h-7 w-7 rounded-full border border-[var(--rh-surface)] bg-[var(--rh-surface-3)]" />
                 ))}
               </div>
-              <span className="rh-muted text-[13px] opacity-0 transition group-hover:opacity-100">
+              <span className="rh-muted text-[13px]">
                 Open →
               </span>
             </div>
           </div>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 }

@@ -131,17 +131,14 @@ export default function Dashboard() {
         ) : (
           <>
             {latest && (
-              <div className="mt-6 flex items-center gap-3 rounded-2xl border border-[#5f8a5c42] bg-[linear-gradient(100deg,rgba(95,138,92,.13),rgba(95,138,92,.05))] px-5 py-4">
-                <div className="relative h-[11px] w-[11px] shrink-0">
-                  <span className={`absolute inset-0 rounded-full ${stats.captureState === "recording" ? "bg-[#5f8a5c] [animation:dash-pulse_2s_ease-in-out_infinite]" : "bg-[#c7ae84]"}`} />
-                  {stats.captureState === "recording" && <span className="absolute inset-0 rounded-full bg-[#5f8a5c] [animation:dash-ring_2s_ease-out_infinite]" />}
-                </div>
-                <div className="min-w-0 text-[15.5px] text-[#3f5a3d]">
-                  <span className="font-semibold text-[#37502f]">{statusLabel}</span>
+              <div className="rh-surface mt-6 flex items-center gap-3 rounded-2xl border px-5 py-4">
+                <span className={`h-2 w-2 shrink-0 rounded-full ${stats.captureState === "recording" ? "bg-[#5f8a5c]" : stats.captureState === "paused" ? "bg-[#c7ae84]" : "bg-[#b8795f]"}`} />
+                <div className="min-w-0 truncate text-[15px] text-[var(--rh-muted)]">
+                  <span className="font-semibold text-[var(--rh-ink)]">{statusLabel}</span>
                   {typeof stats.elapsedMs === "number" ? <span className="font-semibold"> · {formatElapsed(stats.elapsedMs)}</span> : null}
                   {" "}— {stats.pages} pages · {stats.searches} searches · {stats.tabs} tabs
                 </div>
-                <div className="ml-auto hidden text-[13px] italic text-[#7f9a7c] sm:block">{stats.source === "extension" ? "extension live" : syncLabel}</div>
+                <div className="rh-faint ml-auto hidden text-[12px] sm:block">{stats.source === "extension" ? "extension" : syncLabel}</div>
               </div>
             )}
 
@@ -199,11 +196,10 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="mt-4 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(340px,1fr))] xl:[grid-template-columns:repeat(auto-fit,minmax(372px,1fr))]">
-                {visibleHoles.map((h, i) => (
+                {visibleHoles.map((h) => (
                   <HoleCard
                     key={h.id}
                     hole={h}
-                    index={i}
                     selected={selectedIds.includes(h.id)}
                     onSelect={updateSelection}
                     onFavorite={favoriteOne}

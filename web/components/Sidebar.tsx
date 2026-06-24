@@ -42,12 +42,12 @@ export function Sidebar() {
 
       <button
         onClick={togglePalette}
-        className="rh-surface mb-7 flex items-center justify-between rounded-[13px] border px-5 py-4 text-[15px] transition"
+        className="rh-surface mb-6 flex items-center justify-between rounded-[11px] border px-4 py-3 text-[14px] transition"
       >
         <span className="flex min-w-0 items-center gap-2">
           <span className="text-[16px]">⌕</span> Quick jump
         </span>
-        <kbd className="rh-surface-2 rounded border px-2 py-1 font-mono text-[11px] rh-muted">
+        <kbd className="rh-surface-2 rounded border px-2 py-0.5 font-mono text-[10px] rh-muted">
           ⌘K
         </kbd>
       </button>
@@ -72,7 +72,7 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="rh-faint mb-3 mt-8 px-3 text-[12px] font-semibold uppercase tracking-[0.16em]">
+      <div className="rh-faint mb-3 mt-7 px-3 text-[11px] font-semibold uppercase tracking-[0.16em]">
         Rabbit Holes
       </div>
       <div className="flex-1 space-y-1 overflow-y-auto">
@@ -180,16 +180,13 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
   }
 
   return (
-    <div
-      className="mt-5 rounded-[13px] border px-4 py-3"
-      style={{ borderColor: "color-mix(in srgb, var(--rh-green) 34%, transparent)", background: "color-mix(in srgb, var(--rh-green) 12%, var(--rh-surface))" }}
-    >
+    <div className="rh-surface mt-5 rounded-[13px] border px-4 py-3">
       <div className="flex items-center gap-3">
         <span
-          className="h-2.5 w-2.5 shrink-0 rounded-full"
-          style={{ background: recording ? STATUS_META.active.dot : "#c7ae84" }}
+          className="h-2 w-2 shrink-0 rounded-full"
+          style={{ background: recording ? STATUS_META.active.dot : effectiveState === "paused" ? "#c7ae84" : "#b8795f" }}
         />
-        <span className="flex-1 text-[14px] font-semibold" style={{ color: "var(--rh-green)" }}>
+        <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold text-[var(--rh-ink)]">
           {statusLabel}
           {hasTimer && <span className="tabular-nums"> · {formatElapsed(elapsed)}</span>}
         </span>
@@ -212,7 +209,7 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
           </div>
         )}
       </div>
-      <div className="rh-surface mt-3 grid grid-cols-3 divide-x divide-[var(--rh-line)] rounded-[10px] border-0 py-2">
+      <div className="mt-3 grid grid-cols-3 divide-x divide-[var(--rh-line)] border-t border-[var(--rh-line)] pt-3">
         <MiniStat n={stats.pages} label="pages" />
         <MiniStat n={stats.searches} label="searches" />
         <MiniStat n={stats.tabs} label="tabs" />
@@ -228,7 +225,7 @@ function CaptureButton({ onClick, disabled, title, label, active }: { readonly o
       disabled={disabled}
       title={title}
       aria-label={title}
-      className={`grid h-8 min-w-[54px] place-items-center rounded-[9px] border px-2 text-[11px] font-semibold transition disabled:opacity-40 ${
+      className={`grid h-8 min-w-[52px] place-items-center rounded-[9px] border px-2 text-[11px] font-semibold transition disabled:opacity-40 ${
         active
           ? "bg-[var(--rh-primary)] text-[var(--rh-primary-text)]"
           : "rh-surface text-[var(--rh-muted)] hover:text-[var(--rh-ink)]"
@@ -242,8 +239,8 @@ function CaptureButton({ onClick, disabled, title, label, active }: { readonly o
 function MiniStat({ n, label }: { readonly n: number; readonly label: string }) {
   return (
     <div className="px-2 text-center">
-      <div className="rh-ink text-[17px] font-semibold tabular-nums">{n}</div>
-      <div className="rh-muted mt-0.5 text-[9px] font-semibold uppercase tracking-[0.12em]">{label}</div>
+      <div className="rh-ink text-[15px] font-semibold tabular-nums">{n}</div>
+      <div className="rh-muted mt-0.5 text-[8.5px] font-semibold uppercase tracking-[0.12em]">{label}</div>
     </div>
   );
 }

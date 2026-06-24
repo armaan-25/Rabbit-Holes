@@ -49,9 +49,8 @@ export function DiscoverButton() {
       <button
         onClick={discover}
         disabled={busy}
-        className="rh-surface group relative overflow-hidden rounded-[14px] border px-4 py-2.5 text-[13px] font-semibold shadow-[0_4px_18px_rgba(70,45,20,.08)] transition hover:-translate-y-0.5 hover:shadow-[0_10px_26px_rgba(70,45,20,.13)] disabled:cursor-wait disabled:opacity-65"
+        className="rh-surface group relative overflow-hidden rounded-[14px] border px-4 py-2.5 text-[13px] font-semibold shadow-[0_4px_18px_rgba(70,45,20,.06)] transition hover:border-[var(--rh-line-strong)] disabled:cursor-wait disabled:opacity-65"
       >
-        <span className="pointer-events-none absolute inset-0 opacity-70 [background:radial-gradient(80%_120%_at_20%_20%,rgba(180,143,88,.26),transparent_55%),radial-gradient(90%_120%_at_90%_80%,rgba(95,138,92,.18),transparent_58%)]" />
         <span className="relative inline-flex items-center gap-2">{label}</span>
       </button>
       {busy && <RabbitHoleLoading />}
@@ -60,14 +59,10 @@ export function DiscoverButton() {
 }
 
 const WORDS = [
-  { text: "tabs", x: "-270px", y: "-132px", d: "0s" },
-  { text: "searches", x: "246px", y: "-112px", d: ".18s" },
-  { text: "notes", x: "-238px", y: "4px", d: ".34s" },
-  { text: "links", x: "238px", y: "22px", d: ".52s" },
-  { text: "threads", x: "-220px", y: "124px", d: ".7s" },
-  { text: "questions", x: "226px", y: "124px", d: ".9s" },
-  { text: "ideas", x: "-74px", y: "-180px", d: "1.08s" },
-  { text: "context", x: "96px", y: "-172px", d: "1.24s" },
+  { text: "tabs", x: "-220px", y: "-116px", d: "0s" },
+  { text: "searches", x: "210px", y: "-92px", d: ".24s" },
+  { text: "links", x: "-190px", y: "82px", d: ".48s" },
+  { text: "questions", x: "190px", y: "86px", d: ".72s" },
 ];
 
 function RabbitHoleLoading() {
@@ -102,7 +97,7 @@ function RabbitHoleLoading() {
             {WORDS.map((word) => (
               <span
                 key={word.text}
-                className="absolute left-1/2 top-1/2 rh-display select-none text-[24px] italic tracking-wide text-[#8a6a48]/54"
+                className="absolute left-1/2 top-1/2 rh-display select-none text-[22px] italic tracking-wide text-[#8a6a48]/42"
                 style={{
                   "--x": word.x,
                   "--y": word.y,
