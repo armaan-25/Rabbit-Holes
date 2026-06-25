@@ -104,7 +104,7 @@ const reveal = {
 
 export default function Landing() {
   return (
-    <div className="rh-paper min-h-screen">
+    <div className="rh-paper min-h-screen overflow-x-hidden">
       {/* ── Header ─────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 border-b border-[#785a321f] bg-[#f5efe4cc] backdrop-blur-md dark:bg-[#15110dcc]">
         <div className="mx-auto flex h-[76px] w-full max-w-[1320px] items-center justify-between px-5 sm:px-8">

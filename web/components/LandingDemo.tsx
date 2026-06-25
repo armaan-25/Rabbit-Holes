@@ -20,11 +20,11 @@ export function LandingDemo() {
 
   return (
     <div
-      className="mx-auto w-full max-w-[940px]"
+      className="mx-auto w-full max-w-[860px]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="overflow-hidden rounded-[20px] border border-[#785a3224] bg-[#fbf6ec] shadow-[0_40px_90px_rgba(42,32,24,.28)]">
+      <div className="overflow-hidden rounded-[20px] border border-[#785a3224] bg-[#fbf6ec] shadow-[0_24px_60px_rgba(42,32,24,.22)]">
         {/* title bar */}
         <div className="flex items-center gap-3 border-b border-[#785a3221] bg-[#f6efe1] px-4 py-3">
           <div className="flex gap-1.5">
@@ -62,7 +62,7 @@ export function LandingDemo() {
         </div>
 
         {/* stage */}
-        <div className="relative h-[380px] overflow-hidden bg-[radial-gradient(120%_120%_at_50%_0%,#fffaf1,transparent_70%)]">
+        <div className="relative h-[340px] overflow-hidden bg-[radial-gradient(120%_120%_at_50%_0%,#fffaf1,transparent_70%)] sm:h-[360px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={i}
@@ -70,7 +70,7 @@ export function LandingDemo() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-0 p-7"
+              className="absolute inset-0 p-5 sm:p-6"
             >
               {SCENES[i]()}
             </motion.div>
@@ -202,7 +202,7 @@ const Map = () => (
         ))}
       </div>
     </div>
-    <div className="grid h-[282px] overflow-hidden rounded-[18px] border border-[#4a3928] bg-[#1b130d] shadow-[0_18px_50px_rgba(25,15,6,.22)] sm:grid-cols-[minmax(0,1fr)_235px]">
+    <div className="grid h-[250px] overflow-hidden rounded-[18px] border border-[#4a3928] bg-[#1b130d] shadow-[0_18px_50px_rgba(25,15,6,.22)] sm:h-[262px] sm:grid-cols-[minmax(0,1fr)_210px]">
       <div className="relative overflow-hidden [background-image:radial-gradient(rgba(194,112,63,.18)_1px,transparent_1px)] [background-size:22px_22px]">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(120,90,50,.10),transparent_62%)]" />
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
@@ -229,17 +229,17 @@ const Map = () => (
             );
           })}
         </svg>
-        <div className="absolute left-4 top-4 rounded-full border border-[#4a3928] bg-[#21170f]/90 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#b69b77]">
+        <div className="absolute left-3 top-3 rounded-full border border-[#4a3928] bg-[#21170f]/90 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#b69b77]">
           AI Systems · 8 pages · 5 searches
         </div>
         <motion.div
           initial={{ opacity: 0, scale: 0.82 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.05 }}
-          className="absolute left-[8%] top-[48%] w-[122px] rounded-[15px] border border-[#c79f6b] bg-[#f6ecdc] px-3 py-2 shadow-[0_12px_28px_rgba(25,15,6,.18)]"
+          className="absolute left-[9%] top-[50%] w-[104px] rounded-[13px] border border-[#c79f6b] bg-[#f6ecdc] px-2.5 py-2 shadow-[0_12px_28px_rgba(25,15,6,.18)]"
         >
           <div className="mb-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-[#9b825f]">Search</div>
-          <div className="rh-display truncate text-[16px] font-semibold leading-none text-[#2a2018]">vLLM</div>
+          <div className="rh-display truncate text-[14px] font-semibold leading-none text-[#2a2018]">vLLM</div>
         </motion.div>
         {MAP_NODES.map((n, idx) => (
           <motion.div
@@ -247,25 +247,25 @@ const Map = () => (
             initial={{ opacity: 0, y: 8, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.12 + idx * 0.09 }}
-            className={`absolute w-[126px] -translate-x-1/2 -translate-y-1/2 rounded-[15px] border px-3 py-2 shadow-[0_12px_28px_rgba(25,15,6,.18)] ${idx === 2 ? "border-[#2a2018] bg-[#fff8ea] ring-4 ring-[#fff8ea]/10" : "border-[#d8c3a1] bg-[#fbf6ec]"}`}
+            className={`absolute w-[108px] -translate-x-1/2 -translate-y-1/2 rounded-[13px] border px-2.5 py-2 shadow-[0_12px_28px_rgba(25,15,6,.18)] ${idx === 2 ? "border-[#2a2018] bg-[#fff8ea] ring-4 ring-[#fff8ea]/10" : "border-[#d8c3a1] bg-[#fbf6ec]"}`}
             style={{ left: `${n.x}%`, top: `${n.y}%` }}
           >
             <div className="mb-1 flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full" style={{ background: n.dot }} />
               <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[#9b825f]">{n.kind}</span>
             </div>
-            <div className="rh-display truncate text-[16px] font-semibold leading-none text-[#2a2018]">{n.label}</div>
+            <div className="rh-display truncate text-[14px] font-semibold leading-none text-[#2a2018]">{n.label}</div>
           </motion.div>
         ))}
       </div>
       <div className="hidden border-l border-[#4a3928] bg-[#fbf6ec] p-4 sm:block">
         <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a8967d]">Selected node</div>
-        <div className="rh-display mt-3 text-[27px] font-semibold leading-tight text-[#2a2018]">DistServe</div>
+        <div className="rh-display mt-3 text-[24px] font-semibold leading-tight text-[#2a2018]">DistServe</div>
         <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9b825f]">arxiv.org paper</div>
-        <p className="mt-3 text-[12.5px] leading-5 text-[#6a5a48]">
+        <p className="mt-3 text-[12px] leading-5 text-[#6a5a48]">
           Came from PagedAttention, then opened Queueing Theory and SGLang.
         </p>
-        <div className="mt-4 rounded-[13px] border border-[#e1d2ba] bg-white/55 p-3 text-[12px] font-semibold text-[#4c3927]">
+        <div className="mt-3 rounded-[13px] border border-[#e1d2ba] bg-white/55 p-2.5 text-[11.5px] font-semibold text-[#4c3927]">
           1 path in · 2 paths out
         </div>
         <div className="mt-3 flex gap-2">
