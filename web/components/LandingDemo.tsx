@@ -183,11 +183,11 @@ const Holes = () => (
 );
 
 const MAP_NODES = [
-  { label: "vLLM", kind: "Repo", x: 20, y: 30, dot: "#5f6f4d" },
-  { label: "PagedAttention", kind: "Paper", x: 43, y: 24, dot: "#9a5f45" },
-  { label: "DistServe", kind: "Paper", x: 62, y: 48, dot: "#9a5f45" },
-  { label: "Queueing Theory", kind: "Page", x: 50, y: 72, dot: "#8f7859" },
-  { label: "SGLang", kind: "Repo", x: 78, y: 70, dot: "#5f6f4d" },
+  { label: "vLLM", kind: "Repo", x: 23, y: 38, dot: "#6f8758" },
+  { label: "PagedAttention", kind: "Paper", x: 43, y: 27, dot: "#b77657" },
+  { label: "DistServe", kind: "Paper", x: 61, y: 48, dot: "#b77657" },
+  { label: "Queueing Theory", kind: "Page", x: 47, y: 72, dot: "#a8967d" },
+  { label: "SGLang", kind: "Repo", x: 76, y: 69, dot: "#6f8758" },
 ];
 
 const Map = () => (
@@ -202,40 +202,47 @@ const Map = () => (
         ))}
       </div>
     </div>
-    <div className="grid h-[330px] overflow-hidden rounded-[18px] border border-[#4a3928] bg-[#1b130d] sm:h-[350px] sm:grid-cols-[minmax(0,1fr)_250px]">
+    <div className="grid h-[330px] overflow-hidden rounded-[18px] border border-[#4a3928] bg-[#1b130d] sm:h-[350px] sm:grid-cols-[minmax(0,1fr)_230px]">
       <div className="relative overflow-hidden bg-[#1b130d]">
+        <div className="absolute inset-0 opacity-[0.28]" style={{ backgroundImage: "radial-gradient(#6d5639 1px, transparent 1px)", backgroundSize: "18px 18px" }} />
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
           <defs>
-            <marker id="demo-arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth">
-              <path d="M0,0 L6,3 L0,6 Z" fill="#b77637" opacity="0.72" />
+            <marker id="demo-arrow" markerWidth="5" markerHeight="5" refX="4.5" refY="2.5" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L5,2.5 L0,5 Z" fill="#9a6a38" opacity="0.8" />
             </marker>
           </defs>
-          {MAP_NODES.slice(0, -1).map((n, idx) => {
-            const next = MAP_NODES[idx + 1];
+          {[
+            [0, 1],
+            [1, 2],
+            [2, 3],
+            [2, 4],
+          ].map(([from, to], idx) => {
+            const a = MAP_NODES[from];
+            const b = MAP_NODES[to];
             return (
               <motion.path
-                key={`${n.label}-${next.label}`}
-                d={`M ${n.x} ${n.y} C ${(n.x + next.x) / 2} ${n.y}, ${(n.x + next.x) / 2} ${next.y}, ${next.x} ${next.y}`}
+                key={`${a.label}-${b.label}`}
+                d={`M ${a.x + 8} ${a.y} C ${(a.x + b.x) / 2} ${a.y - 4}, ${(a.x + b.x) / 2} ${b.y + 4}, ${b.x - 8} ${b.y}`}
                 fill="none"
-                stroke={idx === 1 ? "#b77637" : "#8a623a"}
-                strokeWidth="0.9"
-                opacity="0.72"
+                stroke="#9a6a38"
+                strokeWidth="0.75"
+                opacity="0.82"
                 markerEnd="url(#demo-arrow)"
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: 1 }}
-                transition={{ delay: idx * 0.13, duration: 0.75, ease: "easeOut" }}
+                transition={{ delay: idx * 0.12, duration: 0.7, ease: "easeOut" }}
               />
             );
           })}
         </svg>
-        <div className="absolute left-3 top-3 rounded-full border border-[#4a3928] bg-[#21170f]/90 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#b69b77]">
+        <div className="absolute left-4 top-4 rounded-full border border-[#4a3928] bg-[#21170f]/90 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#b69b77]">
           AI Systems · 8 pages · 5 searches
         </div>
         <motion.div
           initial={{ opacity: 0, scale: 0.82 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.05 }}
-          className="absolute left-[9%] top-[50%] w-[120px] rounded-[13px] border border-[#c79f6b] bg-[#f6ecdc] px-2.5 py-2"
+          className="absolute left-[11%] top-[58%] w-[112px] rounded-[13px] border border-[#c79f6b] bg-[#f6ecdc] px-2.5 py-2 shadow-[0_10px_22px_rgba(18,11,5,.18)]"
         >
           <div className="mb-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-[#9b825f]">Search</div>
           <div className="rh-display truncate text-[14px] font-semibold leading-none text-[#21170f]">vLLM</div>
@@ -246,7 +253,7 @@ const Map = () => (
             initial={{ opacity: 0, y: 8, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.12 + idx * 0.09 }}
-            className={`absolute w-[124px] -translate-x-1/2 -translate-y-1/2 rounded-[13px] border px-2.5 py-2 ${idx === 2 ? "border-[#d8c3a1] bg-[#fff8ea]" : "border-[#6d5639] bg-[#21170f]"}`}
+            className={`absolute w-[118px] -translate-x-1/2 -translate-y-1/2 rounded-[13px] border px-2.5 py-2 shadow-[0_12px_26px_rgba(18,11,5,.18)] ${idx === 2 ? "border-[#d8c3a1] bg-[#fff8ea]" : "border-[#6d5639] bg-[#21170f]"}`}
             style={{ left: `${n.x}%`, top: `${n.y}%` }}
           >
             <div className="mb-1 flex items-center gap-1.5">
@@ -257,18 +264,18 @@ const Map = () => (
           </motion.div>
         ))}
       </div>
-      <div className="hidden border-l border-[#4a3928] bg-[#21170f] p-4 sm:block">
+      <div className="hidden border-l border-[#4a3928] bg-[#21170f] p-5 sm:block">
         <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a8967d]">Selected node</div>
-        <div className="rh-display mt-3 text-[28px] font-semibold leading-tight text-[#f6ecd9]">DistServe</div>
+        <div className="rh-display mt-4 text-[25px] font-semibold leading-tight text-[#f6ecd9]">DistServe</div>
         <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9b825f]">arxiv.org paper</div>
-        <p className="mt-3 text-[13px] leading-5 text-[#cdbd9f]">
+        <p className="mt-4 text-[13px] leading-5 text-[#cdbd9f]">
           Came from PagedAttention, then opened Queueing Theory and SGLang.
         </p>
-        <div className="mt-4 rounded-[13px] border border-[#e1d2ba] bg-[#f2e9d6] p-3 text-[12px] font-semibold text-[#4c3927]">
+        <div className="mt-5 rounded-[13px] border border-[#6d5639] bg-[#2a2018] p-3 text-[12px] font-semibold text-[#d8c8ad]">
           1 path in · 2 paths out
         </div>
         <div className="mt-3 flex gap-2">
-          <span className="rounded-full bg-[#f2e9d6] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#8a7860]">paper</span>
+          <span className="rounded-full bg-[#2a2018] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#b69b77]">paper</span>
           <span className="rounded-full bg-[#e9f1e4] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#4d7049]">20m read</span>
         </div>
       </div>
