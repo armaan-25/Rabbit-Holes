@@ -179,15 +179,15 @@ export default function MapPage() {
         type: "smoothstep",
         animated: edge.kind === "discovered_through",
         markerEnd: {
-          type: MarkerType.ArrowClosed,
+          type: MarkerType.Arrow,
           color,
-          width: 14,
-          height: 14,
+          width: 10,
+          height: 10,
         },
         style: {
           stroke: color,
-          strokeWidth: 1.8,
-          opacity: 0.72,
+          strokeWidth: 1.35,
+          opacity: 0.58,
         },
       };
     });

@@ -207,8 +207,8 @@ const Map = () => (
         <div className="absolute inset-0 opacity-[0.28]" style={{ backgroundImage: "radial-gradient(#6d5639 1px, transparent 1px)", backgroundSize: "18px 18px" }} />
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
           <defs>
-            <marker id="demo-arrow" viewBox="0 0 6 6" markerWidth="3.4" markerHeight="3.4" refX="5.2" refY="3" orient="auto" markerUnits="userSpaceOnUse">
-              <path d="M0.8,0.8 L5.2,3 L0.8,5.2 Z" fill="#9a6a38" opacity="0.78" />
+            <marker id="demo-arrow" viewBox="0 0 8 8" markerWidth="5" markerHeight="5" refX="6" refY="4" orient="auto" markerUnits="strokeWidth">
+              <path d="M2,1.5 L6,4 L2,6.5" fill="none" stroke="#9a6a38" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.72" />
             </marker>
           </defs>
           {[
@@ -225,11 +225,11 @@ const Map = () => (
                 d={`M ${a.x + 6} ${a.y} C ${(a.x + b.x) / 2} ${a.y - 4}, ${(a.x + b.x) / 2} ${b.y + 4}, ${b.x - 6} ${b.y}`}
                 fill="none"
                 stroke="#9a6a38"
-                strokeWidth="0.58"
+                strokeWidth="0.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 vectorEffect="non-scaling-stroke"
-                opacity="0.76"
+                opacity="0.62"
                 markerEnd="url(#demo-arrow)"
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: 1 }}
