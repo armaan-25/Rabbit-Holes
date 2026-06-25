@@ -92,6 +92,8 @@ const SETTINGS_DEFAULTS = {
   src_social: true,
 };
 let settings = { ...SETTINGS_DEFAULTS };
+const HISTORY_LOOKBACK_MS = 6 * 60 * 60 * 1000;
+const HISTORY_MAX_RESULTS = 120;
 
 // Runtime capture gates.
 let idlePaused = false;
@@ -251,12 +253,105 @@ function enqueue(event) {
   if (buffer.length >= FLUSH_AT) flush();
 }
 
+function enqueueSnapshot(event, at = new Date().toISOString()) {
+  const enriched = { ...event, sessionId, at };
+  buffer.push(enriched);
+  persist(enriched);
+}
+
 async function persist(event) {
   const { events = [] } = await chrome.storage.local.get("events");
   events.push(event);
   // Keep local history bounded.
   const trimmed = events.slice(-500);
   await chrome.storage.local.set({ events: trimmed, lastCapture: event.at });
+}
+
+function searchHistory(query) {
+  return new Promise((resolve) => {
+    chrome.history.search(query, (items) => resolve(items || []));
+  });
+}
+
+function tabsQuery(query) {
+  return new Promise((resolve) => {
+    chrome.tabs.query(query, (tabs) => resolve(tabs || []));
+  });
+}
+
+async function backfillBrowserState() {
+  const now = Date.now();
+  const seen = new Set();
+  const events = [];
+  const { events: existingEvents = [] } = await chrome.storage.local.get("events");
+
+  for (const event of existingEvents) {
+    if (event.type === "visit" && event.url) seen.add(`visit:${event.url}`);
+    if (event.type === "title" && event.url) seen.add(`title:${event.url}`);
+    if (event.type === "search" && event.query) seen.add(`search:${event.engine || "Search"}:${String(event.query).toLowerCase()}`);
+    if (event.type === "tab_open" && event.tabId != null && event.url) seen.add(`tab:${event.tabId}:${event.url}`);
+  }
+
+  function push(event, key, atMs = now) {
+    if (seen.has(key)) return;
+    seen.add(key);
+    events.push({ ...event, at: new Date(atMs).toISOString() });
+  }
+
+  const tabs = await tabsQuery({});
+  for (const tab of tabs) {
+    const url = tab.url || tab.pendingUrl || "";
+    if (!isCapturable(url)) continue;
+    if (tab.incognito && !settings.capture_private) continue;
+    const host = hostnameOf(url);
+    const cleaned = cleanUrl(url);
+    const search = detectSearch(url);
+    push({ type: "tab_open", tabId: tab.id, url: cleaned }, `tab:${tab.id}:${cleaned}`);
+    if (search) {
+      push({ type: "search", tabId: tab.id, query: search.query, engine: search.engine, url }, `search:${search.engine}:${search.query.toLowerCase()}`);
+    } else if (sourceAllowed(host)) {
+      push({ type: "visit", tabId: tab.id, url: cleaned, domain: host, transition: "snapshot", referrer: null }, `visit:${cleaned}`);
+      if (tab.title) push({ type: "title", tabId: tab.id, url: cleaned, title: tab.title }, `title:${cleaned}`);
+    }
+  }
+
+  const historyItems = await searchHistory({
+    text: "",
+    startTime: now - HISTORY_LOOKBACK_MS,
+    endTime: now,
+    maxResults: HISTORY_MAX_RESULTS,
+  });
+
+  for (const item of historyItems) {
+    const url = item.url || "";
+    if (!isCapturable(url)) continue;
+    const host = hostnameOf(url);
+    const cleaned = cleanUrl(url);
+    const atMs = item.lastVisitTime || now;
+    const search = detectSearch(url);
+    if (search) {
+      push({ type: "search", query: search.query, engine: search.engine, url }, `search:${search.engine}:${search.query.toLowerCase()}`, atMs);
+    } else if (sourceAllowed(host)) {
+      push({ type: "visit", url: cleaned, domain: host, transition: "history", referrer: null }, `visit:${cleaned}`, atMs);
+      if (item.title) push({ type: "title", url: cleaned, title: item.title }, `title:${cleaned}`, atMs);
+    }
+  }
+
+  events
+    .sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime())
+    .forEach((event) => {
+      const { at, ...payload } = event;
+      enqueueSnapshot(payload, at);
+    });
+
+  await flush();
+  return {
+    events: events.length,
+    pages: new Set(events.filter((event) => event.type === "visit").map((event) => event.url).filter(Boolean)).size,
+    searches: events.filter((event) => event.type === "search").length,
+    tabs: events.filter((event) => event.type === "tab_open").length,
+    buffered: buffer.length,
+  };
 }
 
 async function flush() {
@@ -323,6 +418,13 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return false;
   }
 
+  if (message?.type === "snapshotBrowserState") {
+    backfillBrowserState()
+      .then((stats) => sendResponse({ ok: true, ...stats }))
+      .catch((error) => sendResponse({ ok: false, error: String(error) }));
+    return true;
+  }
+
   if (message?.type === "setCaptureState") {
     const next = message.state;
     if (!["recording", "paused", "stopped"].includes(next)) {
@@ -358,8 +460,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
   if (message?.type !== "flush") return false;
 
-  flush()
-    .then(() => sendResponse({ ok: true, buffered: buffer.length }))
+  backfillBrowserState()
+    .then((stats) => sendResponse({ ok: true, ...stats, buffered: buffer.length }))
     .catch((error) => sendResponse({ ok: false, error: String(error) }));
 
   return true;
