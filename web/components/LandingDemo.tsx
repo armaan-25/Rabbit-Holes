@@ -182,13 +182,53 @@ const Holes = () => (
   </div>
 );
 
-const MAP_NODES = [
-  { label: "vLLM", kind: "Repo", x: 24, y: 38, dot: "#6f8758" },
-  { label: "PagedAttention", kind: "Paper", x: 43, y: 28, dot: "#b77657" },
-  { label: "DistServe", kind: "Paper", x: 57, y: 48, dot: "#b77657" },
-  { label: "Queueing Theory", kind: "Page", x: 45, y: 72, dot: "#a8967d" },
-  { label: "SGLang", kind: "Repo", x: 68, y: 68, dot: "#6f8758" },
+/* Mirrors the real /map graph: a search → page/repo/paper flow with orthogonal
+ * step connectors and domains. Node styling matches the app's dark FlowNode. */
+type MapKind = "search" | "repo" | "doc" | "paper" | "page";
+
+const MAP_KIND: Record<MapKind, { label: string; bg: string; border: string; dot: string }> = {
+  search: { label: "Search", bg: "#2a1f15", border: "#8a623a", dot: "#b77637" },
+  repo: { label: "Repo", bg: "#202018", border: "#687257", dot: "#5f6f4d" },
+  doc: { label: "Docs", bg: "#222018", border: "#6d704f", dot: "#73805a" },
+  paper: { label: "Paper", bg: "#271d18", border: "#7e5947", dot: "#9a5f45" },
+  page: { label: "Page", bg: "#241c14", border: "#70583b", dot: "#8f7859" },
+};
+
+const MAP_NODES: { id: string; kind: MapKind; label: string; domain?: string; x: number; y: number }[] = [
+  { id: "s0", kind: "search", label: "vLLM", x: 13, y: 13 },
+  { id: "s1", kind: "search", label: "PagedAttention", x: 13, y: 30 },
+  { id: "s2", kind: "search", label: "DistServe", x: 13, y: 47 },
+  { id: "s3", kind: "search", label: "queueing theory", x: 13, y: 64 },
+  { id: "s4", kind: "search", label: "SGLang", x: 13, y: 81 },
+  { id: "r0", kind: "repo", label: "vllm repo", domain: "github.com", x: 48, y: 11 },
+  { id: "r1", kind: "doc", label: "vLLM docs", domain: "docs.vllm.ai", x: 48, y: 25.4 },
+  { id: "r2", kind: "paper", label: "PagedAttention paper", domain: "arxiv.org", x: 48, y: 39.8 },
+  { id: "r3", kind: "paper", label: "DistServe paper", domain: "arxiv.org", x: 48, y: 54.2 },
+  { id: "r4", kind: "page", label: "Queueing theory", domain: "wikipedia.org", x: 48, y: 68.6 },
+  { id: "r5", kind: "repo", label: "SGLang", domain: "github.com", x: 48, y: 83 },
+  { id: "d0", kind: "page", label: "Continuous batching", domain: "anyscale.com", x: 80, y: 41 },
+  { id: "d1", kind: "repo", label: "FlashAttention", domain: "github.com", x: 80, y: 61 },
 ];
+
+const MAP_EDGES: { from: string; to: string; tone: "amber" | "brown" | "green" }[] = [
+  { from: "s0", to: "r0", tone: "amber" },
+  { from: "s0", to: "r1", tone: "amber" },
+  { from: "s1", to: "r2", tone: "amber" },
+  { from: "s2", to: "r3", tone: "amber" },
+  { from: "s3", to: "r4", tone: "amber" },
+  { from: "s4", to: "r5", tone: "amber" },
+  { from: "r2", to: "d0", tone: "brown" },
+  { from: "r3", to: "d0", tone: "brown" },
+  { from: "r3", to: "d1", tone: "green" },
+];
+
+const MAP_TONE = {
+  amber: { stroke: "#b77637", opacity: 0.6, dash: undefined as string | undefined, marker: "demo-arrow-amber" },
+  brown: { stroke: "#8a623a", opacity: 0.6, dash: undefined as string | undefined, marker: "demo-arrow-brown" },
+  green: { stroke: "#5f8a5c", opacity: 0.4, dash: "4 5" as string | undefined, marker: "demo-arrow-green" },
+} as const;
+
+const mapNode = (id: string) => MAP_NODES.find((n) => n.id === id)!;
 
 const Map = () => (
   <div>
@@ -202,86 +242,63 @@ const Map = () => (
         ))}
       </div>
     </div>
-    <div className="grid h-[420px] overflow-hidden rounded-[18px] border border-[#4a3928] bg-[#1b130d] sm:h-[470px] md:grid-cols-[minmax(0,1fr)_190px] lg:grid-cols-[minmax(0,1fr)_220px]">
-      <div className="relative overflow-hidden bg-[#1b130d]">
-        <div className="absolute inset-0 opacity-[0.28]" style={{ backgroundImage: "radial-gradient(#6d5639 1px, transparent 1px)", backgroundSize: "18px 18px" }} />
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
-          <defs>
-            <marker id="demo-arrow" viewBox="0 0 12 12" markerWidth="10" markerHeight="10" refX="11" refY="6" orient="auto" markerUnits="strokeWidth">
-              <path d="M1,1 L11,6 L1,11" fill="none" stroke="#9a6a38" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.72" />
+    <div className="relative h-[420px] overflow-hidden rounded-[18px] border border-[#4a3928] bg-[#1b130d] sm:h-[470px]">
+      <div className="absolute inset-0 opacity-[0.28]" style={{ backgroundImage: "radial-gradient(#6d5639 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
+        <defs>
+          {(["amber", "brown", "green"] as const).map((tone) => (
+            <marker key={tone} id={MAP_TONE[tone].marker} viewBox="0 0 12 12" markerWidth="9" markerHeight="9" refX="9" refY="6" orient="auto" markerUnits="strokeWidth">
+              <path d="M1,1 L10,6 L1,11" fill="none" stroke={MAP_TONE[tone].stroke} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
             </marker>
-          </defs>
-          {[
-            [0, 1],
-            [1, 2],
-            [2, 3],
-            [2, 4],
-          ].map(([from, to], idx) => {
-            const a = MAP_NODES[from];
-            const b = MAP_NODES[to];
-            return (
-              <motion.path
-                key={`${a.label}-${b.label}`}
-                d={`M ${a.x + 6} ${a.y} C ${(a.x + b.x) / 2} ${a.y - 4}, ${(a.x + b.x) / 2} ${b.y + 4}, ${b.x - 6} ${b.y}`}
-                fill="none"
-                stroke="#9a6a38"
-                strokeWidth="0.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                vectorEffect="non-scaling-stroke"
-                opacity="0.62"
-                markerEnd="url(#demo-arrow)"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ delay: idx * 0.12, duration: 0.7, ease: "easeOut" }}
-              />
-            );
-          })}
-        </svg>
-        <div className="absolute left-4 top-4 rounded-full border border-[#4a3928] bg-[#21170f]/90 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#b69b77]">
-          AI Systems · 8 pages · 5 searches
-        </div>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.82 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.05 }}
-          className="absolute left-[10%] top-[58%] w-[96px] rounded-[12px] border border-[#c79f6b] bg-[#f6ecdc] px-2.5 py-2 shadow-[0_10px_22px_rgba(18,11,5,.18)] sm:w-[104px]"
-        >
-          <div className="mb-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-[#9b825f]">Search</div>
-          <div className="rh-display truncate text-[13px] font-semibold leading-none text-[#21170f]">vLLM</div>
-        </motion.div>
-        {MAP_NODES.map((n, idx) => (
+          ))}
+        </defs>
+        {MAP_EDGES.map((edge, idx) => {
+          const a = mapNode(edge.from);
+          const b = mapNode(edge.to);
+          const tone = MAP_TONE[edge.tone];
+          const sx = a.x + 7;
+          const tx = b.x - 7;
+          const mx = (sx + tx) / 2;
+          return (
+            <motion.path
+              key={`${edge.from}-${edge.to}`}
+              d={`M ${sx} ${a.y} H ${mx} V ${b.y} H ${tx}`}
+              fill="none"
+              stroke={tone.stroke}
+              strokeWidth="0.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeDasharray={tone.dash}
+              vectorEffect="non-scaling-stroke"
+              opacity={tone.opacity}
+              markerEnd={`url(#${tone.marker})`}
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ delay: 0.1 + idx * 0.07, duration: 0.6, ease: "easeOut" }}
+            />
+          );
+        })}
+      </svg>
+      {MAP_NODES.map((n, idx) => {
+        const meta = MAP_KIND[n.kind];
+        return (
           <motion.div
-            key={n.label}
-            initial={{ opacity: 0, y: 8, scale: 0.9 }}
+            key={n.id}
+            initial={{ opacity: 0, y: 8, scale: 0.92 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ delay: 0.12 + idx * 0.09 }}
-            className={`absolute w-[96px] -translate-x-1/2 -translate-y-1/2 rounded-[12px] border px-2.5 py-2 shadow-[0_12px_26px_rgba(18,11,5,.18)] sm:w-[106px] ${idx === 2 ? "border-[#d8c3a1] bg-[#fff8ea]" : "border-[#6d5639] bg-[#21170f]"}`}
-            style={{ left: `${n.x}%`, top: `${n.y}%` }}
+            transition={{ delay: 0.1 + idx * 0.05 }}
+            className="absolute w-[150px] -translate-x-1/2 -translate-y-1/2 rounded-[10px] border px-3 py-2 shadow-[0_12px_26px_rgba(18,11,5,.22)]"
+            style={{ left: `${n.x}%`, top: `${n.y}%`, background: meta.bg, borderColor: meta.border }}
           >
             <div className="mb-1 flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full" style={{ background: n.dot }} />
-              <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[#9b825f]">{n.kind}</span>
+              <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: meta.dot }} />
+              <span className="text-[8.5px] font-semibold uppercase tracking-[0.18em] text-[#b69b77]">{meta.label}</span>
             </div>
-            <div className={`rh-display truncate text-[13px] font-semibold leading-none ${idx === 2 ? "text-[#21170f]" : "text-[#f6ecd9]"}`}>{n.label}</div>
+            <div className="rh-display truncate text-[13px] font-semibold leading-tight text-[#f6ecd9]">{n.label}</div>
+            {n.domain && <div className="mt-1 truncate text-[10px] text-[#b7a487]">{n.domain}</div>}
           </motion.div>
-        ))}
-      </div>
-      <div className="hidden border-l border-[#4a3928] bg-[#21170f] p-4 md:block lg:p-5">
-        <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a8967d]">Selected node</div>
-        <div className="rh-display mt-4 text-[22px] font-semibold leading-tight text-[#f6ecd9] lg:text-[25px]">DistServe</div>
-        <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9b825f]">arxiv.org paper</div>
-        <p className="mt-4 text-[12.5px] leading-5 text-[#cdbd9f] lg:text-[13px]">
-          Came from PagedAttention, then opened Queueing Theory and SGLang.
-        </p>
-        <div className="mt-5 rounded-[13px] border border-[#6d5639] bg-[#2a2018] p-3 text-[12px] font-semibold text-[#d8c8ad]">
-          1 path in · 2 paths out
-        </div>
-        <div className="mt-3 flex gap-2">
-          <span className="rounded-full bg-[#2a2018] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#b69b77]">paper</span>
-          <span className="rounded-full bg-[#e9f1e4] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#4d7049]">20m read</span>
-        </div>
-      </div>
+        );
+      })}
     </div>
   </div>
 );
