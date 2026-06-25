@@ -3,7 +3,7 @@
 import { HoleCard } from "@/components/HoleCard";
 import { EmptyHoles } from "@/components/EmptyHoles";
 import { BuildNotice, DiscoverButton, RabbitHoleLoading } from "@/components/DiscoverButton";
-import { clusterBuildState, clusterHoleToRabbitHole, markDiscoveriesSeen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
+import { clusterBuildState, clusterHoleToRabbitHole, forgetClusterContext, markDiscoveriesSeen, markDiscoveryUnseen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
 import { bulkPatchBackendHoles, patchBackendHole } from "@/lib/api";
 import { useLibraryHoles } from "@/hooks/useHoles";
@@ -70,6 +70,8 @@ export default function Dashboard() {
   }
 
   function deleteOne(id: string) {
+    markDiscoveryUnseen(id);
+    forgetClusterContext();
     deleteHole(id);
     setSelectedIds((ids) => ids.filter((x) => x !== id));
     void patchBackendHole(id, { deleted: true }).catch((err) => console.error("delete persist failed", err));
@@ -80,7 +82,11 @@ export default function Dashboard() {
     if (!ids.length) return;
     if (action === "favorite") patchHoles(ids, { favorite: true });
     if (action === "archive") patchHoles(ids, { archived: true, status: "dormant" });
-    if (action === "delete") deleteHoles(ids);
+    if (action === "delete") {
+      ids.forEach((id) => markDiscoveryUnseen(id));
+      forgetClusterContext();
+      deleteHoles(ids);
+    }
     setSelectedIds([]);
     void bulkPatchBackendHoles(ids, action).catch((err) => console.error("bulk persist failed", err));
   }

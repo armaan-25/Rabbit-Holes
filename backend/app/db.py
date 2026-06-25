@@ -286,9 +286,18 @@ def latest_source_signature(user_id: str) -> str | None:
         with connect() as conn:
             row = conn.execute(
                 """
-                select source_signature from sessions
-                where user_id = %s and source_signature is not null
-                order by started_at desc
+                select s.source_signature
+                from sessions s
+                where s.user_id = %s
+                  and s.source_signature is not null
+                  and exists (
+                    select 1
+                    from rabbit_holes h
+                    where h.user_id = s.user_id
+                      and h.session_id = s.id
+                      and h.deleted_at is null
+                  )
+                order by s.started_at desc
                 limit 1
                 """,
                 (user_id,),

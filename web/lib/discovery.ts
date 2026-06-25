@@ -207,6 +207,10 @@ export function markDiscoveriesSeen(discoveries: Discovery[], seen: Set<string> 
   discoveries.forEach((discovery) => seen.add(discovery.id));
 }
 
+export function markDiscoveryUnseen(id: string, seen: Set<string> = discoveredHoleIds) {
+  seen.delete(id);
+}
+
 export function clusterSignature(cluster: ClusterResponse): string {
   const pages = (cluster.pages ?? []).map((p) => p.url || p.title || p.id).filter(Boolean).sort();
   const searches = (cluster.searches ?? []).map((s) => s.query || s.url || s.id).filter(Boolean).sort();
@@ -236,6 +240,11 @@ export function clusterBuildState(cluster: ClusterResponse): ClusterBuildState {
 export function rememberClusterContext(cluster: ClusterResponse) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(LAST_CLUSTER_SIGNATURE_KEY, clusterSignature(cluster));
+}
+
+export function forgetClusterContext() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(LAST_CLUSTER_SIGNATURE_KEY);
 }
 
 async function authHeaders(): Promise<HeadersInit> {
