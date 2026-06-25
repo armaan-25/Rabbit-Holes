@@ -174,21 +174,6 @@ document.getElementById("cluster").addEventListener("click", async (e) => {
   btn.disabled = true;
   setClusterLabel("Opening builder…");
   try {
-    try {
-      await chrome.runtime.sendMessage({ type: "flush" });
-    } catch {
-      // Older loaded copies of the extension may not have the flush listener yet.
-      // Continue anyway so Build still tests the backend instead of failing early.
-    }
-    const valid = await chrome.runtime.sendMessage({ type: "getValidToken" }).catch(() => null);
-    let token = valid?.token;
-    if (!token) {
-      setClusterLabel("Sign in first");
-      setAuthView("expired");
-      window.setTimeout(() => setClusterLabel("Build rabbit holes"), 1600);
-      btn.disabled = false;
-      return;
-    }
     chrome.tabs.create({ url: `${WEB_URL}/dashboard?cluster=1` }, () => window.close());
   } catch {
     setClusterLabel("Could not open");
