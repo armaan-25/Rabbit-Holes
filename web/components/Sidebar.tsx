@@ -152,7 +152,7 @@ export function MobileNav() {
 function CaptureCard({ stats }: { readonly stats: SessionStats }) {
   const [localState, setLocalState] = useState<CaptureState | null>(null);
   const [pending, setPending] = useState(false);
-  const [confirmStop, setConfirmStop] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<CaptureState | null>(null);
   const effectiveState = localState ?? stats.captureState;
   const recording = effectiveState === "recording";
   const statusLabel = recording ? "Capturing" : effectiveState === "paused" ? "Paused" : "Stopped";
@@ -190,16 +190,23 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
   return (
     <div className="rh-surface mt-5 rounded-[13px] border p-4">
       <ConfirmDialog
-        open={confirmStop}
-        eyebrow="End session"
-        title="End this capture session?"
-        body="Stopping clears the current captured session and starts a fresh trail the next time you press resume. Build any rabbit holes you want to keep before ending it."
-        confirmLabel="End session"
-        danger
-        onCancel={() => setConfirmStop(false)}
+        open={confirmAction !== null}
+        eyebrow={confirmAction === "stopped" ? "End session" : confirmAction === "paused" ? "Pause capture" : "Resume capture"}
+        title={confirmAction === "stopped" ? "End this capture session?" : confirmAction === "paused" ? "Pause capture?" : "Resume capture?"}
+        body={
+          confirmAction === "stopped"
+            ? "Ending clears the current captured session and starts a fresh trail the next time you resume. Build any rabbit holes you want to keep before ending it."
+            : confirmAction === "paused"
+              ? "Rabbit Holes will stop recording new pages and searches until you resume."
+              : "Rabbit Holes will start recording new pages, searches, and tab activity again."
+        }
+        confirmLabel={confirmAction === "stopped" ? "End session" : confirmAction === "paused" ? "Pause" : "Resume"}
+        danger={confirmAction === "stopped"}
+        onCancel={() => setConfirmAction(null)}
         onConfirm={() => {
-          setConfirmStop(false);
-          void send("stopped");
+          const next = confirmAction;
+          setConfirmAction(null);
+          if (next) void send(next);
         }}
       />
       <div className="flex items-center gap-2.5">
@@ -210,14 +217,14 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
       {controllable && (
         <div className="mt-3 grid grid-cols-2 gap-2">
           <CaptureButton
-            onClick={() => void send(recording ? "paused" : "recording")}
+            onClick={() => setConfirmAction(recording ? "paused" : "recording")}
             disabled={pending}
             title={recording ? "Pause capture" : "Resume capture"}
             label={pending ? "Working..." : recording ? "Pause" : "Resume"}
             tone={canResume ? "primary" : "default"}
           />
           <CaptureButton
-            onClick={() => setConfirmStop(true)}
+            onClick={() => setConfirmAction("stopped")}
             disabled={pending || effectiveState === "stopped"}
             title="Stop capture"
             label={effectiveState === "stopped" ? "Ended" : "End"}

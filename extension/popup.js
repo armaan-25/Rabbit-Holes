@@ -150,7 +150,13 @@ document.getElementById("signout").addEventListener("click", async () => {
 });
 
 document.getElementById("record-toggle").addEventListener("click", () => {
-  void setCaptureState(captureState === "recording" ? "paused" : "recording");
+  const next = captureState === "recording" ? "paused" : "recording";
+  const ok = window.confirm(
+    next === "paused"
+      ? "Pause Rabbit Holes capture? New pages and searches will not be recorded until you resume."
+      : "Resume Rabbit Holes capture? New pages and searches will start recording again."
+  );
+  if (ok) void setCaptureState(next);
 });
 document.getElementById("record-stop").addEventListener("click", () => {
   if (captureState === "stopped") return;

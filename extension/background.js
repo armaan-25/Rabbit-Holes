@@ -22,6 +22,8 @@ let captureElapsedMs = 0;
 // Remembers the last committed URL per tab so we can reconstruct chains and
 // detect close events with the URL still attached.
 const tabUrl = new Map();
+const recentSearches = new Map();
+const SEARCH_DEDUPE_MS = 90_000;
 
 // In-flight refresh so concurrent callers share one network request.
 let refreshing = null;
@@ -243,6 +245,21 @@ function detectSearch(url) {
   }
 }
 
+function searchKey(search) {
+  return `${search.engine}:${search.query.trim().toLowerCase()}`;
+}
+
+function shouldCaptureSearch(search) {
+  const key = searchKey(search);
+  const now = Date.now();
+  const last = recentSearches.get(key) || 0;
+  recentSearches.set(key, now);
+  for (const [storedKey, at] of recentSearches.entries()) {
+    if (now - at > SEARCH_DEDUPE_MS) recentSearches.delete(storedKey);
+  }
+  return now - last > SEARCH_DEDUPE_MS;
+}
+
 function enqueue(event) {
   if (!captureActive()) return;
   const enriched = { ...event, sessionId, at: new Date().toISOString() };
@@ -401,6 +418,7 @@ chrome.webNavigation.onCommitted.addListener((details) => {
   const host = hostnameOf(details.url);
   const search = detectSearch(details.url);
   if (search) {
+    if (!shouldCaptureSearch(search)) return;
     enqueue({
       type: "search",
       tabId: details.tabId,
