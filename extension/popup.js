@@ -4,6 +4,7 @@ let captureState = "recording";
 let captureStartedAt = null;
 let captureElapsedMs = 0;
 let signedIn = false;
+let capturePending = false;
 
 function setClusterLabel(text) {
   document.getElementById("cluster").innerHTML = `<span>${text}</span>`;
@@ -45,20 +46,30 @@ function setCaptureUI(state) {
         : "Stopped";
 
   const recording = state === "recording";
-  toggle.textContent = recording ? "Ⅱ" : "▶";
+  toggle.textContent = capturePending ? "..." : recording ? "Pause" : "Resume";
   toggle.title = recording ? "Pause recording" : "Resume recording";
-  toggle.classList.toggle("active", !recording && state !== "stopped");
-  stop.classList.toggle("active", state === "stopped");
+  toggle.disabled = capturePending;
+  toggle.classList.toggle("primary", !recording);
+  stop.textContent = state === "stopped" ? "Ended" : "End";
+  stop.disabled = capturePending || state === "stopped";
   renderTimer();
 }
 
 async function setCaptureState(state) {
+  if (capturePending) return false;
+  capturePending = true;
+  setCaptureUI(captureState);
   try {
     const res = await chrome.runtime.sendMessage({ type: "setCaptureState", state });
     if (res?.ok) setCaptureUI(res.state);
     await render();
+    return Boolean(res?.ok);
   } catch {
     setCaptureUI(state);
+    return false;
+  } finally {
+    capturePending = false;
+    setCaptureUI(captureState);
   }
 }
 
@@ -139,12 +150,12 @@ document.getElementById("signout").addEventListener("click", async () => {
 });
 
 document.getElementById("record-toggle").addEventListener("click", () => {
-  setCaptureState(captureState === "recording" ? "paused" : "recording");
+  void setCaptureState(captureState === "recording" ? "paused" : "recording");
 });
 document.getElementById("record-stop").addEventListener("click", () => {
   if (captureState === "stopped") return;
   const ok = window.confirm("End this Rabbit Holes session? This clears the current captured trail and starts fresh when you resume.");
-  if (ok) setCaptureState("stopped");
+  if (ok) void setCaptureState("stopped");
 });
 
 document.getElementById("cluster").addEventListener("click", async (e) => {

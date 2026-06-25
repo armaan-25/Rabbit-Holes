@@ -158,6 +158,7 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
   const statusLabel = recording ? "Capturing" : effectiveState === "paused" ? "Paused" : "Stopped";
   const controllable = stats.source === "extension";
   const hasTimer = typeof stats.elapsedMs === "number";
+  const canResume = effectiveState === "paused" || effectiveState === "stopped";
 
   useEffect(() => {
     if (localState && stats.captureState === localState) setLocalState(null);
@@ -209,18 +210,18 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
       {controllable && (
         <div className="mt-3 grid grid-cols-2 gap-2">
           <CaptureButton
-            onClick={() => send(recording ? "paused" : "recording")}
+            onClick={() => void send(recording ? "paused" : "recording")}
             disabled={pending}
             title={recording ? "Pause capture" : "Resume capture"}
-            label={recording ? "Pause" : "Resume"}
-            active={recording}
+            label={pending ? "Working..." : recording ? "Pause" : "Resume"}
+            tone={canResume ? "primary" : "default"}
           />
           <CaptureButton
             onClick={() => setConfirmStop(true)}
             disabled={pending || effectiveState === "stopped"}
             title="Stop capture"
-            label="Stop"
-            active={effectiveState === "stopped"}
+            label={effectiveState === "stopped" ? "Ended" : "End"}
+            tone="danger"
           />
         </div>
       )}
@@ -233,18 +234,20 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
   );
 }
 
-function CaptureButton({ onClick, disabled, title, label, active }: { readonly onClick: () => void; readonly disabled: boolean; readonly title: string; readonly label: string; readonly active?: boolean }) {
+function CaptureButton({ onClick, disabled, title, label, tone = "default" }: { readonly onClick: () => void; readonly disabled: boolean; readonly title: string; readonly label: string; readonly tone?: "default" | "primary" | "danger" }) {
+  const toneClass =
+    tone === "primary"
+      ? "bg-[var(--rh-primary)] text-[var(--rh-primary-text)] border-transparent"
+      : tone === "danger"
+        ? "border-[#b8795f33] bg-[#b8795f12] text-[#c88f78] hover:bg-[#b8795f20] hover:text-[#dfaa93]"
+        : "rh-surface text-[var(--rh-muted)] hover:text-[var(--rh-ink)]";
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       title={title}
       aria-label={title}
-      className={`grid h-9 place-items-center rounded-[9px] border px-3 text-[12px] font-semibold transition disabled:opacity-40 ${
-        active
-          ? "bg-[var(--rh-primary)] text-[var(--rh-primary-text)]"
-          : "rh-surface text-[var(--rh-muted)] hover:text-[var(--rh-ink)]"
-      }`}
+      className={`grid h-9 place-items-center rounded-[9px] border px-3 text-[12px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-45 ${toneClass}`}
     >
       {label}
     </button>
