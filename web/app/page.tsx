@@ -105,6 +105,7 @@ const reveal = {
 
 export default function Landing() {
   const [authPending, setAuthPending] = useState(false);
+  const [installOpen, setInstallOpen] = useState(false);
 
   async function startGoogleSignIn() {
     if (authPending) return;
@@ -116,6 +117,7 @@ export default function Landing() {
   return (
     <div className="rh-paper min-h-screen overflow-x-hidden">
       {authPending && <AuthTransition />}
+      {installOpen && <InstallInstructionsPopup onClose={() => setInstallOpen(false)} />}
       {/* ── Header ─────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 border-b border-[#785a321f] bg-[#f5efe4cc] backdrop-blur-md dark:bg-[#15110dcc]">
         <div className="mx-auto flex h-[76px] w-full max-w-[1320px] items-center justify-between px-5 sm:px-8">
@@ -132,13 +134,12 @@ export default function Landing() {
           </div>
           <div className="flex items-center gap-2.5">
             <HeaderThemeToggle />
-            <a
-              href="/downloads/rabbit-holes-extension.zip"
-              download
+            <button
+              onClick={() => setInstallOpen(true)}
               className="hidden rounded-full border border-[#785a3224] bg-[#fbf6ec] px-5 py-3 text-[14.5px] font-semibold text-[#2a2018] transition hover:-translate-y-0.5 sm:inline-flex"
             >
               Download extension
-            </a>
+            </button>
             <button
               onClick={startGoogleSignIn}
               disabled={authPending}
@@ -172,13 +173,12 @@ export default function Landing() {
             </p>
 
             <div className="mt-9 flex flex-wrap items-center gap-4">
-              <a
-                href="/downloads/rabbit-holes-extension.zip"
-                download
+              <button
+                onClick={() => setInstallOpen(true)}
                 className="inline-flex items-center gap-3 rounded-full bg-[#2a2018] px-8 py-4 text-[17px] font-semibold text-[#f3e8d4] shadow-[0_14px_40px_rgba(42,32,24,.24)] transition hover:-translate-y-0.5"
               >
                 Download extension ↓
-              </a>
+              </button>
               <button
                 onClick={startGoogleSignIn}
                 disabled={authPending}
@@ -302,13 +302,12 @@ export default function Landing() {
                 Install the extension, sign in, and browse normally. Chromium browsers can load the same extension package today.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
-                <a
-                  href="/downloads/rabbit-holes-extension.zip"
-                  download
+                <button
+                  onClick={() => setInstallOpen(true)}
                   className="inline-flex rounded-full bg-[#2a2018] px-7 py-4 text-[16px] font-semibold text-[#f3e8d4] shadow-[0_12px_34px_rgba(42,32,24,.20)] transition hover:-translate-y-0.5"
                 >
                   Download extension ↓
-                </a>
+                </button>
                 <Link href="/install" className="inline-flex rounded-full border border-[#785a3233] bg-[#f6efe1] px-7 py-4 text-[16px] font-semibold text-[#2a2018] transition hover:-translate-y-0.5">
                   Install steps
                 </Link>
@@ -358,13 +357,12 @@ export default function Landing() {
             Download the extension and let Rabbit Holes organize what you were researching without extra work.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <a
-              href="/downloads/rabbit-holes-extension.zip"
-              download
+            <button
+              onClick={() => setInstallOpen(true)}
               className="inline-flex items-center gap-2.5 rounded-full bg-[#f3e8d4] px-7 py-4 text-[16px] font-semibold text-[#1a1009] transition hover:-translate-y-0.5"
             >
               Download extension ↓
-            </a>
+            </button>
             <button
               onClick={startGoogleSignIn}
               disabled={authPending}
@@ -393,6 +391,61 @@ export default function Landing() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function InstallInstructionsPopup({ onClose }: { readonly onClose: () => void }) {
+  return (
+    <motion.div
+      className="fixed inset-0 z-[90] grid place-items-center bg-[#17100b]/72 px-4 backdrop-blur-[8px]"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="rh-surface w-full max-w-[560px] rounded-[28px] border p-7 shadow-[0_34px_90px_rgba(18,11,5,.38)]"
+        initial={{ y: 16, scale: 0.98, opacity: 0 }}
+        animate={{ y: 0, scale: 1, opacity: 1 }}
+        transition={{ duration: 0.22, ease: "easeOut" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="rh-faint text-[11px] font-bold uppercase tracking-[0.22em]">Manual install</div>
+            <h2 className="rh-display rh-ink mt-2 text-[34px] font-semibold leading-tight">Install Rabbit Holes</h2>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close install instructions"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[var(--rh-line)] bg-[var(--rh-surface-2)] text-[18px] text-[var(--rh-muted)]"
+          >
+            ×
+          </button>
+        </div>
+        <p className="rh-muted mt-3 text-[16px] leading-7">
+          Chrome Web Store review is pending, so install manually for now.
+        </p>
+        <ol className="mt-5 space-y-3 text-[15.5px] leading-6 text-[var(--rh-ink-soft)]">
+          <li><span className="font-semibold text-[var(--rh-ink)]">1.</span> Download and unzip the extension.</li>
+          <li><span className="font-semibold text-[var(--rh-ink)]">2.</span> Open <span className="font-semibold">chrome://extensions</span>.</li>
+          <li><span className="font-semibold text-[var(--rh-ink)]">3.</span> Turn on Developer mode.</li>
+          <li><span className="font-semibold text-[var(--rh-ink)]">4.</span> Click Load unpacked and select the unzipped folder.</li>
+        </ol>
+        <div className="mt-7 flex flex-wrap gap-3">
+          <a
+            href="/downloads/rabbit-holes-extension.zip"
+            download
+            className="rh-primary rounded-full px-6 py-3 text-[15px] font-semibold no-underline"
+          >
+            Download zip ↓
+          </a>
+          <Link href="/install" className="rh-surface-2 rounded-full border px-6 py-3 text-[15px] font-semibold no-underline">
+            Full steps
+          </Link>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
