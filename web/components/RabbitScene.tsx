@@ -36,8 +36,7 @@ export function RabbitScene({ className = "" }: { readonly className?: string })
           width: "42%",
           height: "34%",
           borderRadius: "50%",
-          background:
-            "radial-gradient(ellipse at center, rgba(70,72,80,0.55) 0%, rgba(96,99,108,0.28) 48%, rgba(120,123,132,0.06) 72%, transparent 80%)",
+          background: "rgba(96,99,108,0.22)",
           filter: "blur(5px)",
         }}
       />
@@ -47,7 +46,7 @@ export function RabbitScene({ className = "" }: { readonly className?: string })
           width: "30%",
           height: "18%",
           borderRadius: "50%",
-          background: "radial-gradient(ellipse at center, rgba(28,30,36,0.7) 0%, rgba(40,42,50,0.4) 55%, transparent 78%)",
+          background: "rgba(28,30,36,0.54)",
           filter: "blur(3px)",
         }}
       />

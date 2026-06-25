@@ -33,7 +33,7 @@ function Breakdown({ title, items, color }: { title: string; items: { label: str
               <span className="font-mono text-[12px] text-[var(--rh-muted)]">{item.pct}%</span>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-[var(--rh-surface-3)]">
-              <div className="h-full rounded-full" style={{ width: `${item.pct}%`, background: `linear-gradient(90deg,${color},#d7b079)` }} />
+              <div className="h-full rounded-full" style={{ width: `${item.pct}%`, background: color }} />
             </div>
           </div>
         ))}

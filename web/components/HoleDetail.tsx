@@ -108,14 +108,14 @@ export function HoleDetail({ hole }: { hole: RabbitHole }) {
 
           <aside className="space-y-5 lg:sticky lg:top-8">
             <div className="rh-surface overflow-hidden rounded-[18px] border px-6 pb-6 pt-3 shadow-[0_2px_16px_rgba(70,45,20,.06)]">
-              <div className="-mx-6 mb-2 flex h-[88px] items-end justify-center bg-[radial-gradient(120%_120%_at_50%_120%,rgba(95,138,92,.18),transparent_70%)]">
+              <div className="-mx-6 mb-2 flex h-[88px] items-end justify-center bg-[var(--rh-surface-2)]">
                 <img src="/assets/images/rabbit-hole-hero.png" alt="" className="h-[82px] w-[110px] object-contain" />
               </div>
               <div className="text-center">
                 <div className="rh-display text-[42px] font-semibold leading-none" style={{ color: accent.hex }}>{Math.round(hole.confidence * 100)}%</div>
                 <div className="mt-1 text-[12px] uppercase tracking-[0.14em] text-[#a8967d]">match confidence</div>
               </div>
-              <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[var(--rh-line)]"><div className="h-full rounded-full" style={{ width: `${Math.round(hole.confidence * 100)}%`, background: `linear-gradient(90deg,${accent.hex},#e0865a)` }} /></div>
+              <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[var(--rh-line)]"><div className="h-full rounded-full" style={{ width: `${Math.round(hole.confidence * 100)}%`, background: accent.hex }} /></div>
               <div className="mt-5 divide-y divide-[var(--rh-line)]">
                 {counts.map((k) => (
                   <div key={k.label} className="flex items-center justify-between py-2.5">

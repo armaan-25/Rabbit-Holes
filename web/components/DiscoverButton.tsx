@@ -85,12 +85,9 @@ function RabbitHoleLoading() {
         }
       `}</style>
 
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(246,239,225,.10),transparent_38%)]" />
-
       <div className="relative flex max-h-[88vh] w-full max-w-[760px] flex-col overflow-hidden rounded-[34px] border border-[#f3e8d442] bg-[#f7edda] shadow-[0_40px_130px_rgba(18,11,5,.58)]">
         {/* Scene — cream paper fills the whole upper region, sprite centered, words converging into the hole */}
-        <div className="relative flex min-h-[260px] flex-1 items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_center,rgba(255,252,244,.94),rgba(246,239,225,.82)_64%,rgba(226,213,193,.92))] px-6 pt-10 pb-14">
-          <div className="pointer-events-none absolute inset-0 opacity-65 mix-blend-multiply [animation:loading-grain_3.2s_ease-in-out_infinite] [background-image:radial-gradient(rgba(120,90,50,.13)_1.1px,transparent_1.1px)] [background-size:24px_24px]" />
+        <div className="relative flex min-h-[260px] flex-1 items-center justify-center overflow-hidden bg-[#f4ead7] px-6 pt-10 pb-14">
 
           <div className="relative grid place-items-center">
             <div className="absolute h-52 w-[420px] rounded-full bg-[#5f8a5c]/12 blur-3xl" />
@@ -118,7 +115,7 @@ function RabbitHoleLoading() {
 
         <div className="shrink-0 border-t border-[#f3e8d43b] bg-[#18100a] px-8 py-9 text-center">
           <div className="mx-auto mb-6 h-1.5 max-w-[520px] overflow-hidden rounded-full bg-[#3a2a18]">
-            <div className="h-full w-2/3 rounded-full bg-[linear-gradient(90deg,#c79a5b,#d8835a)] [animation:hole-breathe_1.6s_ease-in-out_infinite]" />
+            <div className="h-full w-2/3 rounded-full bg-[#c79a5b] [animation:hole-breathe_1.6s_ease-in-out_infinite]" />
           </div>
           <div className="rh-display text-[44px] font-semibold leading-none text-[#f8ecd6]">Building rabbit holes</div>
           <div className="mt-3 text-[17px] italic text-[#b8a486]">Following the thread through your session.</div>

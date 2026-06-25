@@ -40,7 +40,7 @@ export function HoleCard({
           {hole.status === "active" && (
             <>
               <div className="pointer-events-none absolute inset-0 rounded-[20px] shadow-[0_0_0_1px_rgba(95,138,92,.24),0_12px_34px_rgba(95,138,92,.12)]" />
-              <div className="absolute bottom-0 left-0 top-0 w-1 bg-[linear-gradient(#6fa36a,#5f8a5c)]" />
+              <div className="absolute bottom-0 left-0 top-0 w-1 bg-[#5f8a5c]" />
             </>
           )}
           <div className="relative">
@@ -118,7 +118,7 @@ export function HoleCard({
               <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--rh-line)]">
                 <div
                   className="h-full rounded-full"
-                  style={{ width: `${Math.round(hole.confidence * 100)}%`, background: `linear-gradient(90deg,${accent.hex},${accent.soft})` }}
+                  style={{ width: `${Math.round(hole.confidence * 100)}%`, background: accent.hex }}
                 />
               </div>
               <span className="text-[13.5px] font-semibold tabular-nums" style={{ color: accent.hex }}>

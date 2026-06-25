@@ -137,9 +137,7 @@ function HeatCell({ cell, max, selected, holes, onSelect }: { readonly cell: Cel
   const hole = day ? holes.find((item) => item.title === day.topic) ?? holes[0] : undefined;
   const accent = hole ? ACCENTS[hole.accent].hex : "#d9ccb6";
   const intensity = day ? Math.max(0.18, day.minutes / max) : 0;
-  const background = day
-    ? `linear-gradient(145deg, ${hexWithAlpha(accent, 0.28 + intensity * 0.6)}, ${hexWithAlpha(accent, 0.12 + intensity * 0.22)}), var(--rh-surface-2)`
-    : "var(--rh-surface-2)";
+  const background = day ? hexWithAlpha(accent, 0.18 + intensity * 0.48) : "var(--rh-surface-2)";
 
   return (
     <button

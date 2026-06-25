@@ -22,8 +22,6 @@ export function RabbitDive() {
           onClick={clear}
         >
           <div className="absolute inset-0 bg-[#1a120c]/76 backdrop-blur-[10px]" />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(246,239,225,.12),transparent_46%)]" />
-
           <motion.div
             className="relative w-full max-w-[720px] overflow-hidden rounded-[34px] border border-[#f3e8d426] bg-[#17100b] shadow-[0_34px_110px_rgba(18,11,5,.48)]"
             initial={{ scale: 0.96, y: 18, opacity: 0 }}
@@ -32,8 +30,7 @@ export function RabbitDive() {
             transition={{ type: "spring", stiffness: 260, damping: 26 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="relative h-[360px] overflow-hidden border-b border-[#f3e8d41f] bg-[radial-gradient(ellipse_at_center,#fff8ea_0%,#f2e9d6_68%,#e6d8bf_100%)]">
-              <div className="absolute inset-0 opacity-40 [background-image:radial-gradient(rgba(120,90,50,.14)_1px,transparent_1px)] [background-size:22px_22px]" />
+            <div className="relative h-[360px] overflow-hidden border-b border-[#f3e8d41f] bg-[#f2e9d6]">
 
               {RESULT_WORDS.map((word, i) => (
                 <motion.span

@@ -62,7 +62,7 @@ export function LandingDemo() {
         </div>
 
         {/* stage */}
-        <div className="relative h-[330px] overflow-hidden bg-[radial-gradient(110%_120%_at_50%_0%,rgba(246,239,225,.22),transparent_62%),#18100a] sm:h-[350px]">
+        <div className="relative h-[330px] overflow-hidden bg-[#18100a] sm:h-[350px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={i}
@@ -139,7 +139,7 @@ const Cluster = () => (
     <div className="mt-2 max-w-[44ch] text-[15px] text-[#cdbd9f]">Clustering the session into the questions you were actually chasing.</div>
     <div className="mt-6 h-1.5 w-[260px] overflow-hidden rounded-full bg-[#4a3928]">
       <motion.div
-        className="h-full rounded-full bg-[linear-gradient(90deg,#c2703f,#e0865a)]"
+        className="h-full rounded-full bg-[#c2703f]"
         initial={{ width: "8%" }}
         animate={{ width: "100%" }}
         transition={{ duration: 2.6, ease: "easeInOut" }}
@@ -172,7 +172,7 @@ const Holes = () => (
           <p className="mt-1.5 text-[13.5px] text-[#cdbd9f]">{h.desc}</p>
           <div className="mt-4 flex items-center gap-2">
             <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#4a3928]">
-              <div className="h-full rounded-full" style={{ width: `${h.match}%`, background: `linear-gradient(90deg,${h.dot},#e0865a)` }} />
+              <div className="h-full rounded-full" style={{ width: `${h.match}%`, background: h.dot }} />
             </div>
             <span className="text-[12.5px] font-semibold tabular-nums" style={{ color: h.dot }}>{h.match}%</span>
           </div>
@@ -203,8 +203,7 @@ const Map = () => (
       </div>
     </div>
     <div className="grid h-[250px] overflow-hidden rounded-[18px] border border-[#4a3928] bg-[#1b130d] shadow-[0_18px_50px_rgba(25,15,6,.22)] sm:h-[262px] sm:grid-cols-[minmax(0,1fr)_210px]">
-      <div className="relative overflow-hidden [background-image:radial-gradient(rgba(194,112,63,.18)_1px,transparent_1px)] [background-size:22px_22px]">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(120,90,50,.10),transparent_62%)]" />
+      <div className="relative overflow-hidden bg-[#1b130d]">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
           <defs>
             <marker id="demo-arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth">
