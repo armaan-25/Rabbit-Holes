@@ -87,11 +87,11 @@ const STEPS = [
 ];
 
 const BROWSERS = [
-  { name: "Chrome", status: "Available now" },
-  { name: "Edge", status: "Chromium install" },
-  { name: "Brave", status: "Chromium install" },
-  { name: "Arc", status: "Chromium install" },
-  { name: "Opera", status: "Chromium install" },
+  { name: "Chrome", status: "Manual install" },
+  { name: "Edge", status: "Manual install" },
+  { name: "Brave", status: "Manual install" },
+  { name: "Arc", status: "Manual install" },
+  { name: "Opera", status: "Manual install" },
   { name: "Firefox", status: "Coming next" },
   { name: "Safari", status: "Coming next" },
 ];
@@ -451,7 +451,7 @@ function InstallInstructionsPopup({ onClose }: { readonly onClose: () => void })
           </button>
         </div>
         <p className="rh-muted mt-3 text-[16px] leading-7">
-          Chrome Web Store review is pending, so install manually for now.
+          The store listing is in review. For now, install the extension directly with Chrome&apos;s Load unpacked flow.
         </p>
         <ol className="mt-5 space-y-3 text-[15.5px] leading-6 text-[var(--rh-ink-soft)]">
           <li><span className="font-semibold text-[var(--rh-ink)]">1.</span> Download and unzip the extension.</li>

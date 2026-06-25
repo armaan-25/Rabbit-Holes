@@ -18,19 +18,19 @@ export default function InstallPage() {
         <div className="rh-faint mt-12 text-[12px] font-bold uppercase tracking-[0.24em]">Install</div>
         <h1 className="rh-display rh-ink mt-3 text-[52px] font-semibold leading-none">Install the extension</h1>
         <p className="rh-muted mt-5 max-w-[680px] text-[18px] leading-8">
-          Chrome, Edge, Brave, Arc, and Opera can use the same Chromium extension package while the Chrome Web Store listing is not live yet.
+          Chrome, Edge, Brave, Arc, and Opera can use the same Chromium extension package. The store listing is in review, so install manually for now.
         </p>
         <section className="rh-surface mt-7 rounded-[22px] border p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="rh-faint text-[11px] font-bold uppercase tracking-[0.22em]">Manual install during review</div>
-              <h2 className="rh-display rh-ink mt-2 text-[28px] font-semibold leading-tight">Use Rabbit Holes before the Chrome Web Store approval lands.</h2>
+              <div className="rh-faint text-[11px] font-bold uppercase tracking-[0.22em]">Early access</div>
+              <h2 className="rh-display rh-ink mt-2 text-[28px] font-semibold leading-tight">Install the working extension directly.</h2>
               <p className="rh-muted mt-2 max-w-[62ch] text-[15.5px] leading-7">
-                The extension works now. Until the public store listing is approved, install it manually with Load unpacked.
+                The public store listing is still being reviewed. Until it is approved, download the package and load it from Chrome&apos;s Extensions page.
               </p>
             </div>
-            <div className="rounded-full border border-[#5f8a5c33] bg-[#eef5e9] px-4 py-2 text-[13px] font-semibold text-[#466d40]">
-              Chrome review pending
+            <div className="shrink-0 rounded-full border border-[var(--rh-line)] bg-[var(--rh-surface-2)] px-4 py-2 text-[13px] font-semibold text-[var(--rh-ink-soft)]">
+              Store listing in review
             </div>
           </div>
         </section>
@@ -54,7 +54,7 @@ export default function InstallPage() {
         <div className="rh-surface mt-8 rounded-[20px] border p-6">
           <h2 className="rh-display rh-ink text-[24px] font-semibold">Send this to a tester</h2>
           <p className="rh-muted mt-3 text-[15.5px] leading-7">
-            Rabbit Holes is waiting on Chrome Web Store review, so install is manual for now: visit this page, download the zip, unzip it, open chrome://extensions, enable Developer mode, click Load unpacked, select the unzipped folder, pin Rabbit Holes, sign in, browse a few related pages, then click Build rabbit holes.
+            Rabbit Holes is available as a direct install while the store listing is reviewed: visit this page, download the zip, unzip it, open chrome://extensions, enable Developer mode, click Load unpacked, select the unzipped folder, pin Rabbit Holes, sign in, browse a few related pages, then click Build rabbit holes.
           </p>
         </div>
       </div>
