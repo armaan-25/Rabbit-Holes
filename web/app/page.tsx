@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Wordmark } from "@/components/Logo";
 import { LandingDemo } from "@/components/LandingDemo";
+import { authCallbackUrl } from "@/lib/auth-urls";
 
 /** Compact theme toggle for the marketing header (mirrors the sidebar toggle). */
 function HeaderThemeToggle() {
@@ -37,7 +38,7 @@ async function signInWithGoogle() {
     const { supabase } = await import("@/lib/supabase/client");
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=/dashboard` },
+      options: { redirectTo: authCallbackUrl("/dashboard") },
     });
     if (error) throw error;
   } catch {

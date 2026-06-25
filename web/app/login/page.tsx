@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { Wordmark } from "@/components/Logo";
+import { authCallbackUrl } from "@/lib/auth-urls";
 
 export default function LoginPage() {
   return (
@@ -47,7 +48,7 @@ function LoginForm() {
     await new Promise((resolve) => window.setTimeout(resolve, 180));
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
+      options: { redirectTo: authCallbackUrl(next) },
     });
     if (error) {
       setTransitioning(false);

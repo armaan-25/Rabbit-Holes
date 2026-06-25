@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { Wordmark } from "@/components/Logo";
+import { authCallbackUrl } from "@/lib/auth-urls";
 
 export default function SignupPage() {
   return (
@@ -29,7 +30,7 @@ function SignupForm() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
+      options: { emailRedirectTo: authCallbackUrl(next) },
     });
     setBusy(false);
     if (error) {

@@ -6,6 +6,7 @@ import { PluginHost } from "@/components/PluginHost";
 import { YouAreHere } from "@/components/shared/YouAreHere";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://userabbitholes.com"),
   title: "Rabbit Holes — Smart history for your research.",
   description: "Your browsing, understood as investigations.",
   icons: {
