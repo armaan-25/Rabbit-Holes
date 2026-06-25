@@ -4,16 +4,20 @@ import { clusterHoleToRabbitHole, hasMeaningfulNewContext, holeToDiscovery, mark
 import { useApp } from "@/lib/store";
 import type { CSSProperties } from "react";
 import { useState } from "react";
+import { useSessionStats } from "@/hooks/useSessionStats";
 
 /** Triggers the discovery overlay from a real /cluster response. */
 export function DiscoverButton() {
   const trigger = useApp((s) => s.triggerDiscovery);
   const setLiveHoles = useApp((s) => s.setLiveHoles);
+  const stats = useSessionStats();
   const [busy, setBusy] = useState(false);
   const [label, setLabel] = useState("Build rabbit holes");
+  const [notice, setNotice] = useState<null | "empty" | "error">(null);
 
   async function discover() {
     if (busy) return;
+    setNotice(null);
     setBusy(true);
     setLabel("Clustering…");
 
@@ -21,6 +25,7 @@ export function DiscoverButton() {
       const cluster = await runCluster();
       if (!hasMeaningfulNewContext(cluster)) {
         setLabel("No new browsing yet");
+        setNotice("empty");
         return;
       }
       setLiveHoles(cluster.holes.map((hole) => clusterHoleToRabbitHole(hole, cluster.pages, cluster.searches)));
@@ -29,6 +34,7 @@ export function DiscoverButton() {
 
       if (!next) {
         setLabel("No new rabbit holes");
+        setNotice("empty");
         return;
       }
 
@@ -38,6 +44,7 @@ export function DiscoverButton() {
     } catch (err) {
       console.error("cluster failed", err);
       setLabel("Backend offline");
+      setNotice("error");
     } finally {
       setBusy(false);
       window.setTimeout(() => setLabel("Build rabbit holes"), 1300);
@@ -54,51 +61,49 @@ export function DiscoverButton() {
         <span className="relative inline-flex items-center gap-2">{label}</span>
       </button>
       {busy && <RabbitHoleLoading />}
+      {notice === "empty" && <BuildNotice type="empty" stats={stats} onClose={() => setNotice(null)} />}
+      {notice === "error" && <BuildNotice type="error" stats={stats} onClose={() => setNotice(null)} />}
     </>
   );
 }
 
 const WORDS = [
-  { text: "tabs", x: "-220px", y: "-116px", d: "0s" },
-  { text: "searches", x: "210px", y: "-92px", d: ".24s" },
-  { text: "links", x: "-190px", y: "82px", d: ".48s" },
-  { text: "questions", x: "190px", y: "86px", d: ".72s" },
+  { text: "tabs", x: "-240px", y: "-128px", d: "0s" },
+  { text: "searches", x: "230px", y: "-106px", d: ".18s" },
+  { text: "links", x: "-226px", y: "84px", d: ".36s" },
+  { text: "questions", x: "218px", y: "86px", d: ".54s" },
+  { text: "notes", x: "-50px", y: "-160px", d: ".72s" },
+  { text: "pages", x: "42px", y: "142px", d: ".9s" },
 ];
 
 function RabbitHoleLoading() {
   return (
-    <div className="fixed inset-0 z-[70] grid place-items-center overflow-hidden bg-[#140d08]/72 px-4 backdrop-blur-[8px]">
+    <div className="fixed inset-0 z-[70] grid place-items-center overflow-hidden bg-[#140d08]/76 px-4 backdrop-blur-[8px]">
       <style>{`
         @keyframes word-to-hole {
           0% { transform: translate(var(--x), var(--y)) scale(1); opacity: 0; filter: blur(0); }
-          16% { opacity: .62; }
-          66% { opacity: .44; }
-          100% { transform: translate(0, 18px) scale(.22); opacity: 0; filter: blur(2.2px); }
+          14% { opacity: .58; }
+          72% { opacity: .42; }
+          100% { transform: translate(0, 28px) scale(.18); opacity: 0; filter: blur(2px); }
         }
-        @keyframes hole-breathe {
-          0%, 100% { transform: scale(1); filter: saturate(.98) contrast(1.02); }
-          50% { transform: scale(1.025); filter: saturate(1.05) contrast(1.08); }
-        }
-        @keyframes loading-grain {
-          0%, 100% { opacity: .28; transform: translate3d(0,0,0); }
-          50% { opacity: .42; transform: translate3d(-1%,1%,0); }
+        @keyframes load-bar {
+          0% { transform: translateX(-100%); }
+          52% { transform: translateX(-18%); }
+          100% { transform: translateX(100%); }
         }
       `}</style>
 
-      <div className="relative flex max-h-[88vh] w-full max-w-[760px] flex-col overflow-hidden rounded-[34px] border border-[#f3e8d442] bg-[#f7edda] shadow-[0_40px_130px_rgba(18,11,5,.58)]">
-        {/* Scene — cream paper fills the whole upper region, sprite centered, words converging into the hole */}
-        <div className="relative flex min-h-[260px] flex-1 items-center justify-center overflow-hidden bg-[#f4ead7] px-6 pt-10 pb-14">
-
+      <div className="relative flex max-h-[88vh] w-full max-w-[760px] flex-col overflow-hidden rounded-[34px] border border-[#f3e8d442] bg-[#17100b] shadow-[0_40px_130px_rgba(18,11,5,.58)]">
+        <div className="relative flex min-h-[350px] flex-1 items-center justify-center overflow-hidden bg-[#2b2117] px-6 pb-10 pt-10">
           <div className="relative grid place-items-center">
-            <div className="absolute h-52 w-[420px] rounded-full bg-[#5f8a5c]/12 blur-3xl" />
             {WORDS.map((word) => (
               <span
                 key={word.text}
-                className="absolute left-1/2 top-1/2 rh-display select-none text-[22px] italic tracking-wide text-[#8a6a48]/42"
+                className="absolute left-1/2 top-1/2 rh-display select-none text-[25px] italic tracking-wide text-[#d7c3a1]/70"
                 style={{
                   "--x": word.x,
                   "--y": word.y,
-                  animation: `word-to-hole 2.15s cubic-bezier(.55,0,.22,1) ${word.d} infinite`,
+                  animation: `word-to-hole 2.45s cubic-bezier(.52,0,.18,1) ${word.d} infinite`,
                 } as CSSProperties}
               >
                 {word.text}
@@ -107,20 +112,62 @@ function RabbitHoleLoading() {
             <img
               src="/assets/images/rabbit-hole-hero.png"
               alt=""
-              className="relative h-auto w-[460px] max-h-[40vh] max-w-full object-contain [animation:hole-breathe_2.4s_ease-in-out_infinite]"
+              className="relative h-auto w-[520px] max-h-[44vh] max-w-full object-contain"
             />
-            <div className="absolute bottom-[40px] h-12 w-52 rounded-full bg-black/24 blur-2xl" />
           </div>
         </div>
 
-        <div className="shrink-0 border-t border-[#f3e8d43b] bg-[#18100a] px-8 py-9 text-center">
-          <div className="mx-auto mb-6 h-1.5 max-w-[520px] overflow-hidden rounded-full bg-[#3a2a18]">
-            <div className="h-full w-2/3 rounded-full bg-[#c79a5b] [animation:hole-breathe_1.6s_ease-in-out_infinite]" />
+        <div className="shrink-0 border-t border-[#f3e8d43b] bg-[#18100a] px-8 py-8 text-center">
+          <div className="mx-auto mb-6 h-2 max-w-[520px] overflow-hidden rounded-full bg-[#3a2a18]">
+            <div className="h-full w-3/5 rounded-full bg-[#c79a5b] [animation:load-bar_1.55s_cubic-bezier(.45,0,.2,1)_infinite]" />
           </div>
           <div className="rh-display text-[44px] font-semibold leading-none text-[#f8ecd6]">Building rabbit holes</div>
           <div className="mt-3 text-[17px] italic text-[#b8a486]">Following the thread through your session.</div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function BuildNotice({ type, stats, onClose }: { readonly type: "empty" | "error"; readonly stats: ReturnType<typeof useSessionStats>; readonly onClose: () => void }) {
+  const empty = type === "empty";
+  return (
+    <div className="fixed inset-0 z-[75] grid place-items-center bg-[#140d08]/72 px-4 backdrop-blur-[8px]">
+      <div className="rh-surface w-full max-w-[560px] rounded-[28px] border p-7 text-center shadow-[0_34px_90px_rgba(18,11,5,.42)]">
+        <div className="rh-faint text-[11px] font-semibold uppercase tracking-[0.22em]">
+          {empty ? "Nothing to build" : "Could not build"}
+        </div>
+        <h2 className="rh-display rh-ink mt-3 text-[34px] font-semibold leading-tight">
+          {empty ? "No new rabbit hole yet" : "Backend is not reachable"}
+        </h2>
+        <p className="rh-muted mx-auto mt-3 max-w-[42ch] text-[15.5px] leading-6">
+          {empty
+            ? "Browse a few related pages or searches first. Rabbit Holes needs a real trail before it can cluster an investigation."
+            : "The app could not reach the clustering service. Try again after the backend finishes waking up or redeploying."}
+        </p>
+        <div className="rh-surface-2 mt-6 grid grid-cols-3 divide-x divide-[var(--rh-line)] rounded-[18px] border px-3 py-4">
+          <MiniBuildStat label="pages" value={stats.pages} />
+          <MiniBuildStat label="searches" value={stats.searches} />
+          <MiniBuildStat label="tabs" value={stats.tabs} />
+        </div>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <button onClick={onClose} className="rh-primary rounded-full px-6 py-3 text-[14px] font-semibold">
+            {empty ? "Keep browsing" : "Close"}
+          </button>
+          <a href="/install" className="rh-surface-2 rounded-full border px-6 py-3 text-[14px] font-semibold no-underline">
+            Check extension setup
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MiniBuildStat({ label, value }: { readonly label: string; readonly value: number }) {
+  return (
+    <div className="px-3 text-center">
+      <div className="rh-display rh-ink text-[26px] font-semibold tabular-nums">{value}</div>
+      <div className="rh-faint mt-1 text-[10px] font-semibold uppercase tracking-[0.16em]">{label}</div>
     </div>
   );
 }

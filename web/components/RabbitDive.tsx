@@ -30,15 +30,15 @@ export function RabbitDive() {
             transition={{ type: "spring", stiffness: 260, damping: 26 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="relative h-[360px] overflow-hidden border-b border-[#f3e8d41f] bg-[#f2e9d6]">
+            <div className="relative h-[390px] overflow-hidden border-b border-[#f3e8d41f] bg-[#2b2117]">
 
               {RESULT_WORDS.map((word, i) => (
                 <motion.span
                   key={word}
-                  className="absolute rh-display select-none text-[22px] italic tracking-wide text-[#8a6a48]/48"
+                  className="absolute rh-display select-none text-[24px] italic tracking-wide text-[#d7c3a1]/58"
                   initial={{ opacity: 0, y: 12 }}
                   animate={{
-                    opacity: [0, 0.58, 0],
+                    opacity: [0, 0.62, 0],
                     x: [i % 2 === 0 ? -96 : 96, 0],
                     y: [i < 3 ? -56 : 56, 8],
                     scale: [1, 0.34],
@@ -51,16 +51,15 @@ export function RabbitDive() {
               ))}
 
               <motion.div
-                className="absolute inset-x-0 bottom-[-54px] mx-auto h-[330px] w-[560px]"
+                className="absolute inset-x-0 bottom-[10px] mx-auto h-[300px] w-[540px]"
                 initial={{ y: 18, scale: 0.94, opacity: 0 }}
                 animate={{ y: 0, scale: 1, opacity: 1 }}
                 transition={{ delay: 0.12, duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
               >
-                <div className="absolute left-1/2 top-[56%] h-24 w-64 -translate-x-1/2 rounded-full bg-black/20 blur-3xl" />
                 <img
                   src="/assets/images/rabbit-hole-hero.png"
                   alt=""
-                  className="relative h-full w-full object-contain drop-shadow-[0_18px_36px_rgba(50,34,18,.18)]"
+                  className="relative h-full w-full object-contain drop-shadow-[0_18px_36px_rgba(18,11,5,.28)]"
                 />
               </motion.div>
             </div>
