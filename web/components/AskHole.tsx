@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import type { RabbitHole } from "@/lib/types";
 import { faviconFor } from "@/lib/ui";
-import { askHole, type ChatTurn } from "@/lib/api";
+import { apiErrorMessage, askHole, type ChatTurn } from "@/lib/api";
 
 interface Message extends ChatTurn {
   citations?: string[];
@@ -33,8 +33,8 @@ export function AskHole({ hole }: { hole: RabbitHole }) {
     try {
       const res = await askHole(hole, q, history);
       setMessages((m) => [...m, { role: "assistant", content: res.answer, citations: res.citations }]);
-    } catch {
-      setError("Couldn't reach the backend. Start the FastAPI server (cd backend → uvicorn app.main:app) to ask questions grounded in these pages.");
+    } catch (err) {
+      setError(apiErrorMessage(err, "ask this rabbit hole"));
     } finally {
       setLoading(false);
       requestAnimationFrame(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }));

@@ -134,7 +134,7 @@ export default function Dashboard() {
           window.history.replaceState(null, "", "/dashboard");
           const status = err instanceof ClusterError ? err.status : undefined;
           setRouteErrorStatus(status);
-          setSyncLabel(status === 401 || status === 403 ? "sign in again" : status === 429 ? "rate limited" : status && status >= 500 ? "service error" : "backend offline");
+          setSyncLabel(status === 401 || status === 403 ? "sign in again" : status === 429 ? "rate limited" : status && status >= 500 ? "service error" : "connection issue");
           setRouteBuildState("error");
         }
       }

@@ -6,7 +6,7 @@ import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase/client";
 import type { RabbitHole } from "@/lib/types";
 import { BunnyO } from "@/components/Logo";
-import { clearBackendData, exportBackendData } from "@/lib/api";
+import { apiErrorMessage, clearBackendData, exportBackendData } from "@/lib/api";
 
 type Row = { id: string; name: string; body: string; default: boolean; tone?: string };
 
@@ -72,7 +72,13 @@ export default function SettingsPage() {
   async function exportData() {
     const holes = readHoles();
     setDataMsg("Preparing export...");
-    const backend = await exportBackendData().catch(() => null);
+    let backend: unknown | null = null;
+    let backendError = "";
+    try {
+      backend = await exportBackendData();
+    } catch (err) {
+      backendError = apiErrorMessage(err, "export backend capture data");
+    }
     const payload = { exportedAt: new Date().toISOString(), email: user?.email ?? null, settings, holes, backend };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -81,7 +87,7 @@ export default function SettingsPage() {
     a.download = `rabbit-holes-export-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    setDataMsg(`Exported ${holes.length} local hole${holes.length === 1 ? "" : "s"}${backend ? " plus backend capture data" : ""}.`);
+    setDataMsg(backendError || `Exported ${holes.length} local hole${holes.length === 1 ? "" : "s"}${backend ? " plus backend capture data" : ""}.`);
   }
 
   function clearDormant() {
@@ -96,7 +102,12 @@ export default function SettingsPage() {
   async function resetFresh() {
     if (!window.confirm("Erase all rabbit holes and sign out? This cannot be undone.")) return;
     setDataMsg("Clearing backend data...");
-    await clearBackendData().catch(() => null);
+    try {
+      await clearBackendData();
+    } catch (err) {
+      setDataMsg(apiErrorMessage(err, "clear backend data"));
+      return;
+    }
     window.localStorage.removeItem(LIVE_HOLES_KEY);
     await supabase.auth.signOut();
     window.location.replace("/login?next=/dashboard");

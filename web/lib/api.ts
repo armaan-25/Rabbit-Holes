@@ -13,6 +13,25 @@ export class ApiError extends Error {
   }
 }
 
+export function apiErrorMessage(error: unknown, action: string): string {
+  if (!(error instanceof ApiError)) return `Could not ${action}. Try again in a moment.`;
+  if (error.status === 401 || error.status === 403) return `Sign in again to ${action}.`;
+  if (error.status === 429) return `Rabbit Holes is rate limited right now. Wait a bit, then try again.`;
+  if (error.status && error.status >= 500) return `The backend is reachable, but ${action} failed inside the service. Try again after the backend redeploy finishes.`;
+  if (typeof error.status === "number") return `Could not ${action}. The backend returned ${error.status}.`;
+  return `Could not reach the Rabbit Holes backend. Check the deployment, then try again.`;
+}
+
+async function apiErrorFromResponse(res: Response, label: string): Promise<ApiError> {
+  let detail: unknown = null;
+  try {
+    detail = await res.json();
+  } catch {
+    detail = await res.text().catch(() => null);
+  }
+  return new ApiError(`${label} failed: ${res.status}`, res.status, detail);
+}
+
 async function authHeaders(extra: HeadersInit = {}): Promise<HeadersInit> {
   if (typeof window === "undefined") return extra;
   const { supabase } = await import("@/lib/supabase/client");
@@ -50,12 +69,17 @@ export interface AskAnswer {
 }
 
 export async function askHole(hole: RabbitHole, question: string, history: ChatTurn[]): Promise<AskAnswer> {
-  const res = await fetch(`${BACKEND_URL}/ask`, {
-    method: "POST",
-    headers: await authHeaders({ "Content-Type": "application/json" }),
-    body: JSON.stringify({ hole: holeContext(hole), question, history }),
-  });
-  if (!res.ok) throw new Error(`ask failed: ${res.status}`);
+  let res: Response;
+  try {
+    res = await fetch(`${BACKEND_URL}/ask`, {
+      method: "POST",
+      headers: await authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ hole: holeContext(hole), question, history }),
+    });
+  } catch (error) {
+    throw new ApiError("Could not reach the Rabbit Holes backend.", undefined, error);
+  }
+  if (!res.ok) throw await apiErrorFromResponse(res, "ask");
   return res.json();
 }
 
@@ -83,29 +107,31 @@ export async function synthesizeHole(hole: RabbitHole): Promise<Brief> {
   } catch (error) {
     throw new ApiError("Could not reach the Rabbit Holes backend.", undefined, error);
   }
-  if (!res.ok) {
-    let detail: unknown = null;
-    try {
-      detail = await res.json();
-    } catch {
-      detail = await res.text().catch(() => null);
-    }
-    throw new ApiError(`synthesize failed: ${res.status}`, res.status, detail);
-  }
+  if (!res.ok) throw await apiErrorFromResponse(res, "synthesize");
   return res.json();
 }
 
 export async function exportBackendData(): Promise<unknown | null> {
-  const res = await fetch(`${BACKEND_URL}/export`, { headers: await authHeaders() });
+  let res: Response;
+  try {
+    res = await fetch(`${BACKEND_URL}/export`, { headers: await authHeaders() });
+  } catch (error) {
+    throw new ApiError("Could not reach the Rabbit Holes backend.", undefined, error);
+  }
   if (res.status === 401) return null;
-  if (!res.ok) throw new Error(`export failed: ${res.status}`);
+  if (!res.ok) throw await apiErrorFromResponse(res, "export");
   return res.json();
 }
 
 export async function clearBackendData(): Promise<void> {
-  const res = await fetch(`${BACKEND_URL}/clear`, { method: "POST", headers: await authHeaders({ "Content-Type": "application/json" }) });
+  let res: Response;
+  try {
+    res = await fetch(`${BACKEND_URL}/clear`, { method: "POST", headers: await authHeaders({ "Content-Type": "application/json" }) });
+  } catch (error) {
+    throw new ApiError("Could not reach the Rabbit Holes backend.", undefined, error);
+  }
   if (res.status === 401) return;
-  if (!res.ok) throw new Error(`clear failed: ${res.status}`);
+  if (!res.ok) throw await apiErrorFromResponse(res, "clear data");
 }
 
 export type HolePatch = {
@@ -115,22 +141,32 @@ export type HolePatch = {
 };
 
 export async function patchBackendHole(id: string, patch: HolePatch): Promise<void> {
-  const res = await fetch(`${BACKEND_URL}/holes/${encodeURIComponent(id)}`, {
-    method: "PATCH",
-    headers: await authHeaders({ "Content-Type": "application/json" }),
-    body: JSON.stringify(patch),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${BACKEND_URL}/holes/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: await authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(patch),
+    });
+  } catch (error) {
+    throw new ApiError("Could not reach the Rabbit Holes backend.", undefined, error);
+  }
   if (res.status === 401) return;
-  if (!res.ok) throw new Error(`hole patch failed: ${res.status}`);
+  if (!res.ok) throw await apiErrorFromResponse(res, "update hole");
 }
 
 export async function bulkPatchBackendHoles(ids: string[], action: "favorite" | "unfavorite" | "archive" | "restore" | "delete"): Promise<void> {
   if (!ids.length) return;
-  const res = await fetch(`${BACKEND_URL}/holes/bulk`, {
-    method: "POST",
-    headers: await authHeaders({ "Content-Type": "application/json" }),
-    body: JSON.stringify({ ids, action }),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${BACKEND_URL}/holes/bulk`, {
+      method: "POST",
+      headers: await authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ ids, action }),
+    });
+  } catch (error) {
+    throw new ApiError("Could not reach the Rabbit Holes backend.", undefined, error);
+  }
   if (res.status === 401) return;
-  if (!res.ok) throw new Error(`bulk hole patch failed: ${res.status}`);
+  if (!res.ok) throw await apiErrorFromResponse(res, "update holes");
 }
