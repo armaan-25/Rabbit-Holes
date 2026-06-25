@@ -15,9 +15,9 @@ class Limit:
 
 
 LIMITS = {
-    "events": Limit(int(os.environ.get("RATE_LIMIT_EVENTS_PER_MIN", "240")), 60),
-    "cluster": Limit(int(os.environ.get("RATE_LIMIT_CLUSTER_PER_HOUR", "20")), 3600),
-    "ai": Limit(int(os.environ.get("RATE_LIMIT_AI_PER_HOUR", "60")), 3600),
+    "events": Limit(int(os.environ.get("RATE_LIMIT_EVENTS_PER_MIN", "180")), 60),
+    "cluster": Limit(int(os.environ.get("RATE_LIMIT_CLUSTER_PER_HOUR", "8")), 3600),
+    "ai": Limit(int(os.environ.get("RATE_LIMIT_AI_PER_HOUR", "20")), 3600),
     "read": Limit(int(os.environ.get("RATE_LIMIT_READS_PER_MIN", "120")), 60),
 }
 
