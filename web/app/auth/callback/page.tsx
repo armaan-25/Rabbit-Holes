@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { isExtensionAuthNext } from "@/lib/auth-urls";
 
 export default function AuthCallbackPage() {
   return (
@@ -24,7 +25,7 @@ function AuthCallbackBody() {
         setMessage(error.message);
         return;
       }
-      const isExtensionFlow = next.startsWith("/extension-auth") || next.startsWith("/rabbit-auth");
+      const isExtensionFlow = isExtensionAuthNext(next);
       // Send first-time users through onboarding before their destination.
       const { data } = await supabase.auth.getUser();
       if (data.user && !data.user.user_metadata?.onboarded && !isExtensionFlow) {

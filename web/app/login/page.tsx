@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { Wordmark } from "@/components/Logo";
-import { authCallbackUrl } from "@/lib/auth-urls";
+import { authCallbackUrl, isExtensionAuthNext } from "@/lib/auth-urls";
 
 export default function LoginPage() {
   return (
@@ -36,7 +36,7 @@ function LoginForm() {
     }
 
     // First-time accounts go through onboarding before their destination.
-    const isExtensionFlow = next.startsWith("/extension-auth") || next.startsWith("/rabbit-auth");
+    const isExtensionFlow = isExtensionAuthNext(next);
     const onboarded = result.data.user?.user_metadata?.onboarded;
     window.location.replace(onboarded || isExtensionFlow ? next : `/onboarding?next=${encodeURIComponent(next)}`);
   }
