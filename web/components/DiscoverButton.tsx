@@ -1,6 +1,6 @@
 "use client";
 
-import { clusterHoleToRabbitHole, hasMeaningfulNewContext, holeToDiscovery, markDiscoverySeen, nextUnseenDiscovery, rememberClusterContext, runCluster } from "@/lib/discovery";
+import { clusterBuildState, clusterHoleToRabbitHole, holeToDiscovery, markDiscoverySeen, nextUnseenDiscovery, rememberClusterContext, runCluster, type ClusterBuildState } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
 import type { CSSProperties } from "react";
 import { useState } from "react";
@@ -13,7 +13,7 @@ export function DiscoverButton() {
   const stats = useSessionStats();
   const [busy, setBusy] = useState(false);
   const [label, setLabel] = useState("Build rabbit holes");
-  const [notice, setNotice] = useState<null | "empty" | "error">(null);
+  const [notice, setNotice] = useState<null | Exclude<ClusterBuildState, "ready"> | "error">(null);
 
   async function discover() {
     if (busy) return;
@@ -23,9 +23,10 @@ export function DiscoverButton() {
 
     try {
       const cluster = await runCluster();
-      if (!hasMeaningfulNewContext(cluster)) {
-        setLabel("No new browsing yet");
-        setNotice("empty");
+      const buildState = clusterBuildState(cluster);
+      if (buildState !== "ready") {
+        setLabel(buildState === "duplicate" ? "Already up to date" : buildState === "unclear" ? "No clear thread yet" : "No browsing yet");
+        setNotice(buildState);
         return;
       }
       setLiveHoles(cluster.holes.map((hole) => clusterHoleToRabbitHole(hole, cluster.pages, cluster.searches)));
@@ -34,7 +35,7 @@ export function DiscoverButton() {
 
       if (!next) {
         setLabel("No new rabbit holes");
-        setNotice("empty");
+        setNotice("duplicate");
         return;
       }
 
@@ -63,6 +64,8 @@ export function DiscoverButton() {
       </button>
       {busy && <RabbitHoleLoading />}
       {notice === "empty" && <BuildNotice type="empty" stats={stats} onClose={() => setNotice(null)} />}
+      {notice === "duplicate" && <BuildNotice type="duplicate" stats={stats} onClose={() => setNotice(null)} />}
+      {notice === "unclear" && <BuildNotice type="unclear" stats={stats} onClose={() => setNotice(null)} />}
       {notice === "error" && <BuildNotice type="error" stats={stats} onClose={() => setNotice(null)} />}
     </>
   );
@@ -130,9 +133,22 @@ export function RabbitHoleLoading() {
   );
 }
 
-export function BuildNotice({ type, stats, onClose }: { readonly type: "empty" | "error"; readonly stats: ReturnType<typeof useSessionStats>; readonly onClose: () => void }) {
+export function BuildNotice({ type, stats, onClose }: { readonly type: "empty" | "duplicate" | "unclear" | "error"; readonly stats: ReturnType<typeof useSessionStats>; readonly onClose: () => void }) {
   const empty = type === "empty";
-  if (empty) {
+  const duplicate = type === "duplicate";
+  const unclear = type === "unclear";
+  if (empty || duplicate || unclear) {
+    const eyebrow = empty ? "Not enough history" : duplicate ? "Already up to date" : "No clear thread yet";
+    const title = empty
+      ? "Uh oh, not enough search history to make a rabbit hole."
+      : duplicate
+        ? "You already built this rabbit hole."
+        : "There is history, but no clear rabbit hole yet.";
+    const body = empty
+      ? "Browse a few related searches and pages first. Rabbit Holes needs a real trail before it can cluster an investigation."
+      : duplicate
+        ? "Your current browsing trail has already been clustered. Browse a few new related pages or searches, then build again."
+        : "Rabbit Holes found browsing activity, but it was too scattered to form one clean investigation. Keep going on one thread, then try again.";
     return (
       <div className="fixed inset-0 z-[75] grid place-items-center bg-[#140d08]/76 px-4 backdrop-blur-[10px]">
         <style>{`
@@ -167,13 +183,13 @@ export function BuildNotice({ type, stats, onClose }: { readonly type: "empty" |
           <div className="bg-[#17100b] px-9 py-8 text-[#f3e8d4]">
             <div className="mb-3 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.22em] text-[#b69b77]">
               <span className="h-2 w-2 rounded-full bg-[#d6a95f] shadow-[0_0_14px_#d6a95f]" />
-              Not enough history
+              {eyebrow}
             </div>
             <h2 className="rh-display text-[42px] font-semibold leading-tight text-[#f6ecd9]">
-              Uh oh, not enough search history to make a rabbit hole.
+              {title}
             </h2>
             <p className="mt-4 max-w-[560px] text-[18px] leading-7 text-[#d8c8ad]">
-              Browse a few related searches and pages first. Rabbit Holes needs a real trail before it can cluster an investigation.
+              {body}
             </p>
             <div className="mt-7 grid max-w-[520px] grid-cols-3 divide-x divide-[#f3e8d426] rounded-[18px] border border-[#f3e8d426] bg-[#21170f] px-3 py-4">
               <MiniBuildStat label="pages" value={stats.pages} />

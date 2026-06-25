@@ -206,11 +206,23 @@ export function clusterSignature(cluster: ClusterResponse): string {
 }
 
 export function hasMeaningfulNewContext(cluster: ClusterResponse): boolean {
-  if (cluster.no_change) return false;
-  if (typeof window === "undefined") return true;
+  return clusterBuildState(cluster) === "ready";
+}
+
+export type ClusterBuildState = "ready" | "empty" | "duplicate" | "unclear";
+
+export function clusterBuildState(cluster: ClusterResponse): ClusterBuildState {
+  const pages = cluster.pages?.length ?? 0;
+  const searches = cluster.searches?.length ?? 0;
+  const holes = cluster.holes?.length ?? 0;
   const signature = clusterSignature(cluster);
-  if (signature === JSON.stringify({ pages: [], searches: [] })) return false;
-  return window.localStorage.getItem(LAST_CLUSTER_SIGNATURE_KEY) !== signature;
+  const emptySignature = JSON.stringify({ pages: [], searches: [] });
+
+  if (cluster.no_change) return pages || searches ? "duplicate" : "empty";
+  if (signature === emptySignature) return "empty";
+  if (typeof window !== "undefined" && window.localStorage.getItem(LAST_CLUSTER_SIGNATURE_KEY) === signature) return "duplicate";
+  if (holes === 0) return pages >= 3 || searches >= 1 ? "unclear" : "empty";
+  return "ready";
 }
 
 export function rememberClusterContext(cluster: ClusterResponse) {
