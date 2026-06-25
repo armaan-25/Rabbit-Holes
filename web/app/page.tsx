@@ -9,10 +9,10 @@ import { authCallbackUrl } from "@/lib/auth-urls";
 
 /** Compact theme toggle for the marketing header (mirrors the sidebar toggle). */
 function HeaderThemeToggle() {
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(true);
   useEffect(() => {
     const saved = window.localStorage.getItem("rabbit-hole-theme");
-    const isDark = saved === "dark";
+    const isDark = saved === "light" ? false : true;
     setDark(isDark);
     document.documentElement.classList.toggle("rabbit-dark", isDark);
   }, []);

@@ -41,7 +41,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className="rabbit-dark scroll-smooth" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem("rabbit-hole-theme")==="light"){document.documentElement.classList.remove("rabbit-dark")}else{document.documentElement.classList.add("rabbit-dark")}}catch(e){document.documentElement.classList.add("rabbit-dark")}`,
+          }}
+        />
+      </head>
       <body className="grain min-h-screen">
         <div className="flex min-h-screen">
           <Sidebar />

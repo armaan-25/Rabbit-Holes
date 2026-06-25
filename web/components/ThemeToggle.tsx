@@ -5,11 +5,11 @@ import { useEffect, useState } from "react";
 type Theme = "light" | "dark";
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
     const saved = window.localStorage.getItem("rabbit-hole-theme") as Theme | null;
-    const initial = saved === "dark" || saved === "light" ? saved : "light";
+    const initial = saved === "dark" || saved === "light" ? saved : "dark";
     setTheme(initial);
     document.documentElement.classList.toggle("rabbit-dark", initial === "dark");
   }, []);
