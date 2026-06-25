@@ -3,7 +3,7 @@
 import { HoleCard } from "@/components/HoleCard";
 import { EmptyHoles } from "@/components/EmptyHoles";
 import { BuildNotice, DiscoverButton, RabbitHoleLoading } from "@/components/DiscoverButton";
-import { clusterBuildState, clusterHoleToRabbitHole, forgetClusterContext, markDiscoveriesSeen, markDiscoveryUnseen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
+import { ClusterError, clusterBuildState, clusterHoleToRabbitHole, forgetClusterContext, markDiscoveriesSeen, markDiscoveryUnseen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
 import { bulkPatchBackendHoles, patchBackendHole } from "@/lib/api";
 import { useLibraryHoles } from "@/hooks/useHoles";
@@ -27,6 +27,7 @@ export default function Dashboard() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [syncLabel, setSyncLabel] = useState("live");
   const [routeBuildState, setRouteBuildState] = useState<"idle" | "loading" | Exclude<ClusterBuildState, "ready"> | "error">("idle");
+  const [routeErrorStatus, setRouteErrorStatus] = useState<number | undefined>(undefined);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"active" | "favorites" | "archived" | "all">("active");
   const [sort, setSort] = useState<"recent" | "pages" | "confidence">("recent");
@@ -97,6 +98,7 @@ export default function Dashboard() {
     let cancelled = false;
     setSyncLabel("clustering");
     setRouteBuildState("loading");
+    setRouteErrorStatus(undefined);
 
     async function buildFromRoute() {
       try {
@@ -130,7 +132,9 @@ export default function Dashboard() {
         console.error("cluster failed", err);
         if (!cancelled) {
           window.history.replaceState(null, "", "/dashboard");
-          setSyncLabel("backend offline");
+          const status = err instanceof ClusterError ? err.status : undefined;
+          setRouteErrorStatus(status);
+          setSyncLabel(status === 401 || status === 403 ? "sign in again" : status === 429 ? "rate limited" : status && status >= 500 ? "service error" : "backend offline");
           setRouteBuildState("error");
         }
       }
@@ -162,7 +166,7 @@ export default function Dashboard() {
       {routeBuildState === "empty" && <BuildNotice type="empty" stats={stats} onClose={() => setRouteBuildState("idle")} />}
       {routeBuildState === "duplicate" && <BuildNotice type="duplicate" stats={stats} onClose={() => setRouteBuildState("idle")} />}
       {routeBuildState === "unclear" && <BuildNotice type="unclear" stats={stats} onClose={() => setRouteBuildState("idle")} />}
-      {routeBuildState === "error" && <BuildNotice type="error" stats={stats} onClose={() => setRouteBuildState("idle")} />}
+      {routeBuildState === "error" && <BuildNotice type="error" stats={stats} errorStatus={routeErrorStatus} onClose={() => setRouteBuildState("idle")} />}
       <AppFrame>
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>

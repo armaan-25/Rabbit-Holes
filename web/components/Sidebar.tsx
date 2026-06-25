@@ -159,6 +159,7 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
   const controllable = stats.source === "extension";
   const hasTimer = typeof stats.elapsedMs === "number";
   const canResume = effectiveState === "paused" || effectiveState === "stopped";
+  const restartLabel = effectiveState === "stopped" ? "Start" : "Resume";
 
   useEffect(() => {
     if (localState && stats.captureState === localState) setLocalState(null);
@@ -191,16 +192,18 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
     <div className="rh-surface mt-5 rounded-[13px] border p-4">
       <ConfirmDialog
         open={confirmAction !== null}
-        eyebrow={confirmAction === "stopped" ? "End session" : confirmAction === "paused" ? "Pause capture" : "Resume capture"}
-        title={confirmAction === "stopped" ? "End this capture session?" : confirmAction === "paused" ? "Pause capture?" : "Resume capture?"}
+        eyebrow={confirmAction === "stopped" ? "End session" : confirmAction === "paused" ? "Pause capture" : effectiveState === "stopped" ? "Start capture" : "Resume capture"}
+        title={confirmAction === "stopped" ? "End this capture session?" : confirmAction === "paused" ? "Pause capture?" : effectiveState === "stopped" ? "Start a new capture session?" : "Resume capture?"}
         body={
           confirmAction === "stopped"
-            ? "Ending clears the current captured session and starts a fresh trail the next time you resume. Build any rabbit holes you want to keep before ending it."
+            ? "Ending clears the current captured session. Build any rabbit holes you want to keep before ending it."
             : confirmAction === "paused"
               ? "Rabbit Holes will stop recording new pages and searches until you resume."
-              : "Rabbit Holes will start recording new pages, searches, and tab activity again."
+              : effectiveState === "stopped"
+                ? "Rabbit Holes will start a fresh trail and begin recording pages, searches, and tab activity."
+                : "Rabbit Holes will start recording new pages, searches, and tab activity again."
         }
-        confirmLabel={confirmAction === "stopped" ? "End session" : confirmAction === "paused" ? "Pause" : "Resume"}
+        confirmLabel={confirmAction === "stopped" ? "End session" : confirmAction === "paused" ? "Pause" : restartLabel}
         danger={confirmAction === "stopped"}
         onCancel={() => setConfirmAction(null)}
         onConfirm={() => {
@@ -219,8 +222,8 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
           <CaptureButton
             onClick={() => setConfirmAction(recording ? "paused" : "recording")}
             disabled={pending}
-            title={recording ? "Pause capture" : "Resume capture"}
-            label={pending ? "Working..." : recording ? "Pause" : "Resume"}
+            title={recording ? "Pause capture" : effectiveState === "stopped" ? "Start capture" : "Resume capture"}
+            label={pending ? "Working..." : recording ? "Pause" : restartLabel}
             tone={canResume ? "primary" : "default"}
           />
           <CaptureButton

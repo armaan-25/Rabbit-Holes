@@ -46,6 +46,17 @@ export interface ClusterResponse {
 }
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://backend-production-4e5a6.up.railway.app";
+
+export class ClusterError extends Error {
+  constructor(
+    message: string,
+    readonly status?: number,
+    readonly detail?: unknown,
+  ) {
+    super(message);
+    this.name = "ClusterError";
+  }
+}
 const ACCENTS: RabbitHole["accent"][] = ["rabbit", "iris", "moss", "sky"];
 export const discoveredHoleIds = new Set<string>(RABBIT_HOLES.map((h) => h.id));
 const LAST_CLUSTER_SIGNATURE_KEY = "rabbit-hole-last-cluster-signature";
@@ -256,9 +267,20 @@ async function authHeaders(): Promise<HeadersInit> {
 }
 
 export async function runCluster(): Promise<ClusterResponse> {
-  const res = await fetch(`${BACKEND_URL}/cluster`, { method: "POST", headers: await authHeaders() });
+  let res: Response;
+  try {
+    res = await fetch(`${BACKEND_URL}/cluster`, { method: "POST", headers: await authHeaders() });
+  } catch (error) {
+    throw new ClusterError("Could not reach the Rabbit Holes backend.", undefined, error);
+  }
   if (!res.ok) {
-    throw new Error(`cluster request failed: ${res.status}`);
+    let detail: unknown = null;
+    try {
+      detail = await res.json();
+    } catch {
+      detail = await res.text().catch(() => null);
+    }
+    throw new ClusterError(`cluster request failed: ${res.status}`, res.status, detail);
   }
   const data = (await res.json()) as ClusterResponse;
   return { holes: data.holes ?? [], pages: data.pages ?? [], searches: data.searches ?? [], no_change: data.no_change, source_signature: data.source_signature };

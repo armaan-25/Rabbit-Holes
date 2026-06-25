@@ -73,7 +73,10 @@ def run_cluster(user: CurrentUser = Depends(get_current_user)):
             "no_change": True,
             "source_signature": signature,
         }
-    holes = ai.cluster(pages, searches)
+    try:
+        holes = ai.cluster(pages, searches)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="Clustering is temporarily unavailable") from exc
     session_id = pages[-1].sessionId if pages else searches[-1].sessionId if searches else str(uuid.uuid4())
     saved_holes = db.save_holes(user.id, session_id, holes, signature)
     store.remember_source_signature(user.id, signature)

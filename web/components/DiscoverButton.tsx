@@ -1,6 +1,6 @@
 "use client";
 
-import { clusterBuildState, clusterHoleToRabbitHole, markDiscoveriesSeen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
+import { ClusterError, clusterBuildState, clusterHoleToRabbitHole, markDiscoveriesSeen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
 import type { CSSProperties } from "react";
 import { useState } from "react";
@@ -15,10 +15,12 @@ export function DiscoverButton() {
   const [busy, setBusy] = useState(false);
   const [label, setLabel] = useState("Build rabbit holes");
   const [notice, setNotice] = useState<null | Exclude<ClusterBuildState, "ready"> | "error">(null);
+  const [errorStatus, setErrorStatus] = useState<number | undefined>(undefined);
 
   async function discover() {
     if (busy) return;
     setNotice(null);
+    setErrorStatus(undefined);
     setBusy(true);
     setLabel("Clustering…");
 
@@ -54,7 +56,9 @@ export function DiscoverButton() {
       window.setTimeout(() => (shown.length > 1 ? triggerMany(shown) : trigger(shown[0])), 80);
     } catch (err) {
       console.error("cluster failed", err);
-      setLabel("Backend offline");
+      const status = err instanceof ClusterError ? err.status : undefined;
+      setErrorStatus(status);
+      setLabel(status === 401 || status === 403 ? "Sign in again" : status === 429 ? "Rate limited" : "Could not build");
       setNotice("error");
     } finally {
       setBusy(false);
@@ -75,7 +79,7 @@ export function DiscoverButton() {
       {notice === "empty" && <BuildNotice type="empty" stats={stats} onClose={() => setNotice(null)} />}
       {notice === "duplicate" && <BuildNotice type="duplicate" stats={stats} onClose={() => setNotice(null)} />}
       {notice === "unclear" && <BuildNotice type="unclear" stats={stats} onClose={() => setNotice(null)} />}
-      {notice === "error" && <BuildNotice type="error" stats={stats} onClose={() => setNotice(null)} />}
+      {notice === "error" && <BuildNotice type="error" stats={stats} errorStatus={errorStatus} onClose={() => setNotice(null)} />}
     </>
   );
 }
@@ -142,7 +146,7 @@ export function RabbitHoleLoading() {
   );
 }
 
-export function BuildNotice({ type, stats, onClose }: { readonly type: "empty" | "duplicate" | "unclear" | "error"; readonly stats: ReturnType<typeof useSessionStats>; readonly onClose: () => void }) {
+export function BuildNotice({ type, stats, errorStatus, onClose }: { readonly type: "empty" | "duplicate" | "unclear" | "error"; readonly stats: ReturnType<typeof useSessionStats>; readonly errorStatus?: number; readonly onClose: () => void }) {
   const empty = type === "empty";
   const duplicate = type === "duplicate";
   const unclear = type === "unclear";
@@ -230,6 +234,22 @@ export function BuildNotice({ type, stats, onClose }: { readonly type: "empty" |
       </div>
     );
   }
+  const title =
+    errorStatus === 401 || errorStatus === 403
+      ? "Sign in again to build rabbit holes"
+      : errorStatus === 429
+        ? "Rabbit Holes is rate limited"
+        : errorStatus && errorStatus >= 500
+          ? "The clustering service hit an error"
+          : "Backend is not reachable";
+  const body =
+    errorStatus === 401 || errorStatus === 403
+      ? "Your browser session did not include a valid auth token. Sign out, sign back in, then build again."
+      : errorStatus === 429
+        ? "Too many clustering requests were made recently. Wait a bit, then try again."
+        : errorStatus && errorStatus >= 500
+          ? "The backend is reachable, but clustering failed inside the service. Try again after the backend redeploy finishes."
+          : "The app could not reach the clustering service. Try again after the backend finishes waking up or redeploying.";
   return (
     <div className="fixed inset-0 z-[75] grid place-items-center bg-[#140d08]/72 px-4 backdrop-blur-[8px]">
       <div className="rh-surface w-full max-w-[560px] rounded-[28px] border p-7 text-center shadow-[0_34px_90px_rgba(18,11,5,.42)]">
@@ -237,10 +257,10 @@ export function BuildNotice({ type, stats, onClose }: { readonly type: "empty" |
           Could not build
         </div>
         <h2 className="rh-display rh-ink mt-3 text-[34px] font-semibold leading-tight">
-          Backend is not reachable
+          {title}
         </h2>
         <p className="rh-muted mx-auto mt-3 max-w-[42ch] text-[15.5px] leading-6">
-          The app could not reach the clustering service. Try again after the backend finishes waking up or redeploying.
+          {body}
         </p>
         <div className="rh-surface-2 mt-6 grid grid-cols-3 divide-x divide-[var(--rh-line)] rounded-[18px] border px-3 py-4">
           <MiniBuildStat label="pages" value={stats.pages} />

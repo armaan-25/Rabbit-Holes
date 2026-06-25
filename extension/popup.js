@@ -46,8 +46,9 @@ function setCaptureUI(state) {
         : "Stopped";
 
   const recording = state === "recording";
-  toggle.textContent = capturePending ? "..." : recording ? "Pause" : "Resume";
-  toggle.title = recording ? "Pause recording" : "Resume recording";
+  const restartLabel = state === "stopped" ? "Start" : "Resume";
+  toggle.textContent = capturePending ? "..." : recording ? "Pause" : restartLabel;
+  toggle.title = recording ? "Pause recording" : state === "stopped" ? "Start recording" : "Resume recording";
   toggle.disabled = capturePending;
   toggle.classList.toggle("primary", !recording);
   stop.textContent = state === "stopped" ? "Ended" : "End";
@@ -154,7 +155,9 @@ document.getElementById("record-toggle").addEventListener("click", () => {
   const ok = window.confirm(
     next === "paused"
       ? "Pause Rabbit Holes capture? New pages and searches will not be recorded until you resume."
-      : "Resume Rabbit Holes capture? New pages and searches will start recording again."
+      : captureState === "stopped"
+        ? "Start a fresh Rabbit Holes capture session?"
+        : "Resume Rabbit Holes capture? New pages and searches will start recording again."
   );
   if (ok) void setCaptureState(next);
 });
