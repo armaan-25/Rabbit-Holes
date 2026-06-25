@@ -39,8 +39,9 @@ export function DiscoverButton() {
       }
 
       markDiscoverySeen(next.id);
-      trigger(next);
       setLabel(`Found: ${next.title}`);
+      setBusy(false);
+      window.setTimeout(() => trigger(next), 80);
     } catch (err) {
       console.error("cluster failed", err);
       setLabel("Backend offline");
@@ -68,12 +69,12 @@ export function DiscoverButton() {
 }
 
 const WORDS = [
-  { text: "tabs", x: "-240px", y: "-128px", d: "0s" },
-  { text: "searches", x: "230px", y: "-106px", d: ".18s" },
-  { text: "links", x: "-226px", y: "84px", d: ".36s" },
-  { text: "questions", x: "218px", y: "86px", d: ".54s" },
-  { text: "notes", x: "-50px", y: "-160px", d: ".72s" },
-  { text: "pages", x: "42px", y: "142px", d: ".9s" },
+  { text: "tabs", x: "-245px", y: "-132px", d: "0s" },
+  { text: "searches", x: "248px", y: "-112px", d: ".16s" },
+  { text: "links", x: "-238px", y: "92px", d: ".32s" },
+  { text: "questions", x: "230px", y: "92px", d: ".48s" },
+  { text: "notes", x: "-62px", y: "-170px", d: ".64s" },
+  { text: "pages", x: "54px", y: "154px", d: ".8s" },
 ];
 
 function RabbitHoleLoading() {
@@ -82,9 +83,9 @@ function RabbitHoleLoading() {
       <style>{`
         @keyframes word-to-hole {
           0% { transform: translate(var(--x), var(--y)) scale(1); opacity: 0; filter: blur(0); }
-          14% { opacity: .58; }
-          72% { opacity: .42; }
-          100% { transform: translate(0, 28px) scale(.18); opacity: 0; filter: blur(2px); }
+          12% { opacity: .78; }
+          70% { opacity: .5; }
+          100% { transform: translate(0, 32px) scale(.16); opacity: 0; filter: blur(2px); }
         }
         @keyframes load-bar {
           0% { transform: translateX(-100%); }
@@ -94,12 +95,12 @@ function RabbitHoleLoading() {
       `}</style>
 
       <div className="relative flex max-h-[88vh] w-full max-w-[760px] flex-col overflow-hidden rounded-[34px] border border-[#f3e8d442] bg-[#17100b] shadow-[0_40px_130px_rgba(18,11,5,.58)]">
-        <div className="relative flex min-h-[350px] flex-1 items-center justify-center overflow-hidden bg-[#2b2117] px-6 pb-10 pt-10">
+        <div className="relative flex min-h-[350px] flex-1 items-center justify-center overflow-hidden bg-[#21170f] px-6 pb-10 pt-10">
           <div className="relative grid place-items-center">
             {WORDS.map((word) => (
               <span
                 key={word.text}
-                className="absolute left-1/2 top-1/2 rh-display select-none text-[25px] italic tracking-wide text-[#d7c3a1]/70"
+                className="absolute left-1/2 top-1/2 z-10 rh-display select-none text-[27px] italic tracking-wide text-[#d7c3a1]/80"
                 style={{
                   "--x": word.x,
                   "--y": word.y,
@@ -112,7 +113,7 @@ function RabbitHoleLoading() {
             <img
               src="/assets/images/rabbit-hole-hero.png"
               alt=""
-              className="relative h-auto w-[520px] max-h-[44vh] max-w-full object-contain"
+              className="relative z-20 h-auto w-[520px] max-h-[44vh] max-w-full object-contain"
             />
           </div>
         </div>
