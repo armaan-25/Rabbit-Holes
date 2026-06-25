@@ -207,8 +207,8 @@ const Map = () => (
         <div className="absolute inset-0 opacity-[0.28]" style={{ backgroundImage: "radial-gradient(#6d5639 1px, transparent 1px)", backgroundSize: "18px 18px" }} />
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
           <defs>
-            <marker id="demo-arrow" viewBox="0 0 8 8" markerWidth="5" markerHeight="5" refX="6" refY="4" orient="auto" markerUnits="strokeWidth">
-              <path d="M2,1.5 L6,4 L2,6.5" fill="none" stroke="#9a6a38" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.72" />
+            <marker id="demo-arrow" viewBox="0 0 12 12" markerWidth="10" markerHeight="10" refX="11" refY="6" orient="auto" markerUnits="strokeWidth">
+              <path d="M1,1 L11,6 L1,11" fill="none" stroke="#9a6a38" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.72" />
             </marker>
           </defs>
           {[
