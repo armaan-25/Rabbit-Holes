@@ -187,14 +187,19 @@ def ask(hole: HoleContext, question: str, history: list[ChatTurn]) -> dict:
     for turn in history[-8:]:
         role = "assistant" if turn.role == "assistant" else "user"
         messages.append({"role": role, "content": turn.content})
-    messages.append({"role": "user", "content": question})
+    messages.append({
+        "role": "user",
+        "content": (
+            question
+            + "\n\nReturn only JSON with this exact shape: "
+            '{"answer":"grounded answer with [p0] citations","citations":["p0"]}'
+        ),
+    })
 
     response = client.messages.create(
         model=MODEL,
         max_tokens=8192,
-        thinking={"type": "adaptive"},
         system=_ASK_SYSTEM,
-        output_config={"format": {"type": "json_schema", "schema": _ASK_SCHEMA}},
         messages=messages,
     )
     data = _first_json(response)
@@ -245,10 +250,18 @@ def synthesize(hole: HoleContext) -> dict:
     response = client.messages.create(
         model=MODEL,
         max_tokens=8192,
-        thinking={"type": "adaptive"},
         system=_SYNTH_SYSTEM,
-        output_config={"format": {"type": "json_schema", "schema": _SYNTH_SCHEMA}},
-        messages=[{"role": "user", "content": _format_hole(hole)}],
+        messages=[
+            {
+                "role": "user",
+                "content": (
+                    _format_hole(hole)
+                    + "\n\nReturn only JSON with this exact shape and no markdown: "
+                    '{"summary":"2-3 sentence summary","comparison":[{"title":"Option","points":["point"]}],'
+                    '"contradictions":["tension"],"open_questions":["question"],"next_steps":["step"]}'
+                ),
+            }
+        ],
     )
     data = _first_json(response)
     return {
