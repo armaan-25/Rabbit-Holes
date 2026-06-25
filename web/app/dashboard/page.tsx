@@ -7,7 +7,7 @@ import { clusterBuildState, clusterHoleToRabbitHole, holeToDiscovery, markDiscov
 import { useApp } from "@/lib/store";
 import { bulkPatchBackendHoles, patchBackendHole } from "@/lib/api";
 import { useLibraryHoles } from "@/hooks/useHoles";
-import { formatElapsed, useSessionStats } from "@/hooks/useSessionStats";
+import { flushExtensionEvents, formatElapsed, useSessionStats } from "@/hooks/useSessionStats";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -88,8 +88,11 @@ export default function Dashboard() {
     let cancelled = false;
     setSyncLabel("clustering");
     setRouteBuildState("loading");
-    void runCluster()
-      .then((cluster) => {
+
+    async function buildFromRoute() {
+      try {
+        await flushExtensionEvents().catch(() => false);
+        const cluster = await runCluster();
         if (cancelled) return;
         window.history.replaceState(null, "", "/dashboard");
         const buildState = clusterBuildState(cluster);
@@ -107,15 +110,17 @@ export default function Dashboard() {
           markDiscoverySeen(next.id);
           window.setTimeout(() => triggerDiscovery(next), 80);
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("cluster failed", err);
         if (!cancelled) {
           window.history.replaceState(null, "", "/dashboard");
           setSyncLabel("backend offline");
           setRouteBuildState("error");
         }
-      });
+      }
+    }
+
+    void buildFromRoute();
 
     return () => {
       cancelled = true;

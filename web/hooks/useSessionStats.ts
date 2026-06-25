@@ -98,6 +98,30 @@ export function setExtensionCapture(state: CaptureState, timeoutMs = 1500): Prom
   });
 }
 
+/** Ask the extension to push its local event buffer to the backend before clustering. */
+export function flushExtensionEvents(timeoutMs = 1800): Promise<boolean> {
+  if (typeof window === "undefined") return Promise.resolve(false);
+  const requestId = crypto.randomUUID();
+
+  return new Promise((resolve) => {
+    const timeout = window.setTimeout(() => {
+      window.removeEventListener("message", onMessage);
+      resolve(false);
+    }, timeoutMs);
+
+    function onMessage(event: MessageEvent) {
+      if (event.source !== window) return;
+      if (event.data?.type !== "rabbit-holes:flush-complete" || event.data.requestId !== requestId) return;
+      window.clearTimeout(timeout);
+      window.removeEventListener("message", onMessage);
+      resolve(Boolean(event.data.ok));
+    }
+
+    window.addEventListener("message", onMessage);
+    window.postMessage({ type: "rabbit-holes:flush", requestId }, window.location.origin);
+  });
+}
+
 export function useSessionStats(): SessionStats {
   const [stats, setStats] = useState<SessionStats>(EMPTY_STATS);
 

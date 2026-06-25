@@ -4,7 +4,7 @@ import { clusterBuildState, clusterHoleToRabbitHole, holeToDiscovery, markDiscov
 import { useApp } from "@/lib/store";
 import type { CSSProperties } from "react";
 import { useState } from "react";
-import { useSessionStats } from "@/hooks/useSessionStats";
+import { flushExtensionEvents, useSessionStats } from "@/hooks/useSessionStats";
 
 /** Triggers the discovery overlay from a real /cluster response. */
 export function DiscoverButton() {
@@ -22,6 +22,7 @@ export function DiscoverButton() {
     setLabel("Clustering…");
 
     try {
+      await flushExtensionEvents().catch(() => false);
       const cluster = await runCluster();
       const buildState = clusterBuildState(cluster);
       if (buildState !== "ready") {
@@ -138,14 +139,20 @@ export function BuildNotice({ type, stats, onClose }: { readonly type: "empty" |
   const duplicate = type === "duplicate";
   const unclear = type === "unclear";
   if (empty || duplicate || unclear) {
-    const eyebrow = empty ? "Not enough history" : duplicate ? "Already up to date" : "No clear thread yet";
-    const title = empty
-      ? "Uh oh, not enough search history to make a rabbit hole."
+    const hasVisibleHistory = stats.pages >= 3 || stats.searches >= 1;
+    const syncLag = empty && hasVisibleHistory;
+    const eyebrow = syncLag ? "History not synced yet" : empty ? "Not enough history" : duplicate ? "Already up to date" : "No clear thread yet";
+    const title = syncLag
+      ? "Rabbit Holes can see local activity, but it has not reached the backend yet."
+      : empty
+        ? "Uh oh, not enough search history to make a rabbit hole."
       : duplicate
         ? "You already built this rabbit hole."
         : "There is history, but no clear rabbit hole yet.";
-    const body = empty
-      ? "Browse a few related searches and pages first. Rabbit Holes needs a real trail before it can cluster an investigation."
+    const body = syncLag
+      ? "The extension popup can be ahead of the server. Keep this tab open for a moment, reload the extension if needed, then build again."
+      : empty
+        ? "Browse a few related searches and pages first. Rabbit Holes needs a real trail before it can cluster an investigation."
       : duplicate
         ? "Your current browsing trail has already been clustered. Browse a few new related pages or searches, then build again."
         : "Rabbit Holes found browsing activity, but it was too scattered to form one clean investigation. Keep going on one thread, then try again.";

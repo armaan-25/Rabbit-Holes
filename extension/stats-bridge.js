@@ -44,5 +44,14 @@
         window.postMessage({ type: "rabbit-holes:capture-updated", requestId, ok: false }, window.location.origin);
       }
     }
+
+    if (event.data?.type === "rabbit-holes:flush") {
+      try {
+        const res = await chrome.runtime.sendMessage({ type: "flush" });
+        window.postMessage({ type: "rabbit-holes:flush-complete", requestId, ok: Boolean(res?.ok), buffered: res?.buffered ?? null }, window.location.origin);
+      } catch {
+        window.postMessage({ type: "rabbit-holes:flush-complete", requestId, ok: false }, window.location.origin);
+      }
+    }
   });
 })();
