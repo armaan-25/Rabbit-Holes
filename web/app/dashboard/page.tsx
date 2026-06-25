@@ -3,7 +3,7 @@
 import { HoleCard } from "@/components/HoleCard";
 import { EmptyHoles } from "@/components/EmptyHoles";
 import { BuildNotice, DiscoverButton, RabbitHoleLoading } from "@/components/DiscoverButton";
-import { clusterBuildState, clusterHoleToRabbitHole, holeToDiscovery, markDiscoverySeen, nextUnseenDiscovery, rememberClusterContext, runCluster, type ClusterBuildState } from "@/lib/discovery";
+import { clusterBuildState, clusterHoleToRabbitHole, markDiscoveriesSeen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
 import { bulkPatchBackendHoles, patchBackendHole } from "@/lib/api";
 import { useLibraryHoles } from "@/hooks/useHoles";
@@ -17,6 +17,7 @@ import { Input, Select } from "@/components/ui/input";
 export default function Dashboard() {
   const setLiveHoles = useApp((s) => s.setLiveHoles);
   const triggerDiscovery = useApp((s) => s.triggerDiscovery);
+  const triggerDiscoveries = useApp((s) => s.triggerDiscoveries);
   const toggleFavorite = useApp((s) => s.toggleFavorite);
   const toggleArchive = useApp((s) => s.toggleArchive);
   const deleteHole = useApp((s) => s.deleteHole);
@@ -103,12 +104,19 @@ export default function Dashboard() {
         }
         setLiveHoles(cluster.holes.map((hole) => clusterHoleToRabbitHole(hole, cluster.pages, cluster.searches)));
         rememberClusterContext(cluster);
-        const next = nextUnseenDiscovery(cluster.holes) ?? (cluster.holes[0] ? holeToDiscovery(cluster.holes[0]) : null);
+        const discoveries = unseenDiscoveries(cluster.holes);
+        const shown = discoveries.length ? discoveries : cluster.holes.map((hole) => ({
+          id: hole.client_id ?? hole.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""),
+          title: hole.title,
+          accent: "rabbit" as const,
+          pages: hole.page_ids.length,
+          searches: hole.topics.length,
+        }));
         setSyncLabel("updated");
         setRouteBuildState("idle");
-        if (next) {
-          markDiscoverySeen(next.id);
-          window.setTimeout(() => triggerDiscovery(next), 80);
+        if (shown.length) {
+          markDiscoveriesSeen(shown);
+          window.setTimeout(() => (shown.length > 1 ? triggerDiscoveries(shown) : triggerDiscovery(shown[0])), 80);
         }
       } catch (err) {
         console.error("cluster failed", err);
@@ -125,7 +133,7 @@ export default function Dashboard() {
     return () => {
       cancelled = true;
     };
-  }, [setLiveHoles, triggerDiscovery]);
+  }, [setLiveHoles, triggerDiscovery, triggerDiscoveries]);
 
   return (
     <div className="rh-paper min-h-screen px-5 py-8 sm:px-8 xl:px-12">

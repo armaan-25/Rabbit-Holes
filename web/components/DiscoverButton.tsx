@@ -1,6 +1,6 @@
 "use client";
 
-import { clusterBuildState, clusterHoleToRabbitHole, holeToDiscovery, markDiscoverySeen, nextUnseenDiscovery, rememberClusterContext, runCluster, type ClusterBuildState } from "@/lib/discovery";
+import { clusterBuildState, clusterHoleToRabbitHole, markDiscoveriesSeen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
 import type { CSSProperties } from "react";
 import { useState } from "react";
@@ -9,6 +9,7 @@ import { flushExtensionEvents, useSessionStats } from "@/hooks/useSessionStats";
 /** Triggers the discovery overlay from a real /cluster response. */
 export function DiscoverButton() {
   const trigger = useApp((s) => s.triggerDiscovery);
+  const triggerMany = useApp((s) => s.triggerDiscoveries);
   const setLiveHoles = useApp((s) => s.setLiveHoles);
   const stats = useSessionStats();
   const [busy, setBusy] = useState(false);
@@ -32,18 +33,25 @@ export function DiscoverButton() {
       }
       setLiveHoles(cluster.holes.map((hole) => clusterHoleToRabbitHole(hole, cluster.pages, cluster.searches)));
       rememberClusterContext(cluster);
-      const next = nextUnseenDiscovery(cluster.holes) ?? (cluster.holes[0] ? holeToDiscovery(cluster.holes[0]) : null);
+      const discoveries = unseenDiscoveries(cluster.holes);
+      const shown = discoveries.length ? discoveries : cluster.holes.map((hole) => ({
+        id: hole.client_id ?? hole.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""),
+        title: hole.title,
+        accent: "rabbit" as const,
+        pages: hole.page_ids.length,
+        searches: hole.topics.length,
+      }));
 
-      if (!next) {
+      if (!shown.length) {
         setLabel("No new rabbit holes");
         setNotice("duplicate");
         return;
       }
 
-      markDiscoverySeen(next.id);
-      setLabel(`Found: ${next.title}`);
+      markDiscoveriesSeen(shown);
+      setLabel(shown.length > 1 ? `Found ${shown.length} rabbit holes` : `Found: ${shown[0].title}`);
       setBusy(false);
-      window.setTimeout(() => trigger(next), 80);
+      window.setTimeout(() => (shown.length > 1 ? triggerMany(shown) : trigger(shown[0])), 80);
     } catch (err) {
       console.error("cluster failed", err);
       setLabel("Backend offline");

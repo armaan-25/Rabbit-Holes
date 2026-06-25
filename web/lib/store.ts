@@ -25,6 +25,7 @@ interface AppState {
 
   discovery: Discovery | null;
   triggerDiscovery: (d: Discovery) => void;
+  triggerDiscoveries: (d: Discovery[]) => void;
   clearDiscovery: () => void;
 }
 
@@ -90,5 +91,6 @@ export const useApp = create<AppState>((set) => ({
 
   discovery: null,
   triggerDiscovery: (d) => set({ discovery: d, paletteOpen: false }),
+  triggerDiscoveries: (d) => set({ discovery: d.length ? { ...d[0], related: d } : null, paletteOpen: false } as Partial<AppState>),
   clearDiscovery: () => set({ discovery: null }),
 }));

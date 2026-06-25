@@ -195,8 +195,16 @@ export function nextUnseenDiscovery(holes: ClusterHole[], seen: Set<string> = di
   return null;
 }
 
+export function unseenDiscoveries(holes: ClusterHole[], seen: Set<string> = discoveredHoleIds): Discovery[] {
+  return holes.map((hole) => holeToDiscovery(hole)).filter((discovery) => !seen.has(discovery.id));
+}
+
 export function markDiscoverySeen(id: string, seen: Set<string> = discoveredHoleIds) {
   seen.add(id);
+}
+
+export function markDiscoveriesSeen(discoveries: Discovery[], seen: Set<string> = discoveredHoleIds) {
+  discoveries.forEach((discovery) => seen.add(discovery.id));
 }
 
 export function clusterSignature(cluster: ClusterResponse): string {

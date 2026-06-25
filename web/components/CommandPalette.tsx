@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { clusterHoleToRabbitHole, hasMeaningfulNewContext, markDiscoverySeen, nextUnseenDiscovery, rememberClusterContext, runCluster } from "@/lib/discovery";
+import { clusterHoleToRabbitHole, hasMeaningfulNewContext, markDiscoveriesSeen, rememberClusterContext, runCluster, unseenDiscoveries } from "@/lib/discovery";
 import { ACCENTS } from "@/lib/ui";
 import { useApp } from "@/lib/store";
 import { useHoles } from "@/hooks/useHoles";
@@ -18,7 +18,7 @@ interface Item {
 }
 
 export function CommandPalette() {
-  const { paletteOpen, setPaletteOpen, togglePalette, triggerDiscovery, setLiveHoles } = useApp();
+  const { paletteOpen, setPaletteOpen, togglePalette, triggerDiscovery, triggerDiscoveries, setLiveHoles } = useApp();
   const visibleHoles = useHoles();
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -58,10 +58,10 @@ export function CommandPalette() {
               if (!hasMeaningfulNewContext(cluster)) return;
               setLiveHoles(cluster.holes.map((hole) => clusterHoleToRabbitHole(hole, cluster.pages, cluster.searches)));
               rememberClusterContext(cluster);
-              const next = nextUnseenDiscovery(cluster.holes);
-              if (!next) return;
-              markDiscoverySeen(next.id);
-              triggerDiscovery(next);
+              const discoveries = unseenDiscoveries(cluster.holes);
+              if (!discoveries.length) return;
+              markDiscoveriesSeen(discoveries);
+              discoveries.length > 1 ? triggerDiscoveries(discoveries) : triggerDiscovery(discoveries[0]);
             } catch (err) {
               console.error("cluster failed", err);
             }
@@ -82,7 +82,7 @@ export function CommandPalette() {
     return all.filter(
       (i) => i.label.toLowerCase().includes(needle) || i.hint.toLowerCase().includes(needle)
     );
-  }, [q, triggerDiscovery, visibleHoles, setLiveHoles]);
+  }, [q, triggerDiscovery, triggerDiscoveries, visibleHoles, setLiveHoles]);
 
   function go(item: Item) {
     setPaletteOpen(false);
