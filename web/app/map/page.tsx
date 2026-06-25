@@ -55,7 +55,7 @@ function FlowNode({ data }: NodeProps<FlowNodeData>) {
   return (
     <button
       type="button"
-      className="rh-map-node group block w-[168px] rounded-[13px] border px-3 py-2.5 text-left transition hover:-translate-y-0.5"
+      className="rh-map-node group block w-[180px] rounded-[12px] border px-3 py-2 text-left transition hover:-translate-y-0.5"
       style={{
         background: selected ? (dark ? "#332417" : "#fff8ea") : dark ? style.darkBg : style.bg,
         borderColor: selected ? (dark ? "#d8c3a1" : "#2a2018") : dark ? style.darkBorder : style.border,
@@ -64,11 +64,11 @@ function FlowNode({ data }: NodeProps<FlowNodeData>) {
     >
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
       <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />
-      <div className="mb-1.5 flex items-center gap-1.5">
-        <span className="h-2 w-2 rounded-full" style={{ background: style.dot }} />
-        <span className="text-[9px] font-semibold uppercase tracking-[0.16em]" style={{ color: dark ? "#b69b77" : "#9b825f" }}>{KIND_LABEL[node.kind]}</span>
+      <div className="mb-1 flex items-center gap-1.5">
+        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: style.dot }} />
+        <span className="text-[8.5px] font-semibold uppercase tracking-[0.18em]" style={{ color: dark ? "#b69b77" : "#9b825f" }}>{KIND_LABEL[node.kind]}</span>
       </div>
-      <div className="rh-display truncate text-[15px] font-semibold leading-tight">{node.label.replace(/^Search: /, "")}</div>
+      <div className="rh-display truncate text-[13.5px] font-semibold leading-tight">{node.label.replace(/^Search: /, "")}</div>
       {domain ? <div className="mt-1 truncate text-[10.5px]" style={{ color: dark ? "#b7a487" : "#7a6954" }}>{domain}</div> : null}
     </button>
   );
@@ -80,24 +80,59 @@ function layoutGraphNodes(hole: RabbitHole) {
   const searchNodes = hole.graph.nodes.filter((node) => node.kind === "search");
   const contentNodes = hole.graph.nodes.filter((node) => node.kind !== "search");
   const positions = new Map<string, { x: number; y: number }>();
-  const NODE_W = 168;
-  const NODE_H = 72;
-  const COL_W = 235;
-  const ROW_H = 104;
-  const SEARCH_X = 80;
-  const CONTENT_X = 330;
-  const searchStartY = Math.max(40, 310 - ((searchNodes.length - 1) * ROW_H) / 2);
+  const NODE_W = 180;
+  const NODE_H = 64;
+  const COL_W = 245;
+  const ROW_H = 84;
+  const SEARCH_X = 120;
+  const CONTENT_X = 395;
+  const START_Y = 300;
+  const edgesBySource = new Map<string, string[]>();
+  const depth = new Map<string, number>();
+
+  hole.graph.edges.forEach((edge) => {
+    const next = edgesBySource.get(edge.source) ?? [];
+    next.push(edge.target);
+    edgesBySource.set(edge.source, next);
+  });
+
+  searchNodes.forEach((node) => depth.set(node.id, 0));
+
+  const queue = searchNodes.map((node) => node.id);
+  while (queue.length > 0) {
+    const source = queue.shift();
+    if (!source) continue;
+    const nextDepth = (depth.get(source) ?? 0) + 1;
+    for (const target of edgesBySource.get(source) ?? []) {
+      if (!depth.has(target) || nextDepth < (depth.get(target) ?? Infinity)) {
+        depth.set(target, nextDepth);
+        queue.push(target);
+      }
+    }
+  }
+
+  const maxSearchRows = Math.max(searchNodes.length, 1);
+  const searchStartY = START_Y - ((maxSearchRows - 1) * ROW_H) / 2;
 
   searchNodes.forEach((node, index) => {
     positions.set(node.id, { x: SEARCH_X, y: searchStartY + index * ROW_H });
   });
 
-  contentNodes.forEach((node, index) => {
-    const col = index % 4;
-    const row = Math.floor(index / 4);
-    positions.set(node.id, {
-      x: CONTENT_X + col * COL_W,
-      y: 70 + row * ROW_H + (col % 2 ? 24 : 0),
+  const grouped = new Map<number, GraphNode[]>();
+  contentNodes.forEach((node) => {
+    const col = Math.max(1, Math.min(depth.get(node.id) ?? 1, 4));
+    const group = grouped.get(col) ?? [];
+    group.push(node);
+    grouped.set(col, group);
+  });
+
+  Array.from(grouped.entries()).forEach(([col, group]) => {
+    const columnStartY = START_Y - ((group.length - 1) * ROW_H) / 2 + (col % 2 ? -16 : 22);
+    group.forEach((node, row) => {
+      positions.set(node.id, {
+        x: CONTENT_X + (col - 1) * COL_W,
+        y: columnStartY + row * ROW_H,
+      });
     });
   });
 
@@ -176,18 +211,19 @@ export default function MapPage() {
         id: edge.id,
         source: edge.source,
         target: edge.target,
-        type: "smoothstep",
-        animated: edge.kind === "discovered_through",
+        type: "step",
+        animated: false,
         markerEnd: {
-          type: MarkerType.Arrow,
+          type: MarkerType.ArrowClosed,
           color,
-          width: 10,
-          height: 10,
+          width: 7,
+          height: 7,
         },
         style: {
           stroke: color,
-          strokeWidth: 1.35,
-          opacity: 0.58,
+          strokeWidth: 1,
+          opacity: edge.kind === "discovered_through" ? 0.34 : 0.62,
+          strokeDasharray: edge.kind === "discovered_through" ? "4 5" : undefined,
         },
       };
     });
@@ -242,9 +278,9 @@ export default function MapPage() {
               edges={edges}
               nodeTypes={nodeTypes}
               fitView
-              fitViewOptions={{ padding: 0.12 }}
-              minZoom={0.45}
-              maxZoom={1.35}
+              fitViewOptions={{ padding: 0.18, maxZoom: 1 }}
+              minZoom={0.35}
+              maxZoom={1.25}
               proOptions={{ hideAttribution: true }}
               nodesConnectable={false}
               edgesFocusable={false}
