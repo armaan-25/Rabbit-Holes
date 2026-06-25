@@ -183,12 +183,19 @@ const Holes = () => (
 );
 
 const MAP_NODES = [
-  { label: "vLLM", kind: "Repo", x: 24, y: 38, dot: "#6f8758" },
-  { label: "PagedAttention", kind: "Paper", x: 43, y: 28, dot: "#b77657" },
-  { label: "DistServe", kind: "Paper", x: 57, y: 48, dot: "#b77657" },
-  { label: "Queueing Theory", kind: "Page", x: 45, y: 72, dot: "#a8967d" },
-  { label: "SGLang", kind: "Repo", x: 68, y: 68, dot: "#6f8758" },
+  { label: "vLLM", kind: "Repo", x: 29, y: 34, dot: "#6f8758" },
+  { label: "PagedAttention", kind: "Paper", x: 48, y: 24, dot: "#b77657" },
+  { label: "DistServe", kind: "Paper", x: 60, y: 48, dot: "#b77657" },
+  { label: "Queueing Theory", kind: "Page", x: 43, y: 72, dot: "#a8967d" },
+  { label: "SGLang", kind: "Repo", x: 72, y: 69, dot: "#6f8758" },
 ];
+
+const MAP_EDGES = [
+  [0, 1],
+  [1, 2],
+  [2, 3],
+  [2, 4],
+] as const;
 
 const Map = () => (
   <div>
@@ -205,18 +212,13 @@ const Map = () => (
     <div className="grid h-[330px] overflow-hidden rounded-[18px] border border-[#4a3928] bg-[#1b130d] sm:h-[350px] md:grid-cols-[minmax(0,1fr)_190px] lg:grid-cols-[minmax(0,1fr)_220px]">
       <div className="relative overflow-hidden bg-[#1b130d]">
         <div className="absolute inset-0 opacity-[0.28]" style={{ backgroundImage: "radial-gradient(#6d5639 1px, transparent 1px)", backgroundSize: "18px 18px" }} />
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" className="absolute inset-0 h-full w-full">
           <defs>
             <marker id="demo-arrow" markerWidth="5" markerHeight="5" refX="4.5" refY="2.5" orient="auto" markerUnits="strokeWidth">
               <path d="M0,0 L5,2.5 L0,5 Z" fill="#9a6a38" opacity="0.8" />
             </marker>
           </defs>
-          {[
-            [0, 1],
-            [1, 2],
-            [2, 3],
-            [2, 4],
-          ].map(([from, to], idx) => {
+          {MAP_EDGES.map(([from, to], idx) => {
             const a = MAP_NODES[from];
             const b = MAP_NODES[to];
             return (
@@ -234,35 +236,40 @@ const Map = () => (
               />
             );
           })}
+          <foreignObject x="7" y="56" width="22" height="18">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.82 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.05 }}
+              className="h-full rounded-[10px] border border-[#c79f6b] bg-[#f6ecdc] px-2 py-1.5 shadow-[0_10px_22px_rgba(18,11,5,.18)]"
+            >
+              <div className="mb-0.5 truncate text-[7px] font-semibold uppercase tracking-[0.14em] text-[#9b825f]">Search</div>
+              <div className="rh-display truncate text-[11px] font-semibold leading-none text-[#21170f]">vLLM</div>
+            </motion.div>
+          </foreignObject>
+          {MAP_NODES.map((n, idx) => {
+            const selected = idx === 2;
+            return (
+              <foreignObject key={n.label} x={n.x - 11} y={n.y - 8} width="22" height="16">
+                <motion.div
+                  initial={{ opacity: 0, y: 5, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: 0.12 + idx * 0.09 }}
+                  className={`h-full rounded-[10px] border px-2 py-1.5 shadow-[0_12px_26px_rgba(18,11,5,.18)] ${selected ? "border-[#d8c3a1] bg-[#fff8ea]" : "border-[#6d5639] bg-[#21170f]"}`}
+                >
+                  <div className="mb-0.5 flex min-w-0 items-center gap-1">
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: n.dot }} />
+                    <span className="truncate text-[6.5px] font-semibold uppercase tracking-[0.12em] text-[#9b825f]">{n.kind}</span>
+                  </div>
+                  <div className={`rh-display truncate text-[10px] font-semibold leading-none ${selected ? "text-[#21170f]" : "text-[#f6ecd9]"}`}>{n.label}</div>
+                </motion.div>
+              </foreignObject>
+            );
+          })}
         </svg>
         <div className="absolute left-4 top-4 rounded-full border border-[#4a3928] bg-[#21170f]/90 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#b69b77]">
           AI Systems · 8 pages · 5 searches
         </div>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.82 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.05 }}
-          className="absolute left-[10%] top-[58%] w-[96px] rounded-[12px] border border-[#c79f6b] bg-[#f6ecdc] px-2.5 py-2 shadow-[0_10px_22px_rgba(18,11,5,.18)] sm:w-[104px]"
-        >
-          <div className="mb-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-[#9b825f]">Search</div>
-          <div className="rh-display truncate text-[13px] font-semibold leading-none text-[#21170f]">vLLM</div>
-        </motion.div>
-        {MAP_NODES.map((n, idx) => (
-          <motion.div
-            key={n.label}
-            initial={{ opacity: 0, y: 8, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ delay: 0.12 + idx * 0.09 }}
-            className={`absolute w-[96px] -translate-x-1/2 -translate-y-1/2 rounded-[12px] border px-2.5 py-2 shadow-[0_12px_26px_rgba(18,11,5,.18)] sm:w-[106px] ${idx === 2 ? "border-[#d8c3a1] bg-[#fff8ea]" : "border-[#6d5639] bg-[#21170f]"}`}
-            style={{ left: `${n.x}%`, top: `${n.y}%` }}
-          >
-            <div className="mb-1 flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full" style={{ background: n.dot }} />
-              <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[#9b825f]">{n.kind}</span>
-            </div>
-            <div className={`rh-display truncate text-[13px] font-semibold leading-none ${idx === 2 ? "text-[#21170f]" : "text-[#f6ecd9]"}`}>{n.label}</div>
-          </motion.div>
-        ))}
       </div>
       <div className="hidden border-l border-[#4a3928] bg-[#21170f] p-4 md:block lg:p-5">
         <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a8967d]">Selected node</div>
