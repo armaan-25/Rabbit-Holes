@@ -144,15 +144,17 @@ document.getElementById("record-toggle").addEventListener("click", () => {
 document.getElementById("record-stop").addEventListener("click", () => setCaptureState("stopped"));
 
 document.getElementById("cluster").addEventListener("click", async (e) => {
+  if (captureState === "stopped") {
+    setClusterLabel("Press play to start");
+    window.setTimeout(() => setClusterLabel("Build rabbit holes"), 1300);
+    return;
+  }
   const btn = e.currentTarget;
   btn.disabled = true;
-  setClusterLabel("Reading tabs…");
+  setClusterLabel("Opening builder…");
   try {
     try {
-      const snapshot = await chrome.runtime.sendMessage({ type: "snapshotBrowserState" });
-      if (snapshot?.ok && (snapshot.pages || snapshot.searches || snapshot.tabs)) {
-        setClusterLabel("Building…");
-      }
+      await chrome.runtime.sendMessage({ type: "flush" });
     } catch {
       // Older loaded copies of the extension may not have the flush listener yet.
       // Continue anyway so Build still tests the backend instead of failing early.
