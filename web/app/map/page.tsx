@@ -7,6 +7,7 @@ import ReactFlow, {
   BackgroundVariant,
   Controls,
   Handle,
+  MarkerType,
   Position,
   type Edge,
   type Node,
@@ -169,18 +170,27 @@ export default function MapPage() {
 
   const edges = useMemo<Edge[]>(() => {
     if (!hole) return [];
-    return hole.graph.edges.map((edge) => ({
-      id: edge.id,
-      source: edge.source,
-      target: edge.target,
-      type: "smoothstep",
-      animated: edge.kind === "discovered_through",
-      style: {
-        stroke: edge.kind === "clicked_from" ? "#8a623a" : edge.kind === "searched_from" ? "#b77637" : "#5f8a5c",
-        strokeWidth: 2,
-        opacity: 0.72,
-      },
-    }));
+    return hole.graph.edges.map((edge) => {
+      const color = edge.kind === "clicked_from" ? "#8a623a" : edge.kind === "searched_from" ? "#b77637" : "#5f8a5c";
+      return {
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        type: "smoothstep",
+        animated: edge.kind === "discovered_through",
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          color,
+          width: 14,
+          height: 14,
+        },
+        style: {
+          stroke: color,
+          strokeWidth: 1.8,
+          opacity: 0.72,
+        },
+      };
+    });
   }, [hole]);
 
   const insight = hole ? selectedInsight(hole, selectedId) : null;
