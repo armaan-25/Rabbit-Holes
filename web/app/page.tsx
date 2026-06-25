@@ -103,8 +103,18 @@ const reveal = {
 };
 
 export default function Landing() {
+  const [authPending, setAuthPending] = useState(false);
+
+  async function startGoogleSignIn() {
+    if (authPending) return;
+    setAuthPending(true);
+    await new Promise((resolve) => window.setTimeout(resolve, 180));
+    await signInWithGoogle();
+  }
+
   return (
     <div className="rh-paper min-h-screen overflow-x-hidden">
+      {authPending && <AuthTransition />}
       {/* ── Header ─────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 border-b border-[#785a321f] bg-[#f5efe4cc] backdrop-blur-md dark:bg-[#15110dcc]">
         <div className="mx-auto flex h-[76px] w-full max-w-[1320px] items-center justify-between px-5 sm:px-8">
@@ -129,10 +139,11 @@ export default function Landing() {
               Download extension
             </a>
             <button
-              onClick={signInWithGoogle}
+              onClick={startGoogleSignIn}
+              disabled={authPending}
               className="inline-flex items-center gap-2.5 rounded-full bg-[#2a2018] px-5 py-3 text-[14.5px] font-semibold text-[#f3e8d4] shadow-[0_8px_22px_rgba(42,32,24,.18)] transition hover:-translate-y-0.5"
             >
-              <GoogleMark /> Continue with Google
+              <GoogleMark /> {authPending ? "Opening..." : "Continue with Google"}
             </button>
           </div>
         </div>
@@ -168,10 +179,11 @@ export default function Landing() {
                 Download extension ↓
               </a>
               <button
-                onClick={signInWithGoogle}
+                onClick={startGoogleSignIn}
+                disabled={authPending}
                 className="inline-flex items-center gap-3 rounded-full border border-[#785a3233] bg-[#fbf6ec] px-8 py-4 text-[17px] font-semibold text-[#2a2018] transition hover:-translate-y-0.5"
               >
-                <GoogleMark /> Continue with Google
+                <GoogleMark /> {authPending ? "Opening..." : "Continue with Google"}
               </button>
               <Link
                 href="/dashboard"
@@ -353,10 +365,11 @@ export default function Landing() {
               Download extension ↓
             </a>
             <button
-              onClick={signInWithGoogle}
+              onClick={startGoogleSignIn}
+              disabled={authPending}
               className="inline-flex items-center gap-2.5 rounded-full border border-[#f3e8d433] px-7 py-4 text-[16px] font-semibold text-[#f3e8d4] transition hover:-translate-y-0.5"
             >
-              <GoogleMark /> Continue with Google
+              <GoogleMark /> {authPending ? "Opening..." : "Continue with Google"}
             </button>
             <Link href="/dashboard" className="inline-flex items-center gap-2 rounded-full border border-[#f3e8d433] px-7 py-4 text-[16px] font-semibold text-[#f3e8d4] transition hover:-translate-y-0.5">
               See the demo →
@@ -379,6 +392,22 @@ export default function Landing() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function AuthTransition() {
+  return (
+    <motion.div
+      className="fixed inset-0 z-[100] grid place-items-center bg-[#15110d] px-6 text-center text-[#f3e8d4]"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.18, ease: "easeOut" }}
+    >
+      <div>
+        <Wordmark className="text-[34px] text-[#f3e8d4]" />
+        <div className="mt-4 text-[15px] text-[#cdbd9f]">Opening secure sign in...</div>
+      </div>
+    </motion.div>
   );
 }
 
