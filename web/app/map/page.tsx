@@ -12,7 +12,6 @@ import ReactFlow, {
   type Node,
   type NodeProps,
 } from "reactflow";
-import { ACCENTS, faviconFor } from "@/lib/ui";
 import { EmptyHolesPage } from "@/components/EmptyHoles";
 import { useHoles } from "@/hooks/useHoles";
 import { useDark } from "@/lib/useDark";
@@ -55,32 +54,63 @@ function FlowNode({ data }: NodeProps<FlowNodeData>) {
   return (
     <button
       type="button"
-      className="rh-map-node group block w-[210px] rounded-[16px] border px-3.5 py-3 text-left shadow-[0_12px_28px_rgba(25,15,6,.16)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(25,15,6,.22)]"
+      className="rh-map-node group block w-[168px] rounded-[13px] border px-3 py-2.5 text-left transition hover:-translate-y-0.5"
       style={{
         background: selected ? (dark ? "#332417" : "#fff8ea") : dark ? style.darkBg : style.bg,
         borderColor: selected ? (dark ? "#d8c3a1" : "#2a2018") : dark ? style.darkBorder : style.border,
-        boxShadow: selected ? "0 0 0 3px rgba(216,195,161,.12), 0 18px 40px rgba(25,15,6,.28)" : undefined,
+        boxShadow: selected ? "0 0 0 2px rgba(216,195,161,.16)" : undefined,
       }}
     >
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
       <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />
-      <div className="mb-2 flex items-center gap-2">
-        {domain ? (
-          <img src={faviconFor(domain)} alt="" className="h-5 w-5 rounded-full bg-white" />
-        ) : (
-          <span className="grid h-5 w-5 place-items-center rounded-full bg-white/70">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ background: style.dot }} />
-          </span>
-        )}
-        <span className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: dark ? "#b69b77" : "#9b825f" }}>{KIND_LABEL[node.kind]}</span>
+      <div className="mb-1.5 flex items-center gap-1.5">
+        <span className="h-2 w-2 rounded-full" style={{ background: style.dot }} />
+        <span className="text-[9px] font-semibold uppercase tracking-[0.16em]" style={{ color: dark ? "#b69b77" : "#9b825f" }}>{KIND_LABEL[node.kind]}</span>
       </div>
-      <div className="rh-display line-clamp-2 break-words text-[18px] font-semibold leading-tight">{node.label.replace(/^Search: /, "")}</div>
-      {domain ? <div className="mt-2 truncate text-[12px]" style={{ color: dark ? "#b7a487" : "#7a6954" }}>{domain}</div> : null}
+      <div className="rh-display truncate text-[15px] font-semibold leading-tight">{node.label.replace(/^Search: /, "")}</div>
+      {domain ? <div className="mt-1 truncate text-[10.5px]" style={{ color: dark ? "#b7a487" : "#7a6954" }}>{domain}</div> : null}
     </button>
   );
 }
 
 const nodeTypes = { flow: FlowNode };
+
+function layoutGraphNodes(hole: RabbitHole) {
+  const searchNodes = hole.graph.nodes.filter((node) => node.kind === "search");
+  const contentNodes = hole.graph.nodes.filter((node) => node.kind !== "search");
+  const positions = new Map<string, { x: number; y: number }>();
+  const NODE_W = 168;
+  const NODE_H = 72;
+  const COL_W = 235;
+  const ROW_H = 104;
+  const SEARCH_X = 80;
+  const CONTENT_X = 330;
+  const searchStartY = Math.max(40, 310 - ((searchNodes.length - 1) * ROW_H) / 2);
+
+  searchNodes.forEach((node, index) => {
+    positions.set(node.id, { x: SEARCH_X, y: searchStartY + index * ROW_H });
+  });
+
+  contentNodes.forEach((node, index) => {
+    const col = index % 4;
+    const row = Math.floor(index / 4);
+    positions.set(node.id, {
+      x: CONTENT_X + col * COL_W,
+      y: 70 + row * ROW_H + (col % 2 ? 24 : 0),
+    });
+  });
+
+  return hole.graph.nodes.map((node) => {
+    const position = positions.get(node.id) ?? { x: 0, y: 0 };
+    return {
+      node,
+      position: {
+        x: position.x - NODE_W / 2,
+        y: position.y - NODE_H / 2,
+      },
+    };
+  });
+}
 
 function selectedInsight(hole: RabbitHole, nodeId: string) {
   const page = hole.pages.find((p) => p.id === nodeId);
@@ -128,15 +158,10 @@ export default function MapPage() {
 
   const nodes = useMemo<Node<FlowNodeData>[]>(() => {
     if (!hole) return [];
-    const WIDTH = 210;
-    const HEIGHT = 86;
-    return hole.graph.nodes.map((node) => ({
+    return layoutGraphNodes(hole).map(({ node, position }) => ({
       id: node.id,
       type: "flow",
-      position: {
-        x: node.x * 1120 - WIDTH / 2,
-        y: node.y * 560 - HEIGHT / 2,
-      },
+      position,
       data: { node, hole, selected: node.id === selectedId, dark },
       draggable: false,
     }));
@@ -201,13 +226,13 @@ export default function MapPage() {
         </div>
 
         <div className="mt-7 grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="rh-map-shell h-[690px] overflow-hidden rounded-[28px] border shadow-[0_24px_70px_rgba(40,25,10,.18)]">
+          <div className="rh-map-shell h-[690px] overflow-hidden rounded-[28px] border">
             <ReactFlow
               nodes={nodes}
               edges={edges}
               nodeTypes={nodeTypes}
               fitView
-              fitViewOptions={{ padding: 0.18 }}
+              fitViewOptions={{ padding: 0.12 }}
               minZoom={0.45}
               maxZoom={1.35}
               proOptions={{ hideAttribution: true }}

@@ -145,6 +145,7 @@ export function MobileNav() {
 
 function CaptureCard({ stats }: { readonly stats: SessionStats }) {
   const [localState, setLocalState] = useState<CaptureState | null>(null);
+  const [pending, setPending] = useState(false);
   const effectiveState = localState ?? stats.captureState;
   const recording = effectiveState === "recording";
   const statusLabel = recording ? "Capturing" : effectiveState === "paused" ? "Paused" : "Stopped";
@@ -152,8 +153,8 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
   const hasTimer = typeof stats.elapsedMs === "number";
 
   useEffect(() => {
-    setLocalState(null);
-  }, [stats.captureState]);
+    if (localState && stats.captureState === localState) setLocalState(null);
+  }, [localState, stats.captureState]);
 
   // The polled stats only refresh every ~2s; tick the clock locally each second
   // so the timer counts smoothly instead of jumping.
@@ -169,7 +170,6 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
     return () => window.clearInterval(id);
   }, [stats.elapsedMs, recording]);
 
-  const [pending, setPending] = useState(false);
   async function send(next: CaptureState) {
     if (pending) return;
     setPending(true);
@@ -180,35 +180,30 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
   }
 
   return (
-    <div className="rh-surface mt-5 rounded-[13px] border px-4 py-3">
-      <div className="flex items-center gap-3">
-        <span
-          className="h-2 w-2 shrink-0 rounded-full"
-          style={{ background: recording ? STATUS_META.active.dot : effectiveState === "paused" ? "#c7ae84" : "#b8795f" }}
-        />
-        <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold text-[var(--rh-ink)]">
-          {statusLabel}
-          {hasTimer && <span className="tabular-nums"> · {formatElapsed(elapsed)}</span>}
-        </span>
-        {controllable && (
-          <div className="flex shrink-0 items-center gap-1.5">
-            <CaptureButton
-              onClick={() => send(recording ? "paused" : "recording")}
-              disabled={pending}
-              title={recording ? "Pause capture" : "Resume capture"}
-              label={recording ? "Pause" : "Play"}
-              active={recording}
-            />
-            <CaptureButton
-              onClick={() => send("stopped")}
-              disabled={pending || effectiveState === "stopped"}
-              title="Stop & clear session"
-              label="Stop"
-              active={effectiveState === "stopped"}
-            />
-          </div>
-        )}
+    <div className="rh-surface mt-5 rounded-[13px] border p-4">
+      <div className="flex items-center gap-2.5">
+        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: recording ? STATUS_META.active.dot : effectiveState === "paused" ? "#c7ae84" : "#b8795f" }} />
+        <span className="min-w-0 flex-1 text-[13px] font-semibold text-[var(--rh-ink)]">{statusLabel}</span>
+        {hasTimer && <span className="shrink-0 text-[12px] font-semibold tabular-nums text-[var(--rh-muted)]">{formatElapsed(elapsed)}</span>}
       </div>
+      {controllable && (
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <CaptureButton
+            onClick={() => send(recording ? "paused" : "recording")}
+            disabled={pending}
+            title={recording ? "Pause capture" : "Resume capture"}
+            label={recording ? "Pause" : "Resume"}
+            active={recording}
+          />
+          <CaptureButton
+            onClick={() => send("stopped")}
+            disabled={pending || effectiveState === "stopped"}
+            title="Stop capture"
+            label="Stop"
+            active={effectiveState === "stopped"}
+          />
+        </div>
+      )}
       <div className="mt-3 grid grid-cols-3 divide-x divide-[var(--rh-line)] border-t border-[var(--rh-line)] pt-3">
         <MiniStat n={stats.pages} label="pages" />
         <MiniStat n={stats.searches} label="searches" />
@@ -225,7 +220,7 @@ function CaptureButton({ onClick, disabled, title, label, active }: { readonly o
       disabled={disabled}
       title={title}
       aria-label={title}
-      className={`grid h-8 min-w-[52px] place-items-center rounded-[9px] border px-2 text-[11px] font-semibold transition disabled:opacity-40 ${
+      className={`grid h-9 place-items-center rounded-[9px] border px-3 text-[12px] font-semibold transition disabled:opacity-40 ${
         active
           ? "bg-[var(--rh-primary)] text-[var(--rh-primary-text)]"
           : "rh-surface text-[var(--rh-muted)] hover:text-[var(--rh-ink)]"
