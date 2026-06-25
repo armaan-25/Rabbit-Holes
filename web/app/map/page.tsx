@@ -54,7 +54,7 @@ function FlowNode({ data }: NodeProps<FlowNodeData>) {
   return (
     <button
       type="button"
-      className="rh-map-node group block w-[168px] rounded-[13px] border px-3 py-2.5 text-left transition hover:-translate-y-0.5"
+      className="rh-map-node group block w-[142px] rounded-[12px] border px-3 py-2 text-left transition hover:-translate-y-0.5"
       style={{
         background: selected ? (dark ? "#332417" : "#fff8ea") : dark ? style.darkBg : style.bg,
         borderColor: selected ? (dark ? "#d8c3a1" : "#2a2018") : dark ? style.darkBorder : style.border,
@@ -63,11 +63,11 @@ function FlowNode({ data }: NodeProps<FlowNodeData>) {
     >
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
       <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />
-      <div className="mb-1.5 flex items-center gap-1.5">
+      <div className="mb-1 flex items-center gap-1.5">
         <span className="h-2 w-2 rounded-full" style={{ background: style.dot }} />
-        <span className="text-[9px] font-semibold uppercase tracking-[0.16em]" style={{ color: dark ? "#b69b77" : "#9b825f" }}>{KIND_LABEL[node.kind]}</span>
+        <span className="text-[8.5px] font-semibold uppercase tracking-[0.14em]" style={{ color: dark ? "#b69b77" : "#9b825f" }}>{KIND_LABEL[node.kind]}</span>
       </div>
-      <div className="rh-display truncate text-[15px] font-semibold leading-tight">{node.label.replace(/^Search: /, "")}</div>
+      <div className="rh-display truncate text-[13.5px] font-semibold leading-tight">{node.label.replace(/^Search: /, "")}</div>
       {domain ? <div className="mt-1 truncate text-[10.5px]" style={{ color: dark ? "#b7a487" : "#7a6954" }}>{domain}</div> : null}
     </button>
   );
@@ -79,24 +79,25 @@ function layoutGraphNodes(hole: RabbitHole) {
   const searchNodes = hole.graph.nodes.filter((node) => node.kind === "search");
   const contentNodes = hole.graph.nodes.filter((node) => node.kind !== "search");
   const positions = new Map<string, { x: number; y: number }>();
-  const NODE_W = 168;
-  const NODE_H = 72;
-  const COL_W = 235;
-  const ROW_H = 104;
-  const SEARCH_X = 80;
+  const NODE_W = 142;
+  const NODE_H = 64;
+  const ROW_H = 84;
+  const SEARCH_X = 100;
   const CONTENT_X = 330;
-  const searchStartY = Math.max(40, 310 - ((searchNodes.length - 1) * ROW_H) / 2);
+  const CONTENT_COL_W = 215;
+  const CONTENT_COLS = contentNodes.length > 12 ? 3 : 2;
+  const searchStartY = Math.max(80, 350 - ((searchNodes.length - 1) * ROW_H) / 2);
 
   searchNodes.forEach((node, index) => {
     positions.set(node.id, { x: SEARCH_X, y: searchStartY + index * ROW_H });
   });
 
   contentNodes.forEach((node, index) => {
-    const col = index % 4;
-    const row = Math.floor(index / 4);
+    const col = index % CONTENT_COLS;
+    const row = Math.floor(index / CONTENT_COLS);
     positions.set(node.id, {
-      x: CONTENT_X + col * COL_W,
-      y: 70 + row * ROW_H + (col % 2 ? 24 : 0),
+      x: CONTENT_X + col * CONTENT_COL_W,
+      y: 95 + row * ROW_H + (col % 2 ? 22 : 0),
     });
   });
 
@@ -226,15 +227,16 @@ export default function MapPage() {
         </div>
 
         <div className="mt-7 grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="rh-map-shell h-[690px] overflow-hidden rounded-[28px] border">
+          <div className="rh-map-shell h-[640px] overflow-hidden rounded-[28px] border">
             <ReactFlow
+              key={hole?.id}
               nodes={nodes}
               edges={edges}
               nodeTypes={nodeTypes}
               fitView
-              fitViewOptions={{ padding: 0.12 }}
-              minZoom={0.45}
-              maxZoom={1.35}
+              fitViewOptions={{ padding: 0.2, maxZoom: 0.95 }}
+              minZoom={0.32}
+              maxZoom={1.2}
               proOptions={{ hideAttribution: true }}
               nodesConnectable={false}
               edgesFocusable={false}

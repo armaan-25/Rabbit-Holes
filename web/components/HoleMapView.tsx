@@ -18,8 +18,8 @@ import { ACCENTS, KIND_META, EDGE_LABELS, faviconFor } from "@/lib/ui";
 import { useDark } from "@/lib/useDark";
 import type { RabbitHole, GraphNode } from "@/lib/types";
 
-const W = 1240;
-const H = 760;
+const W = 940;
+const H = 620;
 
 type StepData = {
   label: string;
@@ -36,19 +36,19 @@ function StepNode({ data }: NodeProps<StepData>) {
   return (
     <Tag
       {...(data.url ? { href: data.url, target: "_blank", rel: "noreferrer" } : {})}
-      className="flex max-w-[240px] items-center gap-2.5 rounded-[14px] border bg-[var(--rh-surface)] px-3.5 py-2.5 no-underline shadow-[0_8px_22px_rgba(70,45,20,.1)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(70,45,20,.16)]"
+      className="flex w-[184px] max-w-[184px] items-center gap-2 rounded-[13px] border bg-[var(--rh-surface)] px-3 py-2 no-underline shadow-[0_8px_22px_rgba(70,45,20,.1)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(70,45,20,.16)]"
       style={{ borderColor: data.dark ? "rgba(230,211,180,0.16)" : "#785a3233" }}
     >
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
       <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />
       <span
-        className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-[9px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] text-[13px] font-semibold"
+        className="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-[8px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] text-[12px] font-semibold"
         style={{ color: meta.color }}
       >
-        {data.domain ? <img src={faviconFor(data.domain)} alt="" className="h-5 w-5 rounded" /> : meta.glyph}
+        {data.domain ? <img src={faviconFor(data.domain)} alt="" className="h-4 w-4 rounded" /> : meta.glyph}
       </span>
       <span className="min-w-0">
-        <span className="block truncate text-[13.5px] font-semibold leading-tight text-[var(--rh-ink)]">{data.label}</span>
+        <span className="block truncate text-[12.5px] font-semibold leading-tight text-[var(--rh-ink)]">{data.label}</span>
         <span className="block text-[11px] capitalize text-[var(--rh-faint)]">{meta.label}</span>
       </span>
     </Tag>
@@ -65,7 +65,6 @@ export function HoleMapView({ id, embedded = false }: { id: string; embedded?: b
   const nodes = useMemo<Node<StepData>[]>(() => {
     if (!hole) return [];
     const accent = ACCENTS[hole.accent].hex;
-    // Stretch the raw 0..1 layout to fill the canvas so clustered steps spread out.
     const xs = hole.graph.nodes.map((n) => n.x);
     const ys = hole.graph.nodes.map((n) => n.y);
     const minX = Math.min(...xs);
@@ -77,7 +76,10 @@ export function HoleMapView({ id, embedded = false }: { id: string; embedded?: b
       return {
         id: n.id,
         type: "step",
-        position: { x: ((n.x - minX) / spanX) * W, y: ((n.y - minY) / spanY) * H },
+        position: {
+          x: 70 + ((n.x - minX) / spanX) * W,
+          y: 70 + ((n.y - minY) / spanY) * H,
+        },
         data: { label: n.label, kind: n.kind, domain: page?.domain, url: page?.url, accent, dark },
         draggable: true,
       };
@@ -142,13 +144,14 @@ export function HoleMapView({ id, embedded = false }: { id: string; embedded?: b
 
       <div className={`${embedded ? "h-full" : "h-screen"} w-full`}>
         <ReactFlow
+          key={hole.id}
           nodes={nodes}
           edges={edges}
           nodeTypes={nodeTypes}
           fitView
-          fitViewOptions={{ padding: 0.3 }}
-          minZoom={0.4}
-          maxZoom={1.8}
+          fitViewOptions={{ padding: 0.25, maxZoom: 0.95 }}
+          minZoom={0.32}
+          maxZoom={1.25}
           proOptions={{ hideAttribution: true }}
           nodesConnectable={false}
           edgesFocusable={false}
