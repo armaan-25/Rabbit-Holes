@@ -2,8 +2,8 @@
 
 import { HoleCard } from "@/components/HoleCard";
 import { EmptyHoles } from "@/components/EmptyHoles";
-import { DiscoverButton } from "@/components/DiscoverButton";
-import { clusterHoleToRabbitHole, hasMeaningfulNewContext, rememberClusterContext, runCluster } from "@/lib/discovery";
+import { BuildNotice, DiscoverButton, RabbitHoleLoading } from "@/components/DiscoverButton";
+import { clusterHoleToRabbitHole, hasMeaningfulNewContext, holeToDiscovery, markDiscoverySeen, nextUnseenDiscovery, rememberClusterContext, runCluster } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
 import { bulkPatchBackendHoles, patchBackendHole } from "@/lib/api";
 import { useLibraryHoles } from "@/hooks/useHoles";
@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 
 export default function Dashboard() {
   const setLiveHoles = useApp((s) => s.setLiveHoles);
+  const triggerDiscovery = useApp((s) => s.triggerDiscovery);
   const toggleFavorite = useApp((s) => s.toggleFavorite);
   const toggleArchive = useApp((s) => s.toggleArchive);
   const deleteHole = useApp((s) => s.deleteHole);
@@ -19,6 +20,7 @@ export default function Dashboard() {
   const deleteHoles = useApp((s) => s.deleteHoles);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [syncLabel, setSyncLabel] = useState("live");
+  const [routeBuildState, setRouteBuildState] = useState<"idle" | "loading" | "empty" | "error">("idle");
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"active" | "favorites" | "archived" | "all">("active");
   const [sort, setSort] = useState<"recent" | "pages" | "confidence">("recent");
@@ -81,29 +83,45 @@ export default function Dashboard() {
 
     let cancelled = false;
     setSyncLabel("clustering");
+    setRouteBuildState("loading");
     void runCluster()
       .then((cluster) => {
         if (cancelled) return;
+        window.history.replaceState(null, "", "/dashboard");
         if (!hasMeaningfulNewContext(cluster)) {
           setSyncLabel("no new browsing");
+          setRouteBuildState("empty");
           return;
         }
         setLiveHoles(cluster.holes.map((hole) => clusterHoleToRabbitHole(hole, cluster.pages, cluster.searches)));
         rememberClusterContext(cluster);
+        const next = nextUnseenDiscovery(cluster.holes) ?? (cluster.holes[0] ? holeToDiscovery(cluster.holes[0]) : null);
         setSyncLabel("updated");
+        setRouteBuildState("idle");
+        if (next) {
+          markDiscoverySeen(next.id);
+          window.setTimeout(() => triggerDiscovery(next), 80);
+        }
       })
       .catch((err) => {
         console.error("cluster failed", err);
-        if (!cancelled) setSyncLabel("backend offline");
+        if (!cancelled) {
+          window.history.replaceState(null, "", "/dashboard");
+          setSyncLabel("backend offline");
+          setRouteBuildState("error");
+        }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [setLiveHoles]);
+  }, [setLiveHoles, triggerDiscovery]);
 
   return (
     <div className="rh-paper min-h-screen px-5 py-8 sm:px-8 xl:px-12">
+      {routeBuildState === "loading" && <RabbitHoleLoading />}
+      {routeBuildState === "empty" && <BuildNotice type="empty" stats={stats} onClose={() => setRouteBuildState("idle")} />}
+      {routeBuildState === "error" && <BuildNotice type="error" stats={stats} onClose={() => setRouteBuildState("idle")} />}
       <div className="mx-auto w-full max-w-[1440px]">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>

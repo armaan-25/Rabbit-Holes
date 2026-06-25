@@ -1,4 +1,4 @@
-import { BACKEND_URL, WEB_URL } from "./config.js";
+import { WEB_URL } from "./config.js";
 
 let captureState = "recording";
 let captureStartedAt = null;
@@ -144,13 +144,14 @@ document.getElementById("record-toggle").addEventListener("click", () => {
 document.getElementById("record-stop").addEventListener("click", () => setCaptureState("stopped"));
 
 document.getElementById("cluster").addEventListener("click", async (e) => {
-  const btn = e.currentTarget;
   if (captureState === "stopped") {
     setClusterLabel("Press play to start");
     window.setTimeout(() => setClusterLabel("Build rabbit holes"), 1300);
     return;
   }
-  setClusterLabel("Thinking…");
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  setClusterLabel("Opening builder…");
   try {
     try {
       await chrome.runtime.sendMessage({ type: "flush" });
@@ -164,36 +165,14 @@ document.getElementById("cluster").addEventListener("click", async (e) => {
       setClusterLabel("Sign in first");
       setAuthView("expired");
       window.setTimeout(() => setClusterLabel("Build rabbit holes"), 1600);
+      btn.disabled = false;
       return;
     }
-    let res = await fetch(`${BACKEND_URL}/cluster`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (res.status === 401) {
-      // Token rejected — force one refresh and retry before giving up.
-      const refreshed = await chrome.runtime.sendMessage({ type: "refreshToken" }).catch(() => null);
-      token = refreshed?.token;
-      if (token) {
-        res = await fetch(`${BACKEND_URL}/cluster`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      }
-    }
-    if (res.status === 401) {
-      setClusterLabel("Session expired — sign in");
-      setAuthView("expired");
-      window.setTimeout(() => setClusterLabel("Build rabbit holes"), 1600);
-      return;
-    }
-    if (!res.ok) throw new Error(`cluster failed: ${res.status}`);
-    const payload = await res.json();
-    const holeCount = Array.isArray(payload?.holes) ? payload.holes.length : 0;
-    setClusterLabel(`${holeCount} rabbit hole${holeCount === 1 ? "" : "s"} found`);
-    chrome.tabs.create({ url: `${WEB_URL}/dashboard?cluster=1` });
+    chrome.tabs.create({ url: `${WEB_URL}/dashboard?cluster=1` }, () => window.close());
   } catch {
-    setClusterLabel("Backend offline");
+    setClusterLabel("Could not open");
+    window.setTimeout(() => setClusterLabel("Build rabbit holes"), 1600);
+    btn.disabled = false;
   }
 });
 

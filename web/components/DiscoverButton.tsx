@@ -77,7 +77,7 @@ const WORDS = [
   { text: "pages", x: "54px", y: "154px", d: ".8s" },
 ];
 
-function RabbitHoleLoading() {
+export function RabbitHoleLoading() {
   return (
     <div className="fixed inset-0 z-[70] grid place-items-center overflow-hidden bg-[#140d08]/76 px-4 backdrop-blur-[8px]">
       <style>{`
@@ -130,7 +130,7 @@ function RabbitHoleLoading() {
   );
 }
 
-function BuildNotice({ type, stats, onClose }: { readonly type: "empty" | "error"; readonly stats: ReturnType<typeof useSessionStats>; readonly onClose: () => void }) {
+export function BuildNotice({ type, stats, onClose }: { readonly type: "empty" | "error"; readonly stats: ReturnType<typeof useSessionStats>; readonly onClose: () => void }) {
   const empty = type === "empty";
   return (
     <div className="fixed inset-0 z-[75] grid place-items-center bg-[#140d08]/72 px-4 backdrop-blur-[8px]">
