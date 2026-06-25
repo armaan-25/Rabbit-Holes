@@ -2,12 +2,12 @@ import Link from "next/link";
 import { Wordmark } from "@/components/Logo";
 
 const STEPS = [
-  ["Download", "Download the latest Rabbit Holes extension zip from the landing page."],
-  ["Unzip", "Unzip the folder somewhere stable, for example your Applications or Projects folder. Chrome needs the folder to stay in place."],
-  ["Open extensions", "Go to chrome://extensions and turn on Developer mode."],
-  ["Load unpacked", "Click Load unpacked and select the unzipped extension folder."],
-  ["Sign in", "Click the Rabbit Holes toolbar icon, sign in, then browse normally."],
-  ["Build", "Click Build rabbit holes after a real browsing session to cluster the captured trail."],
+  ["Download", "Download the Rabbit Holes extension zip from this page."],
+  ["Unzip", "Unzip the file and keep the folder somewhere stable. Chrome needs the folder to stay in place."],
+  ["Open extensions", "Open chrome://extensions in Chrome, Brave, Arc, Edge, or Opera, then turn on Developer mode."],
+  ["Load unpacked", "Click Load unpacked and select the unzipped Rabbit Holes extension folder."],
+  ["Pin and sign in", "Pin Rabbit Holes in your toolbar, open it, and sign in with the same account you use on the app."],
+  ["Build", "Browse a few related pages or searches, then click Build rabbit holes to cluster the captured trail."],
 ];
 
 export default function InstallPage() {
@@ -20,6 +20,20 @@ export default function InstallPage() {
         <p className="rh-muted mt-5 max-w-[680px] text-[18px] leading-8">
           Chrome, Edge, Brave, Arc, and Opera can use the same Chromium extension package while the Chrome Web Store listing is not live yet.
         </p>
+        <section className="rh-surface mt-7 rounded-[22px] border p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="rh-faint text-[11px] font-bold uppercase tracking-[0.22em]">Manual install during review</div>
+              <h2 className="rh-display rh-ink mt-2 text-[28px] font-semibold leading-tight">Use Rabbit Holes before the Chrome Web Store approval lands.</h2>
+              <p className="rh-muted mt-2 max-w-[62ch] text-[15.5px] leading-7">
+                The extension works now. Until the public store listing is approved, install it manually with Load unpacked.
+              </p>
+            </div>
+            <div className="rounded-full border border-[#5f8a5c33] bg-[#eef5e9] px-4 py-2 text-[13px] font-semibold text-[#466d40]">
+              Chrome review pending
+            </div>
+          </div>
+        </section>
         <div className="mt-8 flex flex-wrap gap-3">
           <a href="/downloads/rabbit-holes-extension.zip" download className="rh-primary rounded-full px-7 py-4 text-[16px] font-semibold no-underline">
             Download extension ↓
@@ -36,6 +50,12 @@ export default function InstallPage() {
               <p className="rh-muted mt-2 text-[16px] leading-7">{body}</p>
             </section>
           ))}
+        </div>
+        <div className="rh-surface mt-8 rounded-[20px] border p-6">
+          <h2 className="rh-display rh-ink text-[24px] font-semibold">Send this to a tester</h2>
+          <p className="rh-muted mt-3 text-[15.5px] leading-7">
+            Rabbit Holes is waiting on Chrome Web Store review, so install is manual for now: visit this page, download the zip, unzip it, open chrome://extensions, enable Developer mode, click Load unpacked, select the unzipped folder, pin Rabbit Holes, sign in, browse a few related pages, then click Build rabbit holes.
+          </p>
         </div>
       </div>
     </main>
