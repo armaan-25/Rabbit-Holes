@@ -9,6 +9,10 @@ import { bulkPatchBackendHoles, patchBackendHole } from "@/lib/api";
 import { useLibraryHoles } from "@/hooks/useHoles";
 import { formatElapsed, useSessionStats } from "@/hooks/useSessionStats";
 import { useEffect, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { AppFrame, ToolbarFrame } from "@/components/ui/frame";
+import { Input, Select } from "@/components/ui/input";
 
 export default function Dashboard() {
   const setLiveHoles = useApp((s) => s.setLiveHoles);
@@ -122,7 +126,7 @@ export default function Dashboard() {
       {routeBuildState === "loading" && <RabbitHoleLoading />}
       {routeBuildState === "empty" && <BuildNotice type="empty" stats={stats} onClose={() => setRouteBuildState("idle")} />}
       {routeBuildState === "error" && <BuildNotice type="error" stats={stats} onClose={() => setRouteBuildState("idle")} />}
-      <div className="mx-auto w-full max-w-[1440px]">
+      <AppFrame>
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <div className="rh-faint mb-2 text-[12px] font-semibold uppercase tracking-[0.22em]">
@@ -133,11 +137,11 @@ export default function Dashboard() {
             </h1>
           </div>
           <div className="flex items-center gap-3">
-            <div className="rh-surface hidden items-center gap-5 rounded-xl border px-4 py-2.5 shadow-[0_2px_16px_rgba(70,45,20,.06)] sm:flex">
+            <Card className="hidden items-center gap-5 rounded-xl px-4 py-2.5 sm:flex">
               <HeaderStat n={stats.pages} label="pages" />
               <HeaderStat n={stats.searches} label="searches" />
               <HeaderStat n={stats.tabs} label="tabs" accent />
-            </div>
+            </Card>
             <DiscoverButton />
           </div>
         </div>
@@ -149,7 +153,7 @@ export default function Dashboard() {
         ) : (
           <>
             {latest && (
-              <div className="rh-surface mt-6 flex items-center gap-3 rounded-2xl border px-5 py-4">
+              <Card className="mt-6 flex items-center gap-3 rounded-2xl px-5 py-4">
                 <span className={`h-2 w-2 shrink-0 rounded-full ${stats.captureState === "recording" ? "bg-[#5f8a5c]" : stats.captureState === "paused" ? "bg-[#c7ae84]" : "bg-[#b8795f]"}`} />
                 <div className="min-w-0 truncate text-[15px] text-[var(--rh-muted)]">
                   <span className="font-semibold text-[var(--rh-ink)]">{statusLabel}</span>
@@ -157,10 +161,10 @@ export default function Dashboard() {
                   {" "}— {stats.pages} pages · {stats.searches} searches · {stats.tabs} tabs
                 </div>
                 <div className="rh-faint ml-auto hidden text-[12px] sm:block">{stats.source === "extension" ? "extension" : syncLabel}</div>
-              </div>
+              </Card>
             )}
 
-            <div className="rh-surface mt-7 rounded-[22px] border p-4 shadow-[0_2px_16px_rgba(70,45,20,.05)]">
+            <ToolbarFrame className="mt-7">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                   <h2 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#a8967d]">
@@ -171,47 +175,47 @@ export default function Dashboard() {
                   </p>
                 </div>
                 <div className="flex flex-1 flex-wrap gap-2 lg:max-w-[760px] lg:justify-end">
-                  <input
+                  <Input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search holes, domains, topics..."
-                    className="min-w-[220px] flex-1 rounded-[13px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-4 py-3 text-[14px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)] focus:border-[var(--rh-line-strong)]"
+                    className="min-w-[220px] flex-1"
                   />
-                  <select value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} className="rounded-[13px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] px-3 py-3 text-[14px] text-[var(--rh-ink-soft)] outline-none">
+                  <Select value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} className="w-[132px]">
                     <option value="active">Active</option>
                     <option value="favorites">Favorites</option>
                     <option value="archived">Archived</option>
                     <option value="all">All</option>
-                  </select>
-                  <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} className="rounded-[13px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] px-3 py-3 text-[14px] text-[var(--rh-ink-soft)] outline-none">
+                  </Select>
+                  <Select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} className="w-[150px]">
                     <option value="recent">Recent</option>
                     <option value="pages">Most pages</option>
                     <option value="confidence">Confidence</option>
-                  </select>
+                  </Select>
                 </div>
               </div>
-            </div>
+            </ToolbarFrame>
 
             {selectedIds.length > 0 && (
               <div className="sticky top-4 z-10 mt-4 flex flex-wrap items-center gap-3 rounded-[18px] border border-[#5f8a5c42] bg-[var(--rh-surface)]/95 px-4 py-3 shadow-[0_12px_34px_rgba(70,45,20,.12)] backdrop-blur">
                 <div className="mr-auto text-[14px] font-semibold text-[#37502f]">{selectedIds.length} selected</div>
-                <button onClick={() => bulk("favorite")} className="rh-surface-2 rounded-full border px-4 py-2 text-[13px] font-semibold">Favorite</button>
-                <button onClick={() => bulk("archive")} className="rh-surface-2 rounded-full border px-4 py-2 text-[13px] font-semibold">Archive</button>
-                <button onClick={() => bulk("delete")} className="rounded-full border border-[#b8795f33] bg-[#fff6f1] px-4 py-2 text-[13px] font-semibold text-[#a8472a]">Delete</button>
-                <button onClick={() => setSelectedIds([])} className="rounded-full px-4 py-2 text-[13px] font-semibold text-[#8a7860]">Clear</button>
+                <Button size="sm" onClick={() => bulk("favorite")}>Favorite</Button>
+                <Button size="sm" onClick={() => bulk("archive")}>Archive</Button>
+                <Button size="sm" variant="danger" onClick={() => bulk("delete")}>Delete</Button>
+                <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>Clear</Button>
               </div>
             )}
 
             {visibleHoles.length === 0 ? (
-              <div className="rh-surface mt-6 rounded-[22px] border border-dashed px-8 py-12 text-center">
+              <Card className="mt-6 border-dashed px-8 py-12 text-center">
                 <div className="rh-display rh-ink text-[28px] font-semibold">Nothing matches this view</div>
                 <p className="rh-muted mx-auto mt-2 max-w-[46ch] text-[15px] leading-6">
                   Clear the search, switch filters, or build a fresh rabbit hole after browsing something new.
                 </p>
-                <button onClick={() => { setQuery(""); setFilter("active"); }} className="rh-primary mt-5 rounded-full px-5 py-3 text-[14px] font-semibold">
+                <Button variant="primary" className="mt-5" onClick={() => { setQuery(""); setFilter("active"); }}>
                   Reset library view
-                </button>
-              </div>
+                </Button>
+              </Card>
             ) : (
               <div className="mt-4 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(340px,1fr))] xl:[grid-template-columns:repeat(auto-fit,minmax(372px,1fr))]">
                 {visibleHoles.map((h) => (
@@ -233,7 +237,7 @@ export default function Dashboard() {
             </p>
           </>
         )}
-      </div>
+      </AppFrame>
     </div>
   );
 }

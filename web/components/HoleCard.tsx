@@ -5,6 +5,9 @@ import type { RabbitHole } from "@/lib/types";
 import { ACCENTS, KIND_META, faviconFor } from "@/lib/ui";
 import { relativeTime } from "@/lib/format";
 import { StatusBadge } from "./atoms";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 export function HoleCard({
   hole,
@@ -36,7 +39,7 @@ export function HoleCard({
   return (
     <div>
       <Link href={`/holes/${hole.id}`} className="group block">
-        <div className={`rh-surface relative min-h-[292px] overflow-hidden rounded-[20px] border p-6 text-left shadow-[0_2px_18px_rgba(70,45,20,.06)] transition duration-200 group-hover:border-[var(--rh-line-strong)] ${selected ? "border-[#5f8a5c] ring-2 ring-[#5f8a5c33]" : ""}`}>
+        <Card className={`relative min-h-[292px] overflow-hidden rounded-[20px] p-6 text-left transition duration-200 group-hover:border-[var(--rh-line-strong)] ${selected ? "border-[#5f8a5c] ring-2 ring-[#5f8a5c33]" : ""}`}>
           {hole.status === "active" && (
             <>
               <div className="pointer-events-none absolute inset-0 rounded-[20px] shadow-[0_0_0_1px_rgba(95,138,92,.24),0_12px_34px_rgba(95,138,92,.12)]" />
@@ -48,59 +51,67 @@ export function HoleCard({
               <StatusBadge status={hole.status} />
               <div className="flex items-center gap-2">
                 {onSelect && (
-                  <button
+                  <Button
                     type="button"
                     title={selected ? "Deselect" : "Select"}
+                    size="icon"
+                    variant={selected ? "secondary" : "ghost"}
                     onClick={(e) => {
                       e.preventDefault();
                       onSelect(hole.id, !selected);
                     }}
-                    className={`grid h-7 w-7 place-items-center rounded-full border text-[13px] transition ${selected ? "border-[#5f8a5c66] bg-[#e5efe0] text-[#37502f]" : "rh-surface-2 text-[var(--rh-muted)]"}`}
+                    className={selected ? "border-[#5f8a5c66] bg-[#e5efe0] text-[#37502f]" : "h-7 w-7"}
                   >
                     {selected ? "✓" : ""}
-                  </button>
+                  </Button>
                 )}
                 <span className="rh-faint text-[13px]">{relativeTime(hole.lastActive)}</span>
                 {(onFavorite || onArchive || onDelete) && (
                   <div className="flex items-center gap-1 opacity-80 transition group-hover:opacity-100">
                     {onFavorite && (
-                      <button
+                      <Button
                         type="button"
                         title={hole.favorite ? "Unfavorite" : "Favorite"}
+                        size="icon"
+                        variant="ghost"
                         onClick={(e) => {
                           e.preventDefault();
                           onFavorite(hole.id);
                         }}
-                        className="rh-surface-2 grid h-7 w-7 place-items-center rounded-full border text-[13px] text-[var(--rh-muted)] transition hover:text-[#c2703f]"
+                        className="h-7 w-7 hover:text-[#c2703f]"
                       >
                         {hole.favorite ? "★" : "☆"}
-                      </button>
+                      </Button>
                     )}
                     {onArchive && (
-                      <button
+                      <Button
                         type="button"
                         title={hole.archived ? "Restore" : "Archive"}
+                        size="icon"
+                        variant="ghost"
                         onClick={(e) => {
                           e.preventDefault();
                           onArchive(hole.id);
                         }}
-                        className="rh-surface-2 grid h-7 w-7 place-items-center rounded-full border text-[13px] text-[var(--rh-muted)] transition hover:text-[var(--rh-ink)]"
+                        className="h-7 w-7"
                       >
                         {hole.archived ? "↥" : "⌄"}
-                      </button>
+                      </Button>
                     )}
                     {onDelete && (
-                      <button
+                      <Button
                         type="button"
                         title="Delete"
+                        size="icon"
+                        variant="danger"
                         onClick={(e) => {
                           e.preventDefault();
                           if (window.confirm(`Delete "${hole.title}"?`)) onDelete(hole.id);
                         }}
-                        className="grid h-7 w-7 place-items-center rounded-full border border-[#b8795f33] bg-[#b8795f14] text-[13px] text-[#a8472a] transition hover:bg-[#b8795f20]"
+                        className="h-7 w-7"
                       >
                         ×
-                      </button>
+                      </Button>
                     )}
                   </div>
                 )}
@@ -128,10 +139,10 @@ export function HoleCard({
 
             <div className="mt-5 flex flex-wrap gap-2 border-t border-[var(--rh-line)] pt-4">
               {counts.map((k) => (
-                <div key={k.label} className="inline-flex items-baseline gap-1 rounded-[9px] bg-[var(--rh-surface-2)] px-2.5 py-1.5">
+                <Badge key={k.label} className="items-baseline rounded-[9px] border-0 px-2.5 py-1.5">
                   <span className="text-[15px] font-semibold tabular-nums text-[var(--rh-ink)]">{k.n}</span>
                   <span className="text-[12.5px] text-[var(--rh-muted)]">{k.label}</span>
-                </div>
+                </Badge>
               ))}
               <div className="ml-auto flex items-center gap-1">
                 {hole.pages.slice(0, 4).map((p) => {
@@ -165,7 +176,7 @@ export function HoleCard({
               </span>
             </div>
           </div>
-        </div>
+        </Card>
       </Link>
     </div>
   );
