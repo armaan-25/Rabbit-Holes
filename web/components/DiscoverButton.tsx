@@ -132,19 +132,84 @@ export function RabbitHoleLoading() {
 
 export function BuildNotice({ type, stats, onClose }: { readonly type: "empty" | "error"; readonly stats: ReturnType<typeof useSessionStats>; readonly onClose: () => void }) {
   const empty = type === "empty";
+  if (empty) {
+    return (
+      <div className="fixed inset-0 z-[75] grid place-items-center bg-[#140d08]/76 px-4 backdrop-blur-[10px]">
+        <style>{`
+          @keyframes soft-word-drift {
+            0% { transform: translateY(10px); opacity: 0; }
+            35% { opacity: .56; }
+            100% { transform: translateY(-18px); opacity: 0; }
+          }
+        `}</style>
+        <div className="relative w-full max-w-[720px] overflow-hidden rounded-[34px] border border-[#f3e8d426] bg-[#17100b] shadow-[0_34px_110px_rgba(18,11,5,.48)]">
+          <div className="relative h-[360px] overflow-hidden border-b border-[#f3e8d41f] bg-[#2b2117]">
+            {["searches", "pages", "links", "tabs"].map((word, i) => (
+              <span
+                key={word}
+                className="absolute rh-display select-none text-[24px] italic tracking-wide text-[#d7c3a1]/60"
+                style={{
+                  left: `${18 + i * 19}%`,
+                  top: `${22 + (i % 2) * 42}%`,
+                  animation: `soft-word-drift 2.8s ease-in-out ${i * 0.2}s infinite`,
+                }}
+              >
+                {word}
+              </span>
+            ))}
+            <img
+              src="/assets/images/rabbit-hole-hero.png"
+              alt=""
+              className="absolute inset-x-0 bottom-[-8px] mx-auto h-[300px] w-[540px] object-contain drop-shadow-[0_18px_36px_rgba(18,11,5,.28)]"
+            />
+          </div>
+
+          <div className="bg-[#17100b] px-9 py-8 text-[#f3e8d4]">
+            <div className="mb-3 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.22em] text-[#b69b77]">
+              <span className="h-2 w-2 rounded-full bg-[#d6a95f] shadow-[0_0_14px_#d6a95f]" />
+              Not enough history
+            </div>
+            <h2 className="rh-display text-[42px] font-semibold leading-tight text-[#f6ecd9]">
+              Uh oh, not enough search history to make a rabbit hole.
+            </h2>
+            <p className="mt-4 max-w-[560px] text-[18px] leading-7 text-[#d8c8ad]">
+              Browse a few related searches and pages first. Rabbit Holes needs a real trail before it can cluster an investigation.
+            </p>
+            <div className="mt-7 grid max-w-[520px] grid-cols-3 divide-x divide-[#f3e8d426] rounded-[18px] border border-[#f3e8d426] bg-[#21170f] px-3 py-4">
+              <MiniBuildStat label="pages" value={stats.pages} />
+              <MiniBuildStat label="searches" value={stats.searches} />
+              <MiniBuildStat label="tabs" value={stats.tabs} />
+            </div>
+            <div className="mt-8 flex flex-wrap gap-4">
+              <button
+                onClick={onClose}
+                className="rounded-[16px] border border-[#f3e8d426] bg-[#2b2117] px-7 py-4 text-[17px] font-semibold text-[#f6efe1] shadow-[0_10px_28px_rgba(42,32,24,.24)] transition hover:-translate-y-0.5"
+              >
+                Keep browsing
+              </button>
+              <a
+                href="/install"
+                className="rounded-[16px] border border-[#f3e8d426] bg-transparent px-7 py-4 text-[17px] font-semibold text-[#cdbd9f] no-underline transition hover:bg-[#f3e8d40d]"
+              >
+                Check extension setup
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="fixed inset-0 z-[75] grid place-items-center bg-[#140d08]/72 px-4 backdrop-blur-[8px]">
       <div className="rh-surface w-full max-w-[560px] rounded-[28px] border p-7 text-center shadow-[0_34px_90px_rgba(18,11,5,.42)]">
         <div className="rh-faint text-[11px] font-semibold uppercase tracking-[0.22em]">
-          {empty ? "Nothing to build" : "Could not build"}
+          Could not build
         </div>
         <h2 className="rh-display rh-ink mt-3 text-[34px] font-semibold leading-tight">
-          {empty ? "No new rabbit hole yet" : "Backend is not reachable"}
+          Backend is not reachable
         </h2>
         <p className="rh-muted mx-auto mt-3 max-w-[42ch] text-[15.5px] leading-6">
-          {empty
-            ? "Browse a few related pages or searches first. Rabbit Holes needs a real trail before it can cluster an investigation."
-            : "The app could not reach the clustering service. Try again after the backend finishes waking up or redeploying."}
+          The app could not reach the clustering service. Try again after the backend finishes waking up or redeploying.
         </p>
         <div className="rh-surface-2 mt-6 grid grid-cols-3 divide-x divide-[var(--rh-line)] rounded-[18px] border px-3 py-4">
           <MiniBuildStat label="pages" value={stats.pages} />
@@ -153,7 +218,7 @@ export function BuildNotice({ type, stats, onClose }: { readonly type: "empty" |
         </div>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <button onClick={onClose} className="rh-primary rounded-full px-6 py-3 text-[14px] font-semibold">
-            {empty ? "Keep browsing" : "Close"}
+            Close
           </button>
           <a href="/install" className="rh-surface-2 rounded-full border px-6 py-3 text-[14px] font-semibold no-underline">
             Check extension setup
