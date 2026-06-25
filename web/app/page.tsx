@@ -151,9 +151,9 @@ export default function Landing() {
               <span className="h-2 w-2 rounded-full bg-[#6a8050]" /> Browser extension · Smart history
             </div>
             <h1 className="rh-display text-[clamp(52px,8.2vw,120px)] font-semibold leading-[0.9] tracking-tight text-[#2a2018]">
-              Remember what
+              Follow ideas,
               <br />
-              <span className="italic text-[#c2703f]">you looked into.</span>
+              <span className="italic text-[#c2703f]">not tabs.</span>
             </h1>
             <p className="mt-7 max-w-[38ch] text-[clamp(18px,1.7vw,24px)] leading-[1.5] text-[#5a4a38]">
               Smart browser history that turns your research trails into maps, timelines, and clean summaries.
