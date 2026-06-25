@@ -212,6 +212,33 @@ export default function Landing() {
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.12 }}
             className="relative min-h-[430px] lg:min-h-[560px]"
           >
+            <style>{`
+              @keyframes hero-word-to-hole {
+                0% { transform: translate(var(--x), var(--y)) scale(1); opacity: 0; filter: blur(0); }
+                16% { opacity: .62; }
+                72% { opacity: .38; }
+                100% { transform: translate(-18px, 116px) scale(.18); opacity: 0; filter: blur(2px); }
+              }
+            `}</style>
+            {[
+              { text: "papers", x: "-178px", y: "-88px", d: "0s" },
+              { text: "repos", x: "116px", y: "-114px", d: ".22s" },
+              { text: "tabs", x: "-226px", y: "48px", d: ".44s" },
+              { text: "questions", x: "160px", y: "36px", d: ".66s" },
+              { text: "links", x: "-104px", y: "142px", d: ".88s" },
+            ].map((word) => (
+              <span
+                key={word.text}
+                className="pointer-events-none absolute left-[48%] top-[42%] z-10 rh-display select-none text-[25px] italic tracking-wide text-[#9e7a50]/62"
+                style={{
+                  "--x": word.x,
+                  "--y": word.y,
+                  animation: `hero-word-to-hole 5.2s cubic-bezier(.52,0,.18,1) ${word.d} infinite`,
+                } as React.CSSProperties}
+              >
+                {word.text}
+              </span>
+            ))}
             <motion.img
               src="/assets/images/rabbit-hole-hero.png"
               alt=""
