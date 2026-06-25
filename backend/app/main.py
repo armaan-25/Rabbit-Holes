@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()  # pull ANTHROPIC_API_KEY etc. from backend/.env before anything else
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, HTTPException
 from fastapi import Depends
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -158,7 +158,10 @@ def ask(req: AskRequest, user: CurrentUser = Depends(get_current_user)):
 def synthesize(req: SynthesizeRequest, user: CurrentUser = Depends(get_current_user)):
     """Produce a structured research brief for one rabbit hole."""
     rate_limit("ai", user.id)
-    return ai.synthesize(req.hole)
+    try:
+        return ai.synthesize(req.hole)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="Brief generation is temporarily unavailable") from exc
 
 
 @app.get("/signals")

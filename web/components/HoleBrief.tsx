@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { RabbitHole } from "@/lib/types";
-import { synthesizeHole, type Brief } from "@/lib/api";
+import { ApiError, synthesizeHole, type Brief } from "@/lib/api";
 
 export function HoleBrief({ hole }: { hole: RabbitHole }) {
   const [brief, setBrief] = useState<Brief | null>(null);
@@ -15,8 +15,20 @@ export function HoleBrief({ hole }: { hole: RabbitHole }) {
     setError(null);
     try {
       setBrief(await synthesizeHole(hole));
-    } catch {
-      setError("Couldn't reach the backend. Start the FastAPI server to synthesize a brief from these sources.");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 401 || err.status === 403) {
+          setError("Sign in again to generate a brief from this rabbit hole.");
+        } else if (err.status === 429) {
+          setError("Brief generation is rate limited right now. Wait a bit, then try again.");
+        } else if (err.status && err.status >= 500) {
+          setError("The brief service hit a server error. Try again after the backend redeploy finishes.");
+        } else {
+          setError("Could not reach the Rabbit Holes backend. Check the deployment, then try again.");
+        }
+      } else {
+        setError("Could not generate the brief. Try again in a moment.");
+      }
     } finally {
       setLoading(false);
     }

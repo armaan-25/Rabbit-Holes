@@ -1,6 +1,17 @@
 import type { RabbitHole } from "./types";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend-production-4e5a6.up.railway.app";
+
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status?: number,
+    readonly detail?: unknown,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
 
 async function authHeaders(extra: HeadersInit = {}): Promise<HeadersInit> {
   if (typeof window === "undefined") return extra;
@@ -62,12 +73,25 @@ export interface Brief {
 }
 
 export async function synthesizeHole(hole: RabbitHole): Promise<Brief> {
-  const res = await fetch(`${BACKEND_URL}/synthesize`, {
-    method: "POST",
-    headers: await authHeaders({ "Content-Type": "application/json" }),
-    body: JSON.stringify({ hole: holeContext(hole) }),
-  });
-  if (!res.ok) throw new Error(`synthesize failed: ${res.status}`);
+  let res: Response;
+  try {
+    res = await fetch(`${BACKEND_URL}/synthesize`, {
+      method: "POST",
+      headers: await authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ hole: holeContext(hole) }),
+    });
+  } catch (error) {
+    throw new ApiError("Could not reach the Rabbit Holes backend.", undefined, error);
+  }
+  if (!res.ok) {
+    let detail: unknown = null;
+    try {
+      detail = await res.json();
+    } catch {
+      detail = await res.text().catch(() => null);
+    }
+    throw new ApiError(`synthesize failed: ${res.status}`, res.status, detail);
+  }
   return res.json();
 }
 

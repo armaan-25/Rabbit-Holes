@@ -45,7 +45,7 @@ export interface ClusterResponse {
   source_signature?: string;
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://backend-production-4e5a6.up.railway.app";
 const ACCENTS: RabbitHole["accent"][] = ["rabbit", "iris", "moss", "sky"];
 export const discoveredHoleIds = new Set<string>(RABBIT_HOLES.map((h) => h.id));
 const LAST_CLUSTER_SIGNATURE_KEY = "rabbit-hole-last-cluster-signature";
