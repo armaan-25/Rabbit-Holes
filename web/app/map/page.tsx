@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -55,11 +54,11 @@ function FlowNode({ data }: NodeProps<FlowNodeData>) {
   return (
     <button
       type="button"
-      className="rh-map-node group block w-[180px] rounded-[12px] border px-3 py-2 text-left transition hover:-translate-y-0.5"
+      className="rh-map-node group block w-[160px] rounded-[10px] border px-3 py-2 text-left transition hover:-translate-y-0.5"
       style={{
         background: selected ? (dark ? "#332417" : "#fff8ea") : dark ? style.darkBg : style.bg,
         borderColor: selected ? (dark ? "#d8c3a1" : "#2a2018") : dark ? style.darkBorder : style.border,
-        boxShadow: selected ? "0 0 0 2px rgba(216,195,161,.16)" : undefined,
+        boxShadow: selected ? "0 0 0 1px rgba(216,195,161,.22)" : undefined,
       }}
     >
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
@@ -68,8 +67,8 @@ function FlowNode({ data }: NodeProps<FlowNodeData>) {
         <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: style.dot }} />
         <span className="text-[8.5px] font-semibold uppercase tracking-[0.18em]" style={{ color: dark ? "#b69b77" : "#9b825f" }}>{KIND_LABEL[node.kind]}</span>
       </div>
-      <div className="rh-display truncate text-[13.5px] font-semibold leading-tight">{node.label.replace(/^Search: /, "")}</div>
-      {domain ? <div className="mt-1 truncate text-[10.5px]" style={{ color: dark ? "#b7a487" : "#7a6954" }}>{domain}</div> : null}
+      <div className="rh-display truncate text-[13px] font-semibold leading-tight">{node.label.replace(/^Search: /, "")}</div>
+      {domain ? <div className="mt-1 truncate text-[10px]" style={{ color: dark ? "#b7a487" : "#7a6954" }}>{domain}</div> : null}
     </button>
   );
 }
@@ -80,13 +79,13 @@ function layoutGraphNodes(hole: RabbitHole) {
   const searchNodes = hole.graph.nodes.filter((node) => node.kind === "search");
   const contentNodes = hole.graph.nodes.filter((node) => node.kind !== "search");
   const positions = new Map<string, { x: number; y: number }>();
-  const NODE_W = 180;
-  const NODE_H = 64;
-  const COL_W = 245;
-  const ROW_H = 84;
-  const SEARCH_X = 120;
-  const CONTENT_X = 395;
-  const START_Y = 300;
+  const NODE_W = 160;
+  const NODE_H = 58;
+  const COL_W = 240;
+  const ROW_H = 78;
+  const SEARCH_X = 130;
+  const CONTENT_X = 365;
+  const START_Y = 430;
   const edgesBySource = new Map<string, string[]>();
   const depth = new Map<string, number>();
 
@@ -148,43 +147,6 @@ function layoutGraphNodes(hole: RabbitHole) {
   });
 }
 
-function selectedInsight(hole: RabbitHole, nodeId: string) {
-  const page = hole.pages.find((p) => p.id === nodeId);
-  const search = hole.searches.find((s) => s.id === nodeId);
-  const graphNode = hole.graph.nodes.find((n) => n.id === nodeId);
-  const incoming = hole.graph.edges.filter((edge) => edge.target === nodeId);
-  const outgoing = hole.graph.edges.filter((edge) => edge.source === nodeId);
-
-  if (page) {
-    const from = page.openedFrom ? hole.graph.nodes.find((n) => n.id === page.openedFrom)?.label : null;
-    return {
-      title: page.title,
-      eyebrow: page.domain,
-      detail: `${Math.round(page.dwellSeconds / 60)} min active${from ? ` · came from ${from.replace(/^Search: /, "")}` : ""}`,
-      url: page.url,
-      flow: `${incoming.length} path in · ${outgoing.length} path${outgoing.length === 1 ? "" : "s"} out`,
-    };
-  }
-
-  if (search) {
-    return {
-      title: search.query,
-      eyebrow: `${search.engine} search`,
-      detail: "This search opened the next branch of the rabbit hole.",
-      url: null,
-      flow: `${incoming.length} path in · ${outgoing.length} result${outgoing.length === 1 ? "" : "s"} followed`,
-    };
-  }
-
-  return {
-    title: graphNode?.label ?? hole.title,
-    eyebrow: hole.title,
-    detail: hole.description,
-    url: null,
-    flow: `${incoming.length} path in · ${outgoing.length} paths out`,
-  };
-}
-
 export default function MapPage() {
   const holes = useHoles();
   const [holeId, setHoleId] = useState(holes[0]?.id ?? "");
@@ -229,8 +191,6 @@ export default function MapPage() {
     });
   }, [hole]);
 
-  const insight = hole ? selectedInsight(hole, selectedId) : null;
-
   if (holes.length === 0) {
     return <EmptyHolesPage eyebrow="Map" title="Nothing to map yet" hint="Once the extension clusters a browsing session, your investigations show up here as a graph of searches and pages." />;
   }
@@ -271,14 +231,13 @@ export default function MapPage() {
           </div>
         </div>
 
-        <div className="mt-7 grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="mt-7">
           <div className="rh-map-shell h-[820px] overflow-hidden rounded-[28px] border">
             <ReactFlow
               nodes={nodes}
               edges={edges}
               nodeTypes={nodeTypes}
-              fitView
-              fitViewOptions={{ padding: 0.18, maxZoom: 1 }}
+              defaultViewport={{ x: 32, y: 42, zoom: 0.9 }}
               minZoom={0.35}
               maxZoom={1.25}
               proOptions={{ hideAttribution: true }}
@@ -290,34 +249,6 @@ export default function MapPage() {
               <Controls showInteractive={false} className="!border-[var(--rh-map-line)] !bg-[var(--rh-surface)] !shadow-none" />
             </ReactFlow>
           </div>
-
-          <aside className="rh-map-panel rounded-[28px] border p-6 shadow-[0_18px_50px_rgba(70,45,20,.10)]">
-            <div className="rh-faint text-[11px] font-semibold uppercase tracking-[0.2em]">Selected node</div>
-            <h2 className="rh-display rh-ink mt-3 line-clamp-3 break-words text-[31px] font-semibold leading-tight">{insight?.title}</h2>
-            <div className="mt-2 truncate text-[13px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--rh-faint)" }}>{insight?.eyebrow}</div>
-            <p className="rh-muted mt-4 line-clamp-5 text-[15px] leading-6">{insight?.detail}</p>
-            <div className="rh-surface-2 mt-5 rounded-2xl border p-4 text-[14px] font-semibold">
-              {insight?.flow}
-            </div>
-            {insight?.url ? (
-              <a
-                href={insight.url}
-                target="_blank"
-                rel="noreferrer"
-                className="rh-primary mt-4 inline-flex rounded-full px-5 py-3 text-[14px] font-semibold no-underline"
-              >
-                Open source →
-              </a>
-            ) : null}
-            {hole ? (
-              <Link
-                href={`/map/${hole.id}`}
-                className="rh-surface-2 mt-3 inline-flex rounded-full border px-5 py-3 text-[14px] font-semibold no-underline"
-              >
-                Open full hole
-              </Link>
-            ) : null}
-          </aside>
         </div>
       </div>
     </div>
