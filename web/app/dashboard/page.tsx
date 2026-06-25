@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AppFrame, ToolbarFrame } from "@/components/ui/frame";
 import { Input, Select } from "@/components/ui/input";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function Dashboard() {
   const setLiveHoles = useApp((s) => s.setLiveHoles);
@@ -29,6 +30,7 @@ export default function Dashboard() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"active" | "favorites" | "archived" | "all">("active");
   const [sort, setSort] = useState<"recent" | "pages" | "confidence">("recent");
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   const holes = useLibraryHoles();
   const stats = useSessionStats();
   const visibleHoles = useMemo(() => {
@@ -137,6 +139,19 @@ export default function Dashboard() {
 
   return (
     <div className="rh-paper min-h-screen px-5 py-8 sm:px-8 xl:px-12">
+      <ConfirmDialog
+        open={confirmBulkDelete}
+        eyebrow="Delete rabbit holes"
+        title={`Delete ${selectedIds.length} selected rabbit ${selectedIds.length === 1 ? "hole" : "holes"}?`}
+        body="This removes the selected rabbit holes from your library. This action is meant for cleanup and cannot be undone from the app."
+        confirmLabel="Delete selected"
+        danger
+        onCancel={() => setConfirmBulkDelete(false)}
+        onConfirm={() => {
+          setConfirmBulkDelete(false);
+          bulk("delete");
+        }}
+      />
       {routeBuildState === "loading" && <RabbitHoleLoading />}
       {routeBuildState === "empty" && <BuildNotice type="empty" stats={stats} onClose={() => setRouteBuildState("idle")} />}
       {routeBuildState === "duplicate" && <BuildNotice type="duplicate" stats={stats} onClose={() => setRouteBuildState("idle")} />}
@@ -217,7 +232,7 @@ export default function Dashboard() {
                 <div className="mr-auto text-[14px] font-semibold text-[#37502f]">{selectedIds.length} selected</div>
                 <Button size="sm" onClick={() => bulk("favorite")}>Favorite</Button>
                 <Button size="sm" onClick={() => bulk("archive")}>Archive</Button>
-                <Button size="sm" variant="danger" onClick={() => bulk("delete")}>Delete</Button>
+                <Button size="sm" variant="danger" onClick={() => setConfirmBulkDelete(true)}>Delete</Button>
                 <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>Clear</Button>
               </div>
             )}

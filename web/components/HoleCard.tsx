@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import type { RabbitHole } from "@/lib/types";
 import { ACCENTS, KIND_META, faviconFor } from "@/lib/ui";
 import { relativeTime } from "@/lib/format";
@@ -8,6 +9,7 @@ import { StatusBadge } from "./atoms";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export function HoleCard({
   hole,
@@ -28,6 +30,7 @@ export function HoleCard({
   const repos = hole.entities.filter((e) => e.kind === "repo").length || hole.summary.repos.length;
   const papers = hole.pages.filter((p) => p.kind === "paper").length;
   const companies = hole.summary.companies.length;
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const counts = [
     { n: hole.pages.length, label: "pages" },
     { n: hole.searches.length, label: "searches" },
@@ -38,6 +41,19 @@ export function HoleCard({
 
   return (
     <div>
+      <ConfirmDialog
+        open={confirmDelete}
+        eyebrow="Delete rabbit hole"
+        title={`Delete ${hole.title}?`}
+        body="This removes the rabbit hole from your library. The underlying browsing trail may still exist in your captured session data unless you reset the session."
+        confirmLabel="Delete"
+        danger
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={() => {
+          setConfirmDelete(false);
+          onDelete?.(hole.id);
+        }}
+      />
       <Link href={`/holes/${hole.id}`} className="group block">
         <Card className={`relative min-h-[292px] overflow-hidden rounded-[20px] p-6 text-left transition duration-200 group-hover:border-[var(--rh-line-strong)] ${selected ? "border-[#5f8a5c] ring-2 ring-[#5f8a5c33]" : ""}`}>
           {hole.status === "active" && (
@@ -106,7 +122,7 @@ export function HoleCard({
                         variant="danger"
                         onClick={(e) => {
                           e.preventDefault();
-                          if (window.confirm(`Delete "${hole.title}"?`)) onDelete(hole.id);
+                          setConfirmDelete(true);
                         }}
                         className="h-7 w-7"
                       >

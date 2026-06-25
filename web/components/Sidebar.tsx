@@ -11,6 +11,7 @@ import { formatElapsed, setExtensionCapture, useSessionStats, type CaptureState,
 import { ThemeToggle } from "./ThemeToggle";
 import { Wordmark } from "./Logo";
 import { supabase } from "@/lib/supabase/client";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", glyph: "⊞" },
@@ -151,6 +152,7 @@ export function MobileNav() {
 function CaptureCard({ stats }: { readonly stats: SessionStats }) {
   const [localState, setLocalState] = useState<CaptureState | null>(null);
   const [pending, setPending] = useState(false);
+  const [confirmStop, setConfirmStop] = useState(false);
   const effectiveState = localState ?? stats.captureState;
   const recording = effectiveState === "recording";
   const statusLabel = recording ? "Capturing" : effectiveState === "paused" ? "Paused" : "Stopped";
@@ -186,6 +188,19 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
 
   return (
     <div className="rh-surface mt-5 rounded-[13px] border p-4">
+      <ConfirmDialog
+        open={confirmStop}
+        eyebrow="End session"
+        title="End this capture session?"
+        body="Stopping clears the current captured session and starts a fresh trail the next time you press resume. Build any rabbit holes you want to keep before ending it."
+        confirmLabel="End session"
+        danger
+        onCancel={() => setConfirmStop(false)}
+        onConfirm={() => {
+          setConfirmStop(false);
+          void send("stopped");
+        }}
+      />
       <div className="flex items-center gap-2.5">
         <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: recording ? STATUS_META.active.dot : effectiveState === "paused" ? "#c7ae84" : "#b8795f" }} />
         <span className="min-w-0 flex-1 text-[13px] font-semibold text-[var(--rh-ink)]">{statusLabel}</span>
@@ -201,7 +216,7 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
             active={recording}
           />
           <CaptureButton
-            onClick={() => send("stopped")}
+            onClick={() => setConfirmStop(true)}
             disabled={pending || effectiveState === "stopped"}
             title="Stop capture"
             label="Stop"

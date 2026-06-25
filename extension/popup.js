@@ -141,7 +141,11 @@ document.getElementById("signout").addEventListener("click", async () => {
 document.getElementById("record-toggle").addEventListener("click", () => {
   setCaptureState(captureState === "recording" ? "paused" : "recording");
 });
-document.getElementById("record-stop").addEventListener("click", () => setCaptureState("stopped"));
+document.getElementById("record-stop").addEventListener("click", () => {
+  if (captureState === "stopped") return;
+  const ok = window.confirm("End this Rabbit Holes session? This clears the current captured trail and starts fresh when you resume.");
+  if (ok) setCaptureState("stopped");
+});
 
 document.getElementById("cluster").addEventListener("click", async (e) => {
   if (captureState === "stopped") {
