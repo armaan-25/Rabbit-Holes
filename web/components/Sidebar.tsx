@@ -24,14 +24,19 @@ const MOBILE_NAV = [
   { href: "/settings", label: "Settings", glyph: "⚙" },
 ];
 
+const CHROMELESS_PATHS = ["/", "/login", "/signup", "/auth/callback", "/extension-auth", "/rabbit-auth", "/onboarding"];
+
+function isChromelessPath(pathname: string) {
+  return CHROMELESS_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+}
+
 export function Sidebar() {
   const pathname = usePathname();
   const togglePalette = useApp((s) => s.togglePalette);
   const holes = useHoles();
   const stats = useSessionStats();
 
-  // The landing is a full-bleed minimalist canvas — no chrome.
-  if (pathname === "/") return null;
+  if (isChromelessPath(pathname)) return null;
 
   return (
     <aside className="rh-sidebar sticky top-0 z-20 hidden h-screen w-[352px] shrink-0 flex-col border-r px-7 py-8 md:flex">
@@ -120,7 +125,7 @@ export function Sidebar() {
 
 export function MobileNav() {
   const pathname = usePathname();
-  if (pathname === "/") return null;
+  if (isChromelessPath(pathname)) return null;
 
   return (
     <nav className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 rounded-[20px] border border-[#785a3224] bg-[#1f150f]/92 p-2 shadow-[0_18px_48px_rgba(18,11,5,.32)] backdrop-blur md:hidden">

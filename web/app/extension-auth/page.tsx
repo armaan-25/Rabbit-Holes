@@ -9,17 +9,20 @@ export default function ExtensionAuthPage() {
 
   useEffect(() => {
     void (async () => {
+      const next = `/extension-auth${window.location.search}`;
       const { data } = await supabase.auth.getSession();
       let session = data.session;
       if (!session) {
-        window.location.replace(`/login?next=${encodeURIComponent(`/extension-auth${window.location.search}`)}`);
+        setStatus("Opening sign in...");
+        window.location.replace(`/login?next=${encodeURIComponent(next)}`);
         return;
       }
 
       const refreshed = await supabase.auth.refreshSession();
       if (refreshed.error && !session.refresh_token) {
         await supabase.auth.signOut();
-        window.location.replace(`/login?next=${encodeURIComponent(`/extension-auth${window.location.search}`)}`);
+        setStatus("Session expired. Opening sign in...");
+        window.location.replace(`/login?next=${encodeURIComponent(next)}`);
         return;
       }
       if (refreshed.data.session) session = refreshed.data.session;
