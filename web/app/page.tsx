@@ -237,11 +237,11 @@ export default function Landing() {
       </div>
 
       {/* ── Live demo (auto-plays through every step) ──────────── */}
-      <section id="demo" className="mx-auto w-full max-w-[1200px] px-5 pb-20 pt-24 sm:px-8">
-        <motion.div {...reveal} className="mb-14 text-center">
+      <section id="demo" className="mx-auto w-full max-w-[1120px] scroll-mt-28 px-5 pb-16 pt-16 sm:px-8">
+        <motion.div {...reveal} className="mb-9 text-center">
           <div className="mb-3 text-[13px] font-semibold uppercase tracking-[0.2em] text-[#a8967d]">See it work</div>
-          <h2 className="rh-display mx-auto max-w-[18ch] text-[clamp(32px,4.4vw,56px)] font-semibold leading-[1.04] text-[#2a2018]">
-            Watch a browsing session become a rabbit hole.
+          <h2 className="rh-display mx-auto max-w-[15ch] text-[clamp(30px,3.8vw,48px)] font-semibold leading-[1.02] text-[#2a2018]">
+            Watch a trail become a rabbit hole.
           </h2>
         </motion.div>
         <motion.div {...reveal} transition={{ ...reveal.transition, delay: 0.1 }} className="relative">

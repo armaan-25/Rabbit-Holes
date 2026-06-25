@@ -24,34 +24,34 @@ export function LandingDemo() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="overflow-hidden rounded-[20px] border border-[#785a3224] bg-[#fbf6ec] shadow-[0_24px_60px_rgba(42,32,24,.22)]">
+      <div className="overflow-hidden rounded-[20px] border border-[#4a3928] bg-[#21170f] shadow-[0_24px_60px_rgba(42,32,24,.22)]">
         {/* title bar */}
-        <div className="flex items-center gap-3 border-b border-[#785a3221] bg-[#f6efe1] px-4 py-3">
+        <div className="flex items-center gap-3 border-b border-[#4a3928] bg-[#2a2118] px-4 py-3">
           <div className="flex gap-1.5">
             <span className="h-3 w-3 rounded-full bg-[#d98a5f]" />
             <span className="h-3 w-3 rounded-full bg-[#c7ae84]" />
             <span className="h-3 w-3 rounded-full bg-[#6a8050]" />
           </div>
-          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-[#785a3221] bg-[#fbf6ec] px-4 py-1 text-[12.5px] text-[#8a7860]">
+          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-[#5b4731] bg-[#21170f] px-4 py-1 text-[12.5px] text-[#d8c8ad]">
             <span>●</span> Rabbit Holes
           </div>
         </div>
 
         {/* step tabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto border-b border-[#785a3221] px-3 py-2.5">
+        <div className="flex items-center gap-1.5 overflow-x-auto border-b border-[#4a3928] bg-[#1d140d] px-3 py-2.5">
           {STEPS.map((s, idx) => (
             <button
               key={s}
               onClick={() => setI(idx)}
               className={`relative whitespace-nowrap rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition ${
-                idx === i ? "bg-[#2a2018] text-[#f3e8d4]" : "text-[#8a7860] hover:text-[#2a2018]"
+                idx === i ? "bg-[#f3e8d4] text-[#21170f]" : "text-[#b7a487] hover:text-[#f3e8d4]"
               }`}
             >
               {s}
               {idx === i && !paused && (
                 <motion.span
                   key={`${i}-bar`}
-                  className="absolute bottom-1 left-3.5 right-3.5 h-[2px] origin-left rounded-full bg-[#f3e8d4]/40"
+                  className="absolute bottom-1 left-3.5 right-3.5 h-[2px] origin-left rounded-full bg-[#21170f]/30"
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ duration: DURATION / 1000, ease: "linear" }}
@@ -62,7 +62,7 @@ export function LandingDemo() {
         </div>
 
         {/* stage */}
-        <div className="relative h-[340px] overflow-hidden bg-[radial-gradient(120%_120%_at_50%_0%,#fffaf1,transparent_70%)] sm:h-[360px]">
+        <div className="relative h-[330px] overflow-hidden bg-[radial-gradient(110%_120%_at_50%_0%,rgba(246,239,225,.22),transparent_62%),#18100a] sm:h-[350px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={i}
@@ -86,8 +86,8 @@ export function LandingDemo() {
 function SceneHeader({ kicker, title }: { kicker: string; title: string }) {
   return (
     <div className="mb-5">
-      <div className="text-[11.5px] font-semibold uppercase tracking-[0.18em] text-[#a8967d]">{kicker}</div>
-      <div className="rh-display text-[24px] font-semibold leading-tight text-[#2a2018]">{title}</div>
+      <div className="text-[11.5px] font-semibold uppercase tracking-[0.18em] text-[#9b825f]">{kicker}</div>
+      <div className="rh-display text-[24px] font-semibold leading-tight text-[#f6ecd9]">{title}</div>
     </div>
   );
 }
@@ -115,11 +115,11 @@ const Capture = () => (
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.15 + idx * 0.18 }}
-          className="flex items-center gap-3 rounded-[12px] border border-[#785a3221] bg-[#fbf6ec] px-4 py-3"
+          className="flex items-center gap-3 rounded-[12px] border border-[#4a3928] bg-[#21170f] px-4 py-3"
         >
-          <span className="grid h-8 w-8 place-items-center rounded-[9px] bg-[#f2e9d6] text-[14px] text-[#a8895f]">{c.glyph}</span>
-          <span className="flex-1 truncate text-[15px] text-[#3a2f25]">{c.label}</span>
-          <span className="text-[11.5px] uppercase tracking-wide text-[#a8967d]">{c.kind}</span>
+          <span className="grid h-8 w-8 place-items-center rounded-[9px] bg-[#2a2118] text-[14px] text-[#c7ae84]">{c.glyph}</span>
+          <span className="flex-1 truncate text-[15px] text-[#f3e8d4]">{c.label}</span>
+          <span className="text-[11.5px] uppercase tracking-wide text-[#9b825f]">{c.kind}</span>
         </motion.div>
       ))}
     </div>
@@ -135,9 +135,9 @@ const Cluster = () => (
     >
       <img src="/assets/images/rabbit-hole-hero.png" alt="" className="h-12 w-12 object-contain" />
     </motion.div>
-    <div className="rh-display mt-5 text-[26px] font-semibold text-[#2a2018]">Building rabbit holes…</div>
-    <div className="mt-2 text-[15px] text-[#6a5a48]">Claude clusters 14 signals into the questions you were actually chasing.</div>
-    <div className="mt-6 h-1.5 w-[260px] overflow-hidden rounded-full bg-[#785a321f]">
+    <div className="rh-display mt-5 text-[26px] font-semibold text-[#f6ecd9]">Building rabbit holes...</div>
+    <div className="mt-2 max-w-[44ch] text-[15px] text-[#cdbd9f]">Clustering the session into the questions you were actually chasing.</div>
+    <div className="mt-6 h-1.5 w-[260px] overflow-hidden rounded-full bg-[#4a3928]">
       <motion.div
         className="h-full rounded-full bg-[linear-gradient(90deg,#c2703f,#e0865a)]"
         initial={{ width: "8%" }}
@@ -163,15 +163,15 @@ const Holes = () => (
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 + idx * 0.12 }}
-          className="rounded-[14px] border border-[#785a3221] bg-[#fbf6ec] p-4"
+          className="rounded-[14px] border border-[#4a3928] bg-[#21170f] p-4"
         >
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full" style={{ background: h.dot }} />
-            <span className="rh-display text-[18px] font-semibold text-[#2a2018]">{h.title}</span>
+            <span className="rh-display text-[18px] font-semibold text-[#f6ecd9]">{h.title}</span>
           </div>
-          <p className="mt-1.5 text-[13.5px] text-[#6a5a48]">{h.desc}</p>
+          <p className="mt-1.5 text-[13.5px] text-[#cdbd9f]">{h.desc}</p>
           <div className="mt-4 flex items-center gap-2">
-            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#785a321f]">
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#4a3928]">
               <div className="h-full rounded-full" style={{ width: `${h.match}%`, background: `linear-gradient(90deg,${h.dot},#e0865a)` }} />
             </div>
             <span className="text-[12.5px] font-semibold tabular-nums" style={{ color: h.dot }}>{h.match}%</span>
@@ -196,7 +196,7 @@ const Map = () => (
       <SceneHeader kicker="03 · The map" title="See the route you actually took" />
       <div className="hidden gap-1.5 sm:flex">
         {["AI Systems", "Startups", "Quant"].map((item, idx) => (
-          <span key={item} className={`rounded-full border px-3 py-1.5 text-[11.5px] font-semibold ${idx === 0 ? "border-[#21170f] bg-[#21170f] text-[#f3e8d4]" : "border-[#d8c3a1] bg-[#fbf6ec] text-[#6a5a48]"}`}>
+          <span key={item} className={`rounded-full border px-3 py-1.5 text-[11.5px] font-semibold ${idx === 0 ? "border-[#f3e8d4] bg-[#f3e8d4] text-[#21170f]" : "border-[#6d5639] bg-[#21170f] text-[#cdbd9f]"}`}>
             {item}
           </span>
         ))}
@@ -239,7 +239,7 @@ const Map = () => (
           className="absolute left-[9%] top-[50%] w-[104px] rounded-[13px] border border-[#c79f6b] bg-[#f6ecdc] px-2.5 py-2 shadow-[0_12px_28px_rgba(25,15,6,.18)]"
         >
           <div className="mb-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-[#9b825f]">Search</div>
-          <div className="rh-display truncate text-[14px] font-semibold leading-none text-[#2a2018]">vLLM</div>
+          <div className="rh-display truncate text-[14px] font-semibold leading-none text-[#21170f]">vLLM</div>
         </motion.div>
         {MAP_NODES.map((n, idx) => (
           <motion.div
@@ -247,22 +247,22 @@ const Map = () => (
             initial={{ opacity: 0, y: 8, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.12 + idx * 0.09 }}
-            className={`absolute w-[108px] -translate-x-1/2 -translate-y-1/2 rounded-[13px] border px-2.5 py-2 shadow-[0_12px_28px_rgba(25,15,6,.18)] ${idx === 2 ? "border-[#2a2018] bg-[#fff8ea] ring-4 ring-[#fff8ea]/10" : "border-[#d8c3a1] bg-[#fbf6ec]"}`}
+            className={`absolute w-[108px] -translate-x-1/2 -translate-y-1/2 rounded-[13px] border px-2.5 py-2 shadow-[0_12px_28px_rgba(25,15,6,.18)] ${idx === 2 ? "border-[#d8c3a1] bg-[#fff8ea] ring-4 ring-[#fff8ea]/10" : "border-[#6d5639] bg-[#21170f]"}`}
             style={{ left: `${n.x}%`, top: `${n.y}%` }}
           >
             <div className="mb-1 flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full" style={{ background: n.dot }} />
               <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[#9b825f]">{n.kind}</span>
             </div>
-            <div className="rh-display truncate text-[14px] font-semibold leading-none text-[#2a2018]">{n.label}</div>
+            <div className={`rh-display truncate text-[14px] font-semibold leading-none ${idx === 2 ? "text-[#21170f]" : "text-[#f6ecd9]"}`}>{n.label}</div>
           </motion.div>
         ))}
       </div>
-      <div className="hidden border-l border-[#4a3928] bg-[#fbf6ec] p-4 sm:block">
+      <div className="hidden border-l border-[#4a3928] bg-[#21170f] p-4 sm:block">
         <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a8967d]">Selected node</div>
-        <div className="rh-display mt-3 text-[24px] font-semibold leading-tight text-[#2a2018]">DistServe</div>
+        <div className="rh-display mt-3 text-[24px] font-semibold leading-tight text-[#f6ecd9]">DistServe</div>
         <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9b825f]">arxiv.org paper</div>
-        <p className="mt-3 text-[12px] leading-5 text-[#6a5a48]">
+        <p className="mt-3 text-[12px] leading-5 text-[#cdbd9f]">
           Came from PagedAttention, then opened Queueing Theory and SGLang.
         </p>
         <div className="mt-3 rounded-[13px] border border-[#e1d2ba] bg-white/55 p-2.5 text-[11.5px] font-semibold text-[#4c3927]">
@@ -289,12 +289,12 @@ const Ask = () => (
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5 }}
-      className="mt-3 max-w-[88%] rounded-[14px] rounded-bl-[4px] border border-[#785a3221] bg-[#f6efe1] px-4 py-3 text-[14.5px] leading-[1.55] text-[#3a2f25]"
+      className="mt-3 max-w-[88%] rounded-[14px] rounded-bl-[4px] border border-[#4a3928] bg-[#21170f] px-4 py-3 text-[14.5px] leading-[1.55] text-[#f3e8d4]"
     >
       vLLM&rsquo;s paged-attention claims big throughput wins, but the continuous-batching write-up argues the gains shrink under long-context loads.
-      <div className="mt-3 flex flex-wrap gap-1.5 border-t border-[#785a3221] pt-3">
+      <div className="mt-3 flex flex-wrap gap-1.5 border-t border-[#4a3928] pt-3">
         {["FlashAttention paper", "vLLM docs", "batching blog"].map((c) => (
-          <span key={c} className="inline-flex items-center gap-1.5 rounded-full border border-[#785a3224] bg-[#fbf6ec] px-2.5 py-1 text-[11.5px] text-[#6a5a48]">
+          <span key={c} className="inline-flex items-center gap-1.5 rounded-full border border-[#4a3928] bg-[#1a1009] px-2.5 py-1 text-[11.5px] text-[#cdbd9f]">
             <span className="h-1.5 w-1.5 rounded-full bg-[#c2703f]" /> {c}
           </span>
         ))}
