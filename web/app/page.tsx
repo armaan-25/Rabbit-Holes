@@ -155,8 +155,8 @@ export default function Landing() {
               <br />
               <span className="italic text-[#c2703f]">you looked into.</span>
             </h1>
-            <p className="mt-7 max-w-[44ch] text-[clamp(18px,1.7vw,24px)] leading-[1.5] text-[#5a4a38]">
-              Rabbit Holes groups your searches and pages into the actual topics you were researching, so you can retrace, ask, and pick things back up later.
+            <p className="mt-7 max-w-[38ch] text-[clamp(18px,1.7vw,24px)] leading-[1.5] text-[#5a4a38]">
+              Smart browser history that turns your research trails into maps, timelines, and clean summaries.
             </p>
 
             <div className="mt-9 flex flex-wrap items-center gap-4">
