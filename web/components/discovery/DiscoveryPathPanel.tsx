@@ -66,7 +66,13 @@ export function DiscoveryPathPanel({ hole }: { hole: RabbitHole }) {
             <img src={faviconFor(selected.domain)} alt="" className="h-4 w-4 rounded" />
             {selected.domain} · {Math.round(selected.dwellSeconds / 60)}m active
           </div>
-          <a href={selected.url} target="_blank" rel="noreferrer" className="mt-5 inline-flex rounded-full bg-[#f3e8d4] px-4 py-2 text-[13px] font-semibold text-[#2a2018] no-underline">
+          <a
+            href={selected.url}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-5 inline-flex min-w-[128px] items-center justify-center rounded-[12px] border border-[#dcccb3]/35 bg-transparent px-4 py-2.5 text-center text-[13px] font-semibold leading-none text-[#f3e8d4] no-underline transition hover:border-[#f3e8d4]/70 hover:bg-[#f3e8d4]/10"
+            aria-label={`Open ${selected.title}`}
+          >
             Open page ↗
           </a>
         </div>
