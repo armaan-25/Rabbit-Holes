@@ -240,6 +240,33 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
         <MiniStat n={stats.searches} label="searches" />
         <MiniStat n={stats.tabs} label="tabs" />
       </div>
+      {stats.capturedTabs && (
+        <details className="mt-3 overflow-hidden rounded-[10px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)]">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-[12px] font-semibold text-[var(--rh-muted)] [&::-webkit-details-marker]:hidden">
+            <span>Captured tabs</span>
+            <span className="rounded-full border border-[var(--rh-line)] px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[var(--rh-faint)]">{stats.capturedTabs.length}</span>
+          </summary>
+          <div className="max-h-[190px] overflow-y-auto border-t border-[var(--rh-line)]">
+            {stats.capturedTabs.length === 0 ? (
+              <div className="px-3 py-3 text-[12px] text-[var(--rh-faint)]">No tabs captured yet.</div>
+            ) : (
+              stats.capturedTabs.map((tab) => (
+                <a
+                  key={`${tab.url}-${tab.at ?? ""}`}
+                  href={tab.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block border-t border-[var(--rh-line)] px-3 py-2 first:border-t-0 hover:bg-[var(--rh-surface-3)]"
+                  title={tab.title}
+                >
+                  <div className="truncate text-[12px] font-semibold text-[var(--rh-ink)]">{tab.title}</div>
+                  <div className="mt-0.5 truncate text-[11px] text-[var(--rh-faint)]">{tab.domain}</div>
+                </a>
+              ))
+            )}
+          </div>
+        </details>
+      )}
     </div>
   );
 }

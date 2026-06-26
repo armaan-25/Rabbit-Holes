@@ -7,12 +7,20 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://backend-prod
 
 export type CaptureState = "recording" | "paused" | "stopped";
 
+export interface CapturedTab {
+  title: string;
+  url: string;
+  domain: string;
+  at?: string | null;
+}
+
 export interface SessionStats {
   pages: number;
   searches: number;
   tabs: number;
   captureState: CaptureState;
   elapsedMs?: number;
+  capturedTabs?: CapturedTab[];
   source: "extension" | "backend";
 }
 

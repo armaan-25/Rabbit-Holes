@@ -38,6 +38,32 @@ function formatHost(url) {
   }
 }
 
+function canonicalUrl(url) {
+  try {
+    const u = new URL(url);
+    u.hash = "";
+    for (const key of [...u.searchParams.keys()]) {
+      const lower = key.toLowerCase();
+      if (
+        lower.startsWith("utm_") ||
+        lower === "fbclid" ||
+        lower === "gclid" ||
+        lower === "mc_cid" ||
+        lower === "mc_eid" ||
+        lower === "igshid" ||
+        lower === "ref" ||
+        lower === "source"
+      ) {
+        u.searchParams.delete(key);
+      }
+    }
+    u.hostname = u.hostname.replace(/^www\./, "");
+    return u.toString().replace(/\/$/, "");
+  } catch {
+    return String(url || "").split("#")[0];
+  }
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -54,8 +80,9 @@ function renderCapturedTabs(events) {
   const seen = new Set();
 
   for (const event of [...events].reverse()) {
-    if (event.type !== "visit" || !event.url || seen.has(event.url)) continue;
-    seen.add(event.url);
+    const key = canonicalUrl(event.url);
+    if (event.type !== "visit" || !event.url || seen.has(key)) continue;
+    seen.add(key);
     visits.push(event);
     if (visits.length >= 12) break;
   }
