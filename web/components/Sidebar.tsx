@@ -7,7 +7,7 @@ import type { User } from "@supabase/supabase-js";
 import { ACCENTS, STATUS_META } from "@/lib/ui";
 import { useApp } from "@/lib/store";
 import { useHoles } from "@/hooks/useHoles";
-import { formatElapsed, setExtensionCapture, useSessionStats, type CaptureState, type SessionStats } from "@/hooks/useSessionStats";
+import { formatElapsed, removeCapturedTab, setExtensionCapture, useSessionStats, type CaptureState, type SessionStats } from "@/hooks/useSessionStats";
 import { ThemeToggle } from "./ThemeToggle";
 import { Wordmark } from "./Logo";
 import { supabase } from "@/lib/supabase/client";
@@ -153,6 +153,7 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
   const [localState, setLocalState] = useState<CaptureState | null>(null);
   const [pending, setPending] = useState(false);
   const [confirmAction, setConfirmAction] = useState<CaptureState | null>(null);
+  const [removingUrl, setRemovingUrl] = useState<string | null>(null);
   const effectiveState = localState ?? stats.captureState;
   const recording = effectiveState === "recording";
   const statusLabel = recording ? "Capturing" : effectiveState === "paused" ? "Paused" : "Stopped";
@@ -186,6 +187,13 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
     const ok = await setExtensionCapture(next);
     if (!ok) setLocalState(null);
     setPending(false);
+  }
+
+  async function removeTab(url: string) {
+    if (removingUrl) return;
+    setRemovingUrl(url);
+    await removeCapturedTab(url);
+    setRemovingUrl(null);
   }
 
   return (
@@ -251,17 +259,26 @@ function CaptureCard({ stats }: { readonly stats: SessionStats }) {
               <div className="px-3 py-3 text-[12px] text-[var(--rh-faint)]">No tabs captured yet.</div>
             ) : (
               stats.capturedTabs.map((tab) => (
-                <a
+                <div
                   key={`${tab.url}-${tab.at ?? ""}`}
-                  href={tab.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block border-t border-[var(--rh-line)] px-3 py-2 first:border-t-0 hover:bg-[var(--rh-surface-3)]"
+                  className="flex items-center gap-2 border-t border-[var(--rh-line)] px-3 py-2 first:border-t-0 hover:bg-[var(--rh-surface-3)]"
                   title={tab.title}
                 >
-                  <div className="truncate text-[12px] font-semibold text-[var(--rh-ink)]">{tab.title}</div>
-                  <div className="mt-0.5 truncate text-[11px] text-[var(--rh-faint)]">{tab.domain}</div>
-                </a>
+                  <a href={tab.url} target="_blank" rel="noreferrer" className="min-w-0 flex-1">
+                    <div className="truncate text-[12px] font-semibold text-[var(--rh-ink)]">{tab.title}</div>
+                    <div className="mt-0.5 truncate text-[11px] text-[var(--rh-faint)]">{tab.domain}</div>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => void removeTab(tab.url)}
+                    disabled={removingUrl === tab.url}
+                    title="Remove from capture"
+                    aria-label={`Remove ${tab.title} from capture`}
+                    className="grid h-7 w-7 shrink-0 place-items-center rounded-[8px] border border-[#b8795f33] bg-[#b8795f10] text-[14px] leading-none text-[#c88f78] transition hover:bg-[#b8795f1f] hover:text-[#dfaa93] disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    {removingUrl === tab.url ? "…" : "×"}
+                  </button>
+                </div>
               ))
             )}
           </div>

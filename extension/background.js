@@ -139,6 +139,59 @@ function cleanUrl(url) {
   }
 }
 
+function canonicalUrl(url) {
+  try {
+    const u = new URL(url);
+    u.hash = "";
+    for (const key of [...u.searchParams.keys()]) {
+      const lower = key.toLowerCase();
+      if (
+        lower.startsWith("utm_") ||
+        lower === "fbclid" ||
+        lower === "gclid" ||
+        lower === "mc_cid" ||
+        lower === "mc_eid" ||
+        lower === "igshid" ||
+        lower === "ref" ||
+        lower === "source"
+      ) {
+        u.searchParams.delete(key);
+      }
+    }
+    u.hostname = u.hostname.replace(/^www\./, "");
+    return u.toString().replace(/\/$/, "");
+  } catch {
+    return String(url || "").split("#")[0];
+  }
+}
+
+function isCapturedTabEvent(event) {
+  return event?.type === "visit" || event?.type === "title" || event?.type === "tab_open";
+}
+
+function matchesCapturedUrl(event, key) {
+  return Boolean(event?.url && canonicalUrl(event.url) === key);
+}
+
+async function removeCapturedTab(url) {
+  const key = canonicalUrl(url);
+  if (!key) return { ok: false, removed: 0, buffered: buffer.length };
+
+  const beforeBuffer = buffer.length;
+  buffer = buffer.filter((event) => !(isCapturedTabEvent(event) && matchesCapturedUrl(event, key)));
+
+  const { events = [] } = await chrome.storage.local.get("events");
+  const nextEvents = events.filter((event) => !(isCapturedTabEvent(event) && matchesCapturedUrl(event, key)));
+  await chrome.storage.local.set({ events: nextEvents });
+
+  return {
+    ok: true,
+    removed: events.length - nextEvents.length,
+    bufferedRemoved: beforeBuffer - buffer.length,
+    buffered: buffer.length,
+  };
+}
+
 // Honor the per-source toggles. Unmapped domains are always allowed.
 function sourceAllowed(host) {
   const h = host.replace(/^www\./, "");
@@ -332,6 +385,13 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     chrome.storage.local.remove(["accessToken", "refreshToken", "tokenExpiresAt", "user"]).then(() => {
       sendResponse({ ok: true });
     });
+    return true;
+  }
+
+  if (message?.type === "removeCapturedTab") {
+    removeCapturedTab(message.url)
+      .then((result) => sendResponse(result))
+      .catch((error) => sendResponse({ ok: false, error: String(error), buffered: buffer.length }));
     return true;
   }
 

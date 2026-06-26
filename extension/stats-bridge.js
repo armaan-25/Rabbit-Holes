@@ -99,6 +99,15 @@
       }
     }
 
+    if (event.data?.type === "rabbit-holes:remove-tab") {
+      try {
+        const res = await chrome.runtime.sendMessage({ type: "removeCapturedTab", url: event.data.url });
+        window.postMessage({ type: "rabbit-holes:tab-removed", requestId, ok: Boolean(res?.ok), removed: res?.removed ?? 0 }, window.location.origin);
+      } catch {
+        window.postMessage({ type: "rabbit-holes:tab-removed", requestId, ok: false, removed: 0 }, window.location.origin);
+      }
+    }
+
     if (event.data?.type === "rabbit-holes:flush") {
       try {
         const res = await chrome.runtime.sendMessage({ type: "flush" });

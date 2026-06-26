@@ -96,13 +96,27 @@ function renderCapturedTabs(events) {
   list.innerHTML = visits.map((visit) => {
     const title = escapeHtml(visit.title || visit.url || "Untitled page");
     const host = escapeHtml(visit.domain || formatHost(visit.url) || "captured page");
+    const url = escapeHtml(visit.url || "");
     return `
       <div class="captured-item" title="${title}">
-        <div class="captured-title">${title}</div>
-        <div class="captured-meta">${host}</div>
+        <div class="captured-copy">
+          <div class="captured-title">${title}</div>
+          <div class="captured-meta">${host}</div>
+        </div>
+        <button class="captured-remove" data-remove-url="${url}" title="Remove from capture" aria-label="Remove ${title}">×</button>
       </div>
     `;
   }).join("");
+
+  list.querySelectorAll("[data-remove-url]").forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      event.stopPropagation();
+      button.textContent = "…";
+      button.disabled = true;
+      await chrome.runtime.sendMessage({ type: "removeCapturedTab", url: button.dataset.removeUrl }).catch(() => null);
+      await render();
+    });
+  });
 }
 
 function setCaptureUI(state) {
