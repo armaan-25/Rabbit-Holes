@@ -30,6 +30,54 @@ function renderTimer() {
   document.getElementById("capture-timer").textContent = formatElapsed(liveElapsedMs());
 }
 
+function formatHost(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function renderCapturedTabs(events) {
+  const count = document.getElementById("captured-count");
+  const list = document.getElementById("captured-list");
+  const visits = [];
+  const seen = new Set();
+
+  for (const event of [...events].reverse()) {
+    if (event.type !== "visit" || !event.url || seen.has(event.url)) continue;
+    seen.add(event.url);
+    visits.push(event);
+    if (visits.length >= 12) break;
+  }
+
+  count.textContent = String(visits.length);
+  if (!visits.length) {
+    list.innerHTML = `<div class="captured-empty">No tabs captured yet.</div>`;
+    return;
+  }
+
+  list.innerHTML = visits.map((visit) => {
+    const title = escapeHtml(visit.title || visit.url || "Untitled page");
+    const host = escapeHtml(visit.domain || formatHost(visit.url) || "captured page");
+    return `
+      <div class="captured-item" title="${title}">
+        <div class="captured-title">${title}</div>
+        <div class="captured-meta">${host}</div>
+      </div>
+    `;
+  }).join("");
+}
+
 function setCaptureUI(state) {
   captureState = state;
   const dot = document.getElementById("capture-dot");
@@ -119,6 +167,7 @@ async function render() {
   document.getElementById("visits").textContent = visits.size;
   document.getElementById("searches").textContent = searches;
   document.getElementById("tabs").textContent = opens;
+  renderCapturedTabs(events);
   captureStartedAt = startedAt;
   captureElapsedMs = elapsedMs;
   setCaptureUI(storedState);

@@ -118,6 +118,69 @@
         display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 9px 11px;
         border: 1px solid var(--line); border-radius: 13px; background: var(--ink); min-width: 0;
       }
+      .captured {
+        margin: 10px 0;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: rgba(26,16,9,.72);
+      }
+      .captured summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 12px;
+        cursor: pointer;
+        color: var(--cream-2);
+        font-size: 13px;
+        font-weight: 700;
+        list-style: none;
+      }
+      .captured summary::-webkit-details-marker { display: none; }
+      .captured summary::after {
+        content: "⌄";
+        color: var(--muted);
+        font-size: 13px;
+        transition: transform .16s ease;
+      }
+      .captured[open] summary::after { transform: rotate(180deg); }
+      .captured-count {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+      }
+      .captured-list {
+        max-height: 150px;
+        overflow-y: auto;
+        border-top: 1px solid var(--line);
+      }
+      .captured-empty,
+      .captured-item {
+        padding: 9px 12px;
+        border-top: 1px solid rgba(230,211,180,.07);
+      }
+      .captured-item:first-child { border-top: 0; }
+      .captured-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--cream);
+        font-size: 12.5px;
+        font-weight: 700;
+      }
+      .captured-meta,
+      .captured-empty {
+        margin-top: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--muted);
+        font-size: 11.5px;
+      }
       .account-dot { width: 7px; height: 7px; flex: 0 0 auto; border-radius: 999px; background: var(--green); box-shadow: 0 0 10px rgba(135,184,129,.5); }
       .account-email { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; color: var(--cream-2); }
       .account-signout {
@@ -163,6 +226,16 @@
       </div>
 
       <button class="watercolor" id="cluster"><span>Build rabbit holes</span></button>
+
+      <details class="captured" id="captured-details">
+        <summary>
+          <span>Captured tabs</span>
+          <span class="captured-count" id="captured-count">0</span>
+        </summary>
+        <div class="captured-list" id="captured-list">
+          <div class="captured-empty">No tabs captured yet.</div>
+        </div>
+      </details>
 
       <div class="account" id="account">
         <span class="account-dot"></span>
