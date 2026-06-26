@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ACCENTS, KIND_META } from "@/lib/ui";
 import { clockTime, dayLabel } from "@/lib/format";
+import { cleanTimelineEvents } from "@/lib/timeline";
 import { useHoles } from "@/hooks/useHoles";
 import { EmptyHolesPage } from "@/components/EmptyHoles";
 import { CuriosityHeatmap } from "@/components/heatmaps/CuriosityHeatmap";
@@ -26,7 +27,7 @@ export default function TimelinePage() {
 
   const groups = useMemo(() => {
     const rows: Row[] = holes.flatMap((h) =>
-      h.timeline.map((ev) => ({
+      cleanTimelineEvents(h.timeline).map((ev) => ({
         ...ev,
         kind: ev.kind as keyof typeof KIND_META,
         holeId: h.id,

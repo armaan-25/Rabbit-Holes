@@ -113,6 +113,25 @@ function pageKind(url?: string | null, title?: string | null): RabbitHole["pages
   return "website";
 }
 
+function normalizeSearchQuery(query?: string | null): string {
+  return (query ?? "").toLowerCase().trim().replace(/\s+/g, " ");
+}
+
+function dedupeSearches(searches: CapturedSearch[]): CapturedSearch[] {
+  const seen = new Set<string>();
+  const sorted = [...searches].sort((a, b) => +new Date(a.at || 0) - +new Date(b.at || 0));
+  const cleaned: CapturedSearch[] = [];
+  for (const search of sorted) {
+    const query = normalizeSearchQuery(search.query || search.url);
+    if (!query) continue;
+    const key = `${(search.engine ?? "").toLowerCase().trim()}:${query}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    cleaned.push(search);
+  }
+  return cleaned;
+}
+
 export function clusterHoleToRabbitHole(hole: ClusterHole, capturedPages: CapturedPage[] = [], capturedSearches: CapturedSearch[] = []): RabbitHole {
   const id = hole.client_id ?? buildHoleId(hole.title, hole.page_ids);
   const now = new Date().toISOString();
@@ -128,7 +147,8 @@ export function clusterHoleToRabbitHole(hole: ClusterHole, capturedPages: Captur
     dwellSeconds: 0,
   }));
   const domains = Array.from(new Set(pages.map((p) => p.domain).filter((d) => d && d !== "unknown")));
-  const searches = (capturedSearches.length ? capturedSearches : hole.topics.map((topic, i) => ({ id: `s${i}`, query: topic, engine: "Captured", at: now }))).map((s, i) => ({
+  const searchSource = capturedSearches.length ? dedupeSearches(capturedSearches) : hole.topics.map((topic, i) => ({ id: `s${i}`, query: topic, engine: "Captured", at: now }));
+  const searches = searchSource.map((s, i) => ({
     id: s.id || `s${i}`,
     query: s.query || hole.topics[i] || "Captured search",
     engine: s.engine || "Captured",
@@ -175,14 +195,14 @@ export function clusterHoleToRabbitHole(hole: ClusterHole, capturedPages: Captur
     timeline: [
       ...searches.map((s, i) => ({
         id: `t-search-${i + 1}`,
-        at: now,
+        at: s.searchedAt || now,
         kind: "search" as const,
         title: `Searched "${s.query}"`,
         detail: s.engine,
       })),
       ...pages.map((p, i) => ({
         id: `t-page-${i + 1}`,
-        at: now,
+        at: p.visitedAt || now,
         kind: "website" as const,
         title: p.title,
         detail: p.domain,

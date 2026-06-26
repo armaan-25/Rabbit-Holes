@@ -5,10 +5,11 @@ import { motion } from "framer-motion";
 import type { RabbitHole } from "@/lib/types";
 import { KIND_META } from "@/lib/ui";
 import { clockTime } from "@/lib/format";
+import { cleanTimelineEvents } from "@/lib/timeline";
 import type { PlaybackState } from "@/types/features";
 
 export function InvestigationReplay({ hole }: { hole: RabbitHole }) {
-  const events = useMemo(() => [...hole.timeline].sort((a, b) => +new Date(a.at) - +new Date(b.at)), [hole.timeline]);
+  const events = useMemo(() => cleanTimelineEvents(hole.timeline), [hole.timeline]);
   const [index, setIndex] = useState(0);
   const [state, setState] = useState<PlaybackState>("idle");
   const current = events[index] ?? events[0];

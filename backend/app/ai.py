@@ -14,7 +14,10 @@ from anthropic import Anthropic
 
 from .schemas import RawEvent, ClusterResult, HoleContext, ChatTurn
 
-MODEL = os.environ.get("RABBIT_HOLE_MODEL", "claude-opus-4-8")
+DEFAULT_MODEL = os.environ.get("RABBIT_HOLE_MODEL", "claude-haiku-4-5")
+CLUSTER_MODEL = os.environ.get("RABBIT_HOLE_CLUSTER_MODEL", DEFAULT_MODEL)
+ASK_MODEL = os.environ.get("RABBIT_HOLE_ASK_MODEL", DEFAULT_MODEL)
+BRIEF_MODEL = os.environ.get("RABBIT_HOLE_BRIEF_MODEL", DEFAULT_MODEL)
 
 # Structured-output schema. Constrains the response to a list of rabbit holes.
 _SCHEMA = {
@@ -102,13 +105,31 @@ def _parse_json_object(text: str) -> dict:
 
 def _format_signals(pages: list[RawEvent], searches: list[RawEvent]) -> str:
     lines = ["SEARCHES:"]
-    for s in searches:
+    for s in _dedupe_searches(searches):
         lines.append(f"- [{s.at}] {s.query}")
     lines.append("\nPAGES (id | domain | title):")
     for i, p in enumerate(pages):
         pid = f"p{i}"
         lines.append(f"- {pid} | {p.domain or ''} | {p.title or p.url}")
     return "\n".join(lines)
+
+
+def _search_key(search: RawEvent) -> str:
+    query = " ".join((search.query or search.url or "").lower().strip().split())
+    engine = (search.engine or "").lower().strip()
+    return f"{engine}:{query}"
+
+
+def _dedupe_searches(searches: list[RawEvent]) -> list[RawEvent]:
+    seen: set[str] = set()
+    cleaned: list[RawEvent] = []
+    for search in searches:
+        key = _search_key(search)
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        cleaned.append(search)
+    return cleaned
 
 
 def cluster(pages: list[RawEvent], searches: list[RawEvent]) -> list[ClusterResult]:
@@ -118,7 +139,7 @@ def cluster(pages: list[RawEvent], searches: list[RawEvent]) -> list[ClusterResu
 
     client = Anthropic()  # reads ANTHROPIC_API_KEY from the environment
     response = client.messages.create(
-        model=MODEL,
+        model=CLUSTER_MODEL,
         max_tokens=4096,
         system=_SYSTEM,
         messages=[
@@ -197,7 +218,7 @@ def ask(hole: HoleContext, question: str, history: list[ChatTurn]) -> dict:
     })
 
     response = client.messages.create(
-        model=MODEL,
+        model=ASK_MODEL,
         max_tokens=8192,
         system=_ASK_SYSTEM,
         messages=messages,
@@ -248,7 +269,7 @@ def synthesize(hole: HoleContext) -> dict:
     """Produce a structured research brief for one rabbit hole."""
     client = Anthropic()
     response = client.messages.create(
-        model=MODEL,
+        model=BRIEF_MODEL,
         max_tokens=8192,
         system=_SYNTH_SYSTEM,
         messages=[
