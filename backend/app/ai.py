@@ -9,10 +9,13 @@ consumes.
 
 import json
 import os
+import re
+from collections import Counter
+from urllib.parse import urlparse
 
 from anthropic import Anthropic
 
-from .schemas import RawEvent, ClusterResult, HoleContext, ChatTurn
+from .schemas import RawEvent, ClusterResult, HoleContext, ChatTurn, Entity
 
 DEFAULT_MODEL = os.environ.get("RABBIT_HOLE_MODEL", "claude-haiku-4-5")
 CLUSTER_MODEL = os.environ.get("RABBIT_HOLE_CLUSTER_MODEL", DEFAULT_MODEL)
@@ -132,30 +135,122 @@ def _dedupe_searches(searches: list[RawEvent]) -> list[RawEvent]:
     return cleaned
 
 
+def _domain_of(page: RawEvent) -> str:
+    if page.domain:
+        return page.domain.replace("www.", "")
+    if page.url:
+        try:
+            return urlparse(page.url).netloc.replace("www.", "")
+        except Exception:
+            return ""
+    return ""
+
+
+def _words(value: str) -> list[str]:
+    stop = {
+        "the", "and", "for", "with", "from", "into", "your", "you", "are", "how", "what",
+        "why", "when", "where", "this", "that", "about", "google", "search", "page",
+        "home", "login", "official", "website", "www", "com", "org", "net",
+    }
+    return [w for w in re.findall(r"[a-zA-Z][a-zA-Z0-9+.-]{2,}", value.lower()) if w not in stop]
+
+
+def _title_from_signals(pages: list[RawEvent], searches: list[RawEvent]) -> str:
+    if searches:
+        query = searches[-1].query or searches[-1].url or ""
+        words = _words(query)
+        if words:
+            return " ".join(w.capitalize() for w in words[:3])
+
+    text = " ".join((p.title or p.url or "") for p in pages)
+    common = [word for word, _ in Counter(_words(text)).most_common(3)]
+    if common:
+        return " ".join(w.capitalize() for w in common[:3])
+
+    domains = [_domain_of(p).split(".")[0] for p in pages if _domain_of(p)]
+    if domains:
+        return f"{domains[0].capitalize()} Research"
+    return "Captured Research"
+
+
+def _fallback_cluster(pages: list[RawEvent], searches: list[RawEvent]) -> list[ClusterResult]:
+    if not pages:
+        return []
+
+    domains = [_domain_of(page) for page in pages if _domain_of(page)]
+    domain_counts = Counter(domains)
+    title = _title_from_signals(pages, searches)
+    text = " ".join([*(s.query or "" for s in searches), *(p.title or p.url or "" for p in pages)])
+    topics = [word for word, _ in Counter(_words(text)).most_common(5)] or ["research trail"]
+    entities = [
+        Entity(id=f"e{i}", name=domain, kind="tool" if "github" in domain else "concept", mentions=count)
+        for i, (domain, count) in enumerate(domain_counts.most_common(8))
+    ]
+
+    if searches:
+        description = f"Research around {searches[-1].query or title}, built from {len(pages)} captured pages."
+        questions = [f"What did these pages establish about {searches[-1].query or title}?"]
+    else:
+        description = f"A page-driven investigation built from {len(pages)} captured pages."
+        questions = [f"What connects these {len(pages)} captured pages?"]
+
+    return [
+        ClusterResult(
+            title=title,
+            description=description,
+            topics=topics,
+            questions=questions,
+            entities=entities,
+            page_ids=[f"p{i}" for i, _page in enumerate(pages)],
+            confidence=0.64 if searches else 0.52,
+        )
+    ]
+
+
+def _valid_holes(holes: list[ClusterResult], page_count: int) -> list[ClusterResult]:
+    valid_page_ids = {f"p{i}" for i in range(page_count)}
+    cleaned: list[ClusterResult] = []
+    assigned: set[str] = set()
+    for hole in holes:
+        page_ids = [pid for pid in hole.page_ids if pid in valid_page_ids and pid not in assigned]
+        if not page_ids:
+            continue
+        assigned.update(page_ids)
+        hole.page_ids = page_ids
+        cleaned.append(hole)
+    return cleaned
+
+
 def cluster(pages: list[RawEvent], searches: list[RawEvent]) -> list[ClusterResult]:
     """Cluster the captured signals into rabbit holes."""
     if not pages and not searches:
         return []
 
-    client = Anthropic()  # reads ANTHROPIC_API_KEY from the environment
-    response = client.messages.create(
-        model=CLUSTER_MODEL,
-        max_tokens=4096,
-        system=_SYSTEM,
-        messages=[
-            {
-                "role": "user",
-                "content": _format_signals(pages, searches) + "\n\n" + _json_instructions(),
-            }
-        ],
-    )
+    try:
+        client = Anthropic()  # reads ANTHROPIC_API_KEY from the environment
+        response = client.messages.create(
+            model=CLUSTER_MODEL,
+            max_tokens=4096,
+            system=_SYSTEM,
+            messages=[
+                {
+                    "role": "user",
+                    "content": _format_signals(pages, searches) + "\n\n" + _json_instructions(),
+                }
+            ],
+        )
 
-    text = "".join(b.text for b in response.content if b.type == "text")
-    data = _parse_json_object(text)
-    holes = data.get("holes", [])
-    if not isinstance(holes, list):
-        return []
-    return [ClusterResult(**h) for h in holes if isinstance(h, dict)]
+        text = "".join(b.text for b in response.content if b.type == "text")
+        data = _parse_json_object(text)
+        holes = data.get("holes", [])
+        if isinstance(holes, list):
+            cleaned = _valid_holes([ClusterResult(**h) for h in holes if isinstance(h, dict)], len(pages))
+            if cleaned:
+                return cleaned
+    except Exception:
+        pass
+
+    return _fallback_cluster(pages, searches)
 
 
 # ---------------------------------------------------------------------------
