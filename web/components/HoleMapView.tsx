@@ -19,8 +19,8 @@ import { ACCENTS, KIND_META, EDGE_LABELS, faviconFor } from "@/lib/ui";
 import { useDark } from "@/lib/useDark";
 import type { RabbitHole, GraphEdge, GraphNode } from "@/lib/types";
 
-const W = 1240;
-const H = 760;
+const W = 1120;
+const H = 640;
 
 type StepData = {
   label: string;
@@ -107,6 +107,72 @@ function simplifyGraph(hole: RabbitHole): { nodes: GraphNode[]; edges: GraphEdge
   return { nodes: visible, edges };
 }
 
+function layoutGraph(graph: { nodes: GraphNode[]; edges: GraphEdge[] }) {
+  const searchNodes = graph.nodes.filter((node) => node.kind === "search");
+  const contentNodes = graph.nodes.filter((node) => node.kind !== "search");
+  const positions = new Map<string, { x: number; y: number }>();
+  const edgesBySource = new Map<string, string[]>();
+  const depth = new Map<string, number>();
+  const nodeW = 240;
+  const nodeH = 58;
+  const rowH = 82;
+  const colW = 286;
+  const searchX = 96;
+  const contentX = 380;
+  const centerY = H / 2;
+
+  for (const edge of graph.edges) {
+    const targets = edgesBySource.get(edge.source) ?? [];
+    targets.push(edge.target);
+    edgesBySource.set(edge.source, targets);
+  }
+
+  for (const node of searchNodes) depth.set(node.id, 0);
+  const queue = searchNodes.map((node) => node.id);
+  while (queue.length > 0) {
+    const source = queue.shift();
+    if (!source) continue;
+    const nextDepth = (depth.get(source) ?? 0) + 1;
+    for (const target of edgesBySource.get(source) ?? []) {
+      if (!depth.has(target) || nextDepth < (depth.get(target) ?? Infinity)) {
+        depth.set(target, nextDepth);
+        queue.push(target);
+      }
+    }
+  }
+
+  const placeColumn = (nodes: GraphNode[], x: number, offset = 0) => {
+    const visibleRows = Math.max(nodes.length, 1);
+    const spacing = visibleRows > 7 ? 62 : rowH;
+    const startY = centerY - ((visibleRows - 1) * spacing) / 2 + offset;
+    nodes.forEach((node, index) => {
+      positions.set(node.id, { x, y: startY + index * spacing });
+    });
+  };
+
+  placeColumn(searchNodes, searchX);
+
+  const grouped = new Map<number, GraphNode[]>();
+  for (const node of contentNodes) {
+    const column = Math.max(1, Math.min(depth.get(node.id) ?? 1, 4));
+    const group = grouped.get(column) ?? [];
+    group.push(node);
+    grouped.set(column, group);
+  }
+
+  for (const [column, nodes] of grouped.entries()) {
+    placeColumn(nodes, contentX + (column - 1) * colW, column % 2 ? -24 : 24);
+  }
+
+  return graph.nodes.map((node) => ({
+    node,
+    position: {
+      x: (positions.get(node.id)?.x ?? searchX) - nodeW / 2,
+      y: (positions.get(node.id)?.y ?? centerY) - nodeH / 2,
+    },
+  }));
+}
+
 export function HoleMapView({ id, embedded = false }: { id: string; embedded?: boolean }) {
   const liveHoles = useApp((s) => s.liveHoles);
   const hole: RabbitHole | undefined = liveHoles.find((h) => h.id === id) ?? getHole(id);
@@ -116,20 +182,15 @@ export function HoleMapView({ id, embedded = false }: { id: string; embedded?: b
     if (!hole) return [];
     const graph = simplifyGraph(hole);
     const accent = ACCENTS[hole.accent].hex;
-    // Stretch the raw 0..1 layout to fill the canvas so clustered steps spread out.
-    const xs = graph.nodes.map((n) => n.x);
-    const ys = graph.nodes.map((n) => n.y);
-    const minX = Math.min(...xs);
-    const minY = Math.min(...ys);
-    const spanX = Math.max(...xs) - minX || 1;
-    const spanY = Math.max(...ys) - minY || 1;
-    return graph.nodes.map((n) => {
+    const hiddenCount = Math.max(0, hole.graph.nodes.length - (graph.nodes.length - 1));
+
+    return layoutGraph(graph).map(({ node: n, position }) => {
       const page = hole.pages.find((p) => p.id === n.id);
       return {
         id: n.id,
         type: "step",
-        position: { x: ((n.x - minX) / spanX) * W, y: ((n.y - minY) / spanY) * H },
-        data: { label: n.label, kind: n.kind, domain: page?.domain, url: page?.url, accent, dark, aggregateCount: n.id === "__more-pages" ? hole.graph.nodes.length - graph.nodes.length + 1 : undefined },
+        position,
+        data: { label: n.label, kind: n.kind, domain: page?.domain, url: page?.url, accent, dark, aggregateCount: n.id === "__more-pages" ? hiddenCount : undefined },
         draggable: true,
       };
     });
