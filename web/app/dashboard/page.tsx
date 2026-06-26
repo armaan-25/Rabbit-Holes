@@ -5,7 +5,7 @@ import { EmptyHoles } from "@/components/EmptyHoles";
 import { BuildNotice, DiscoverButton, RabbitHoleLoading } from "@/components/DiscoverButton";
 import { ClusterError, clusterBuildState, clusterHoleToRabbitHole, forgetClusterContext, markDiscoveriesSeen, markDiscoveryUnseen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
-import { bulkPatchBackendHoles, patchBackendHole } from "@/lib/api";
+import { bulkPatchBackendHoles, patchBackendHole, preGenerateHoleBriefs } from "@/lib/api";
 import { useLibraryHoles } from "@/hooks/useHoles";
 import { flushExtensionEvents, formatElapsed, useSessionStats } from "@/hooks/useSessionStats";
 import { useEffect, useMemo, useState } from "react";
@@ -112,7 +112,8 @@ export default function Dashboard() {
           setRouteBuildState(buildState);
           return;
         }
-        setLiveHoles(cluster.holes.map((hole) => clusterHoleToRabbitHole(hole, cluster.pages, cluster.searches)));
+        const liveHoles = cluster.holes.map((hole) => clusterHoleToRabbitHole(hole, cluster.pages, cluster.searches));
+        setLiveHoles(liveHoles);
         rememberClusterContext(cluster);
         const discoveries = unseenDiscoveries(cluster.holes);
         const shown = discoveries.length ? discoveries : cluster.holes.map((hole) => ({
@@ -122,6 +123,9 @@ export default function Dashboard() {
           pages: hole.page_ids.length,
           searches: hole.topics.length,
         }));
+        setSyncLabel("writing brief");
+        await preGenerateHoleBriefs(liveHoles);
+        if (cancelled) return;
         setSyncLabel("updated");
         setRouteBuildState("idle");
         if (shown.length) {

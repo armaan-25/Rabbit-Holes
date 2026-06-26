@@ -5,6 +5,7 @@ import { useApp } from "@/lib/store";
 import type { CSSProperties } from "react";
 import { useState } from "react";
 import { flushExtensionEvents, useSessionStats } from "@/hooks/useSessionStats";
+import { preGenerateHoleBriefs } from "@/lib/api";
 
 /** Triggers the discovery overlay from a real /cluster response. */
 export function DiscoverButton() {
@@ -33,7 +34,8 @@ export function DiscoverButton() {
         setNotice(buildState);
         return;
       }
-      setLiveHoles(cluster.holes.map((hole) => clusterHoleToRabbitHole(hole, cluster.pages, cluster.searches)));
+      const liveHoles = cluster.holes.map((hole) => clusterHoleToRabbitHole(hole, cluster.pages, cluster.searches));
+      setLiveHoles(liveHoles);
       rememberClusterContext(cluster);
       const discoveries = unseenDiscoveries(cluster.holes);
       const shown = discoveries.length ? discoveries : cluster.holes.map((hole) => ({
@@ -50,6 +52,8 @@ export function DiscoverButton() {
         return;
       }
 
+      setLabel(shown.length > 1 ? "Writing briefs…" : "Writing brief…");
+      await preGenerateHoleBriefs(liveHoles);
       markDiscoveriesSeen(shown);
       setLabel(shown.length > 1 ? `Found ${shown.length} rabbit holes` : `Found: ${shown[0].title}`);
       setBusy(false);

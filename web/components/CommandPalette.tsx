@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { clusterHoleToRabbitHole, hasMeaningfulNewContext, markDiscoveriesSeen, rememberClusterContext, runCluster, unseenDiscoveries } from "@/lib/discovery";
+import { preGenerateHoleBriefs } from "@/lib/api";
 import { ACCENTS } from "@/lib/ui";
 import { useApp } from "@/lib/store";
 import { useHoles } from "@/hooks/useHoles";
@@ -56,10 +57,12 @@ export function CommandPalette() {
             try {
               const cluster = await runCluster();
               if (!hasMeaningfulNewContext(cluster)) return;
-              setLiveHoles(cluster.holes.map((hole) => clusterHoleToRabbitHole(hole, cluster.pages, cluster.searches)));
+              const liveHoles = cluster.holes.map((hole) => clusterHoleToRabbitHole(hole, cluster.pages, cluster.searches));
+              setLiveHoles(liveHoles);
               rememberClusterContext(cluster);
               const discoveries = unseenDiscoveries(cluster.holes);
               if (!discoveries.length) return;
+              await preGenerateHoleBriefs(liveHoles);
               markDiscoveriesSeen(discoveries);
               discoveries.length > 1 ? triggerDiscoveries(discoveries) : triggerDiscovery(discoveries[0]);
             } catch (err) {

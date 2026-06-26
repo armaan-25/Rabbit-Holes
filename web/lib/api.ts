@@ -111,6 +111,48 @@ export async function synthesizeHole(hole: RabbitHole): Promise<Brief> {
   return res.json();
 }
 
+export function briefCacheKey(holeId: string): string {
+  return `rabbit-hole-brief:${holeId}`;
+}
+
+export function readCachedBrief(holeId: string): Brief | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const cached = window.localStorage.getItem(briefCacheKey(holeId));
+    return cached ? (JSON.parse(cached) as Brief) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function writeCachedBrief(holeId: string, brief: Brief): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(briefCacheKey(holeId), JSON.stringify(brief));
+  } catch {
+    // Cache writes should never block the actual brief UI.
+  }
+}
+
+export async function preGenerateHoleBrief(hole: RabbitHole): Promise<Brief | null> {
+  const cached = readCachedBrief(hole.id);
+  if (cached) return cached;
+  try {
+    const brief = await synthesizeHole(hole);
+    writeCachedBrief(hole.id, brief);
+    return brief;
+  } catch (error) {
+    console.error("brief pre-generation failed", error);
+    return null;
+  }
+}
+
+export async function preGenerateHoleBriefs(holes: RabbitHole[]): Promise<void> {
+  for (const hole of holes) {
+    await preGenerateHoleBrief(hole);
+  }
+}
+
 export async function exportBackendData(): Promise<unknown | null> {
   let res: Response;
   try {

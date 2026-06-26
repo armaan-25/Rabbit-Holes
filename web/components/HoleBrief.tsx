@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { RabbitHole } from "@/lib/types";
-import { apiErrorMessage, synthesizeHole, type Brief } from "@/lib/api";
+import { apiErrorMessage, readCachedBrief, synthesizeHole, writeCachedBrief, type Brief } from "@/lib/api";
 
 export function HoleBrief({ hole }: { hole: RabbitHole }) {
   const [brief, setBrief] = useState<Brief | null>(null);
@@ -10,7 +10,6 @@ export function HoleBrief({ hole }: { hole: RabbitHole }) {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const generatedRef = useRef(false);
-  const cacheKey = `rabbit-hole-brief:${hole.id}`;
 
   async function generate({ force = false } = {}) {
     if (loading) return;
@@ -18,15 +17,15 @@ export function HoleBrief({ hole }: { hole: RabbitHole }) {
     setError(null);
     try {
       if (!force) {
-        const cached = window.localStorage.getItem(cacheKey);
+        const cached = readCachedBrief(hole.id);
         if (cached) {
-          setBrief(JSON.parse(cached) as Brief);
+          setBrief(cached);
           return;
         }
       }
       const next = await synthesizeHole(hole);
       setBrief(next);
-      window.localStorage.setItem(cacheKey, JSON.stringify(next));
+      writeCachedBrief(hole.id, next);
     } catch (err) {
       setError(apiErrorMessage(err, "generate a brief"));
     } finally {
