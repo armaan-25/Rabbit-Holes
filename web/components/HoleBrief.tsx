@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { RabbitHole } from "@/lib/types";
 import { apiErrorMessage, synthesizeHole, type Brief } from "@/lib/api";
 
@@ -9,18 +9,45 @@ export function HoleBrief({ hole }: { hole: RabbitHole }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const generatedRef = useRef(false);
+  const cacheKey = `rabbit-hole-brief:${hole.id}`;
 
-  async function generate() {
+  async function generate({ force = false } = {}) {
+    if (loading) return;
     setLoading(true);
     setError(null);
     try {
-      setBrief(await synthesizeHole(hole));
+      if (!force) {
+        const cached = window.localStorage.getItem(cacheKey);
+        if (cached) {
+          setBrief(JSON.parse(cached) as Brief);
+          return;
+        }
+      }
+      const next = await synthesizeHole(hole);
+      setBrief(next);
+      window.localStorage.setItem(cacheKey, JSON.stringify(next));
     } catch (err) {
       setError(apiErrorMessage(err, "generate a brief"));
     } finally {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    generatedRef.current = false;
+    setBrief(null);
+    setError(null);
+    setCopied(false);
+  }, [hole.id]);
+
+  useEffect(() => {
+    if (generatedRef.current) return;
+    generatedRef.current = true;
+    void generate();
+    // generate is intentionally not a dependency; it changes with loading/cache state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hole.id]);
 
   function toMarkdown(b: Brief): string {
     const lines = [`# ${hole.title}`, "", b.summary, ""];
@@ -59,16 +86,21 @@ export function HoleBrief({ hole }: { hole: RabbitHole }) {
           <p className="rh-muted mt-0.5 text-[13.5px]">The synthesis you never got around to writing.</p>
         </div>
         {brief ? (
-          <button onClick={copy} className="rh-surface-2 shrink-0 rounded-[11px] border px-3.5 py-2 text-[13.5px] font-semibold transition">
-            {copied ? "Copied ✓" : "Copy as Markdown"}
-          </button>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <button onClick={copy} className="rh-surface-2 rounded-[11px] border px-3.5 py-2 text-[13.5px] font-semibold transition">
+              {copied ? "Copied ✓" : "Copy as Markdown"}
+            </button>
+            <button onClick={() => void generate({ force: true })} disabled={loading} className="rh-surface-2 rounded-[11px] border px-3.5 py-2 text-[13.5px] font-semibold transition disabled:opacity-50">
+              {loading ? "Refreshing…" : "Regenerate"}
+            </button>
+          </div>
         ) : (
           <button
-            onClick={generate}
+            onClick={() => void generate({ force: true })}
             disabled={loading}
             className="rh-primary shrink-0 rounded-[12px] px-4 py-2.5 text-[14.5px] font-semibold transition hover:-translate-y-0.5 disabled:opacity-50"
           >
-            {loading ? "Synthesizing…" : "Generate brief"}
+            {loading ? "Synthesizing…" : error ? "Try again" : "Generate brief"}
           </button>
         )}
       </div>
