@@ -59,7 +59,7 @@ export function HoleDetail({ hole }: { hole: RabbitHole }) {
             <AskHole hole={hole} />
 
             <section>
-              <SectionHeader title="Rabbit hole map" note={`${hole.graph.nodes.length} nodes`} />
+              <SectionHeader title="Rabbit hole map" note={hole.graph.nodes.length > 24 ? `showing key nodes · ${hole.graph.nodes.length} total` : `${hole.graph.nodes.length} nodes`} />
               <div className="h-[620px] overflow-hidden rounded-[22px] border border-[#4a3928] bg-[#1b130d] shadow-[0_18px_50px_rgba(70,45,20,.12)]">
                 <HoleMapView id={hole.id} embedded />
               </div>

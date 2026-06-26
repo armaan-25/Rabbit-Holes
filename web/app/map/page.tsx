@@ -15,7 +15,7 @@ import ReactFlow, {
 import { EmptyHolesPage } from "@/components/EmptyHoles";
 import { useHoles } from "@/hooks/useHoles";
 import { useDark } from "@/lib/useDark";
-import type { GraphNode, NodeKind, RabbitHole } from "@/lib/types";
+import type { GraphEdge, GraphNode, NodeKind, RabbitHole } from "@/lib/types";
 
 type FlowNodeData = {
   node: GraphNode;
@@ -74,10 +74,38 @@ function FlowNode({ data }: NodeProps<FlowNodeData>) {
 }
 
 const nodeTypes = { flow: FlowNode };
+const MAX_VISIBLE_NODES = 30;
 
-function layoutGraphNodes(hole: RabbitHole) {
-  const searchNodes = hole.graph.nodes.filter((node) => node.kind === "search");
-  const contentNodes = hole.graph.nodes.filter((node) => node.kind !== "search");
+function simplifiedGraph(hole: RabbitHole): { nodes: GraphNode[]; edges: GraphEdge[] } {
+  if (hole.graph.nodes.length <= MAX_VISIBLE_NODES) return hole.graph;
+  const searches = hole.graph.nodes.filter((node) => node.kind === "search").slice(0, 10);
+  const pages = hole.graph.nodes.filter((node) => node.kind !== "search");
+  const pageById = new Map(hole.pages.map((page) => [page.id, page]));
+  const domains = new Map<string, GraphNode[]>();
+  for (const node of pages) {
+    const domain = pageById.get(node.id)?.domain ?? "unknown";
+    const group = domains.get(domain) ?? [];
+    group.push(node);
+    domains.set(domain, group);
+  }
+  const representatives = [...domains.values()].map((group) => group[0]).filter(Boolean).slice(0, MAX_VISIBLE_NODES - searches.length - 1);
+  const nodes = [...searches, ...representatives];
+  const visibleIds = new Set(nodes.map((node) => node.id));
+  const hiddenCount = hole.graph.nodes.filter((node) => !visibleIds.has(node.id)).length;
+  if (hiddenCount > 0) {
+    nodes.push({ id: "__more-pages", label: `${hiddenCount} more pages`, kind: "website", x: 0.9, y: 0.5 });
+    visibleIds.add("__more-pages");
+  }
+  const edges = hole.graph.edges.filter((edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target));
+  if (hiddenCount > 0 && searches[0]) {
+    edges.push({ id: "__more-pages-edge", source: searches[0].id, target: "__more-pages", kind: "discovered_through" });
+  }
+  return { nodes, edges };
+}
+
+function layoutGraphNodes(hole: RabbitHole, graph = simplifiedGraph(hole)) {
+  const searchNodes = graph.nodes.filter((node) => node.kind === "search");
+  const contentNodes = graph.nodes.filter((node) => node.kind !== "search");
   const positions = new Map<string, { x: number; y: number }>();
   const NODE_W = 160;
   const NODE_H = 58;
@@ -89,7 +117,7 @@ function layoutGraphNodes(hole: RabbitHole) {
   const edgesBySource = new Map<string, string[]>();
   const depth = new Map<string, number>();
 
-  hole.graph.edges.forEach((edge) => {
+  graph.edges.forEach((edge) => {
     const next = edgesBySource.get(edge.source) ?? [];
     next.push(edge.target);
     edgesBySource.set(edge.source, next);
@@ -135,7 +163,7 @@ function layoutGraphNodes(hole: RabbitHole) {
     });
   });
 
-  return hole.graph.nodes.map((node) => {
+  return graph.nodes.map((node) => {
     const position = positions.get(node.id) ?? { x: 0, y: 0 };
     return {
       node,
@@ -156,7 +184,8 @@ export default function MapPage() {
 
   const nodes = useMemo<Node<FlowNodeData>[]>(() => {
     if (!hole) return [];
-    return layoutGraphNodes(hole).map(({ node, position }) => ({
+    const graph = simplifiedGraph(hole);
+    return layoutGraphNodes(hole, graph).map(({ node, position }) => ({
       id: node.id,
       type: "flow",
       position,
@@ -167,7 +196,8 @@ export default function MapPage() {
 
   const edges = useMemo<Edge[]>(() => {
     if (!hole) return [];
-    return hole.graph.edges.map((edge) => {
+    const graph = simplifiedGraph(hole);
+    return graph.edges.map((edge) => {
       const color = edge.kind === "clicked_from" ? "#8a623a" : edge.kind === "searched_from" ? "#b77637" : "#5f8a5c";
       return {
         id: edge.id,

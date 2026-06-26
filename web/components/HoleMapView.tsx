@@ -17,7 +17,7 @@ import { getHole } from "@/lib/data";
 import { useApp } from "@/lib/store";
 import { ACCENTS, KIND_META, EDGE_LABELS, faviconFor } from "@/lib/ui";
 import { useDark } from "@/lib/useDark";
-import type { RabbitHole, GraphNode } from "@/lib/types";
+import type { RabbitHole, GraphEdge, GraphNode } from "@/lib/types";
 
 const W = 1240;
 const H = 760;
@@ -29,6 +29,7 @@ type StepData = {
   url?: string;
   accent: string;
   dark: boolean;
+  aggregateCount?: number;
 };
 
 function StepNode({ data }: NodeProps<StepData>) {
@@ -46,17 +47,65 @@ function StepNode({ data }: NodeProps<StepData>) {
         className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-[9px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] text-[13px] font-semibold"
         style={{ color: meta.color }}
       >
-        {data.domain ? <img src={faviconFor(data.domain)} alt="" className="h-5 w-5 rounded" /> : meta.glyph}
+        {data.aggregateCount ? `+${data.aggregateCount}` : data.domain ? <img src={faviconFor(data.domain)} alt="" className="h-5 w-5 rounded" /> : meta.glyph}
       </span>
       <span className="min-w-0">
         <span className="block truncate text-[13.5px] font-semibold leading-tight text-[var(--rh-ink)]">{data.label}</span>
-        <span className="block text-[11px] capitalize text-[var(--rh-faint)]">{meta.label}</span>
+        <span className="block text-[11px] capitalize text-[var(--rh-faint)]">{data.aggregateCount ? "hidden repeated pages" : meta.label}</span>
       </span>
     </Tag>
   );
 }
 
 const nodeTypes = { step: StepNode };
+const MAX_VISIBLE_NODES = 24;
+
+function simplifyGraph(hole: RabbitHole): { nodes: GraphNode[]; edges: GraphEdge[] } {
+  if (hole.graph.nodes.length <= MAX_VISIBLE_NODES) return hole.graph;
+
+  const searches = hole.graph.nodes.filter((node) => node.kind === "search");
+  const byDomain = new Map<string, GraphNode[]>();
+  const pageById = new Map(hole.pages.map((page) => [page.id, page]));
+  for (const node of hole.graph.nodes.filter((item) => item.kind !== "search")) {
+    const domain = pageById.get(node.id)?.domain ?? "unknown";
+    const group = byDomain.get(domain) ?? [];
+    group.push(node);
+    byDomain.set(domain, group);
+  }
+
+  const representativePages = [...byDomain.values()]
+    .map((group) => group[0])
+    .filter(Boolean)
+    .slice(0, Math.max(8, MAX_VISIBLE_NODES - searches.length - 1));
+  const visible = [...searches.slice(0, 8), ...representativePages];
+  const visibleIds = new Set(visible.map((node) => node.id));
+  const hidden = hole.graph.nodes.filter((node) => !visibleIds.has(node.id));
+
+  if (hidden.length) {
+    const aggregate: GraphNode = {
+      id: "__more-pages",
+      label: `${hidden.length} more pages`,
+      kind: "website",
+      x: 0.92,
+      y: 0.5,
+    };
+    visible.push(aggregate);
+    visibleIds.add(aggregate.id);
+  }
+
+  const edges = hole.graph.edges.filter((edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target));
+  const firstSearch = searches[0]?.id;
+  if (hidden.length && firstSearch) {
+    edges.push({
+      id: "__more-pages-edge",
+      source: firstSearch,
+      target: "__more-pages",
+      kind: "discovered_through",
+    });
+  }
+
+  return { nodes: visible, edges };
+}
 
 export function HoleMapView({ id, embedded = false }: { id: string; embedded?: boolean }) {
   const liveHoles = useApp((s) => s.liveHoles);
@@ -65,21 +114,22 @@ export function HoleMapView({ id, embedded = false }: { id: string; embedded?: b
 
   const nodes = useMemo<Node<StepData>[]>(() => {
     if (!hole) return [];
+    const graph = simplifyGraph(hole);
     const accent = ACCENTS[hole.accent].hex;
     // Stretch the raw 0..1 layout to fill the canvas so clustered steps spread out.
-    const xs = hole.graph.nodes.map((n) => n.x);
-    const ys = hole.graph.nodes.map((n) => n.y);
+    const xs = graph.nodes.map((n) => n.x);
+    const ys = graph.nodes.map((n) => n.y);
     const minX = Math.min(...xs);
     const minY = Math.min(...ys);
     const spanX = Math.max(...xs) - minX || 1;
     const spanY = Math.max(...ys) - minY || 1;
-    return hole.graph.nodes.map((n) => {
+    return graph.nodes.map((n) => {
       const page = hole.pages.find((p) => p.id === n.id);
       return {
         id: n.id,
         type: "step",
         position: { x: ((n.x - minX) / spanX) * W, y: ((n.y - minY) / spanY) * H },
-        data: { label: n.label, kind: n.kind, domain: page?.domain, url: page?.url, accent, dark },
+        data: { label: n.label, kind: n.kind, domain: page?.domain, url: page?.url, accent, dark, aggregateCount: n.id === "__more-pages" ? hole.graph.nodes.length - graph.nodes.length + 1 : undefined },
         draggable: true,
       };
     });
@@ -87,7 +137,8 @@ export function HoleMapView({ id, embedded = false }: { id: string; embedded?: b
 
   const edges = useMemo<Edge[]>(() => {
     if (!hole) return [];
-    return hole.graph.edges.map((e) => {
+    const graph = simplifyGraph(hole);
+    return graph.edges.map((e) => {
       const dashed = e.kind === "discovered_through";
       return {
         id: e.id,
