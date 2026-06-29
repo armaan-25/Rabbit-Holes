@@ -61,6 +61,10 @@ export default function Landing() {
         </section>
 
         <section className="mx-auto w-full max-w-[1160px] px-5 py-20 sm:px-8">
+          <MockDemoFlow />
+        </section>
+
+        <section className="mx-auto w-full max-w-[1160px] px-5 py-20 sm:px-8">
           <div className="grid gap-5 lg:grid-cols-3">
             <ValueCard title="Local first" body="Your trail, settings, and investigations live in browser storage by default." />
             <ValueCard title="Bring your own AI" body="Use OpenAI, Anthropic, OpenRouter, Gemini, Ollama, LM Studio, or a compatible endpoint." />
@@ -79,6 +83,84 @@ export default function Landing() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function MockDemoFlow() {
+  const tabs = ["vLLM docs", "PagedAttention", "DistServe paper", "Sarathi"];
+  const events = [
+    ["search", "vLLM request scheduling"],
+    ["repo", "vllm-project/vllm"],
+    ["paper", "DistServe"],
+  ];
+
+  return (
+    <section className="rounded-[34px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-5 sm:p-7 lg:p-9">
+      <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <div className="rh-faint text-[12px] font-semibold uppercase tracking-[0.22em]">Demo flow</div>
+          <h2 className="rh-display mt-2 text-[42px] font-semibold leading-none tracking-[-0.03em] text-[var(--rh-ink)]">From tabs to thread.</h2>
+        </div>
+        <p className="rh-muted max-w-[34ch] text-[16px] leading-7">
+          Browse normally. Rabbit Holes keeps the trail and turns it into something you can return to.
+        </p>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-[1fr_80px_0.82fr] lg:items-center">
+        <div className="overflow-hidden rounded-[26px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)]">
+          <div className="flex items-center gap-2 border-b border-[var(--rh-line)] px-4 py-3">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#df8c58]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#d6bf82]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#7d9d69]" />
+            <div className="ml-4 flex min-w-0 flex-1 gap-2">
+              {tabs.map((tab) => (
+                <div key={tab} className="min-w-0 rounded-full border border-[var(--rh-line)] bg-[var(--rh-surface)] px-3 py-1.5 text-[12px] font-semibold text-[var(--rh-muted)]">
+                  <span className="block max-w-[120px] truncate">{tab}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-3 p-5">
+            {events.map(([kind, label]) => (
+              <div key={label} className="flex items-center justify-between gap-4 rounded-[18px] border border-[var(--rh-line)] bg-[var(--rh-surface)] px-4 py-3">
+                <div>
+                  <div className="rh-faint text-[10px] font-bold uppercase tracking-[0.18em]">{kind}</div>
+                  <div className="mt-1 text-[17px] font-semibold text-[var(--rh-ink)]">{label}</div>
+                </div>
+                <div className="h-2 w-2 rounded-full bg-[var(--rh-green)]" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="hidden justify-center lg:flex">
+          <div className="flex h-[2px] w-full items-center bg-[var(--rh-line-strong)]">
+            <span className="ml-auto h-3 w-3 rotate-45 border-r-2 border-t-2 border-[var(--rh-line-strong)]" />
+          </div>
+        </div>
+
+        <div className="rounded-[26px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] p-6">
+          <div className="rh-faint text-[11px] font-semibold uppercase tracking-[0.22em]">Generated rabbit hole</div>
+          <h3 className="rh-display mt-3 text-[42px] font-semibold leading-none tracking-[-0.03em] text-[var(--rh-ink)]">AI Systems</h3>
+          <p className="rh-muted mt-4 text-[17px] leading-7">How does vLLM schedule requests across long-running inference workloads?</p>
+          <div className="mt-6 grid grid-cols-3 gap-3">
+            {[
+              ["24", "pages"],
+              ["6", "searches"],
+              ["4", "questions"],
+            ].map(([value, label]) => (
+              <div key={label} className="rounded-[18px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-4 text-center">
+                <div className="rh-display text-[30px] font-semibold leading-none text-[var(--rh-ink)]">{value}</div>
+                <div className="rh-faint mt-2 text-[10px] font-bold uppercase tracking-[0.16em]">{label}</div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 rounded-[18px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-4 text-[16px] font-semibold text-[var(--rh-ink-soft)]">
+            Continue from DistServe section 4.
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
