@@ -39,7 +39,6 @@ export default function Landing() {
           <nav className="flex items-center gap-3 text-[14px] font-semibold">
             <Link href="/install" className="hidden rounded-full px-4 py-2 text-[var(--rh-muted)] no-underline transition hover:text-[var(--rh-ink)] sm:inline-flex">Docs</Link>
             <a href="https://github.com/armaan-25/Rabbit-Holes" className="hidden rounded-full px-4 py-2 text-[var(--rh-muted)] no-underline transition hover:text-[var(--rh-ink)] sm:inline-flex">GitHub</a>
-            <Link href="/login" className="hidden rounded-full px-4 py-2 text-[var(--rh-muted)] no-underline transition hover:text-[var(--rh-ink)] sm:inline-flex">Sign In</Link>
             <button onClick={() => setInstallOpen(true)} className="rounded-full bg-[var(--rh-primary)] px-5 py-2.5 text-[var(--rh-primary-text)] transition hover:-translate-y-0.5">
               Get Started
             </button>
@@ -115,7 +114,7 @@ export default function Landing() {
               Add it to your browser.
             </h2>
             <p className="rh-muted mx-auto mt-5 max-w-[30ch] text-[20px] leading-[1.5]">
-              Sign in after install if you want sync. The extension is still the tool.
+              No account required. Your investigations and settings stay in browser storage by default.
             </p>
             <div className="mt-9 flex justify-center">
               <button onClick={() => setInstallOpen(true)} className="rounded-full bg-[var(--rh-primary)] px-8 py-4 text-[17px] font-semibold text-[var(--rh-primary-text)] transition hover:-translate-y-0.5">
@@ -136,7 +135,7 @@ export default function Landing() {
             {[
               [
                 "Do I need an account?",
-                "Not to understand the tool. Install the extension first. Sign in only when you want sync or account-backed features.",
+                "No. Install the extension and use it locally. Accounts are not part of the staging pivot.",
               ],
               [
                 "Where does my work get saved?",
