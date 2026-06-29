@@ -37,15 +37,16 @@ export default function Landing() {
       </header>
 
       <main>
-        <section className="mx-auto grid min-h-[calc(100vh-76px)] w-full max-w-[1160px] items-center gap-16 px-5 pb-20 pt-10 sm:px-8 lg:grid-cols-[0.9fr_1.1fr]">
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}>
-            <h1 className="rh-display max-w-[8.6ch] text-[clamp(74px,10vw,132px)] font-semibold leading-[0.88] tracking-[-0.045em] text-[var(--rh-ink)]">
-              Follow ideas, not tabs.
+        <section className="mx-auto flex min-h-[calc(100vh-76px)] w-full max-w-[1160px] flex-col items-center justify-center px-5 pb-16 pt-8 text-center sm:px-8">
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+            <div className="rh-faint mb-4 text-[12px] font-semibold uppercase tracking-[0.26em]">Follow ideas, not tabs.</div>
+            <h1 className="rh-display mx-auto max-w-[11ch] text-[clamp(54px,8vw,104px)] font-semibold leading-[0.92] tracking-[-0.045em] text-[var(--rh-ink)]">
+              Your browser, remembered.
             </h1>
-            <p className="rh-muted mt-7 max-w-[30ch] text-[22px] leading-[1.45]">
+            <p className="rh-muted mx-auto mt-6 max-w-[33ch] text-[21px] leading-[1.45]">
               Rabbit Holes remembers what you were trying to understand.
             </p>
-            <div className="mt-10 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
               <button onClick={() => setInstallOpen(true)} className="rounded-full bg-[var(--rh-primary)] px-7 py-4 text-[17px] font-semibold text-[var(--rh-primary-text)] transition hover:-translate-y-0.5">
                 Install Extension
               </button>
@@ -55,13 +56,9 @@ export default function Landing() {
             </div>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}>
-            <ExampleArtifact />
+          <motion.div className="mt-12 w-full" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}>
+            <MockDemoFlow />
           </motion.div>
-        </section>
-
-        <section className="mx-auto w-full max-w-[1160px] px-5 py-20 sm:px-8">
-          <MockDemoFlow />
         </section>
 
         <section className="mx-auto w-full max-w-[1160px] px-5 py-20 sm:px-8">
@@ -96,6 +93,24 @@ function MockDemoFlow() {
 
   return (
     <section className="rounded-[34px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-5 sm:p-7 lg:p-9">
+      <style>{`
+        @keyframes rh-demo-row {
+          0%, 14% { transform: translateY(10px); opacity: 0; }
+          28%, 100% { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes rh-demo-arrow {
+          0%, 28% { transform: scaleX(.05); opacity: 0; }
+          45%, 100% { transform: scaleX(1); opacity: 1; }
+        }
+        @keyframes rh-demo-card {
+          0%, 42% { transform: translateY(12px) scale(.985); opacity: 0; }
+          58%, 100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        @keyframes rh-demo-dot {
+          0%, 100% { opacity: .45; transform: scale(.85); }
+          50% { opacity: 1; transform: scale(1.08); }
+        }
+      `}</style>
       <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <div className="rh-faint text-[12px] font-semibold uppercase tracking-[0.22em]">Demo flow</div>
@@ -122,24 +137,24 @@ function MockDemoFlow() {
           </div>
           <div className="space-y-3 p-5">
             {events.map(([kind, label]) => (
-              <div key={label} className="flex items-center justify-between gap-4 rounded-[18px] border border-[var(--rh-line)] bg-[var(--rh-surface)] px-4 py-3">
+              <div key={label} className="flex items-center justify-between gap-4 rounded-[18px] border border-[var(--rh-line)] bg-[var(--rh-surface)] px-4 py-3 opacity-0 [animation:rh-demo-row_4.8s_cubic-bezier(.22,1,.36,1)_infinite]" style={{ animationDelay: `${events.findIndex((event) => event[1] === label) * 0.34}s` }}>
                 <div>
                   <div className="rh-faint text-[10px] font-bold uppercase tracking-[0.18em]">{kind}</div>
                   <div className="mt-1 text-[17px] font-semibold text-[var(--rh-ink)]">{label}</div>
                 </div>
-                <div className="h-2 w-2 rounded-full bg-[var(--rh-green)]" />
+                <div className="h-2 w-2 rounded-full bg-[var(--rh-green)] [animation:rh-demo-dot_1.6s_ease-in-out_infinite]" />
               </div>
             ))}
           </div>
         </div>
 
         <div className="hidden justify-center lg:flex">
-          <div className="flex h-[2px] w-full items-center bg-[var(--rh-line-strong)]">
+          <div className="flex h-[2px] w-full origin-left items-center bg-[var(--rh-line-strong)] [animation:rh-demo-arrow_4.8s_cubic-bezier(.22,1,.36,1)_infinite]">
             <span className="ml-auto h-3 w-3 rotate-45 border-r-2 border-t-2 border-[var(--rh-line-strong)]" />
           </div>
         </div>
 
-        <div className="rounded-[26px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] p-6">
+        <div className="rounded-[26px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] p-6 opacity-0 [animation:rh-demo-card_4.8s_cubic-bezier(.22,1,.36,1)_infinite]">
           <div className="rh-faint text-[11px] font-semibold uppercase tracking-[0.22em]">Generated rabbit hole</div>
           <h3 className="rh-display mt-3 text-[42px] font-semibold leading-none tracking-[-0.03em] text-[var(--rh-ink)]">AI Systems</h3>
           <p className="rh-muted mt-4 text-[17px] leading-7">How does vLLM schedule requests across long-running inference workloads?</p>

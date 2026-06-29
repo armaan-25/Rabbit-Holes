@@ -7,12 +7,12 @@ import { clusterBuildState, clusterHoleToRabbitHole, forgetClusterContext, markD
 import { useApp } from "@/lib/store";
 import { bulkPatchBackendHoles, patchBackendHole, preGenerateHoleBriefs } from "@/lib/api";
 import { useLibraryHoles } from "@/hooks/useHoles";
-import { flushExtensionEvents, formatElapsed, useSessionStats } from "@/hooks/useSessionStats";
+import { flushExtensionEvents, useSessionStats } from "@/hooks/useSessionStats";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { AppFrame, ToolbarFrame } from "@/components/ui/frame";
-import { Input, Select } from "@/components/ui/input";
+import { AppFrame } from "@/components/ui/frame";
+import { Input } from "@/components/ui/input";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function Dashboard() {
@@ -29,8 +29,6 @@ export default function Dashboard() {
   const [routeBuildState, setRouteBuildState] = useState<"idle" | "loading" | Exclude<ClusterBuildState, "ready"> | "error">("idle");
   const [routeErrorStatus, setRouteErrorStatus] = useState<number | undefined>(undefined);
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<"active" | "favorites" | "archived" | "all">("active");
-  const [sort, setSort] = useState<"recent" | "pages" | "confidence">("recent");
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   const holes = useLibraryHoles();
   const stats = useSessionStats();
@@ -38,21 +36,13 @@ export default function Dashboard() {
     const needle = query.trim().toLowerCase();
     return holes
       .filter((h) => {
-        if (filter === "active" && h.archived) return false;
-        if (filter === "favorites" && !h.favorite) return false;
-        if (filter === "archived" && !h.archived) return false;
+        if (h.archived) return false;
         if (!needle) return true;
         const haystack = [h.title, h.description, ...h.domains, ...h.summary.topics, ...h.searches.map((s) => s.query)].join(" ").toLowerCase();
         return haystack.includes(needle);
       })
-      .sort((a, b) => {
-        if (sort === "pages") return b.pages.length - a.pages.length;
-        if (sort === "confidence") return b.confidence - a.confidence;
-        return +new Date(b.lastActive) - +new Date(a.lastActive);
-      });
-  }, [filter, holes, query, sort]);
-  const latest = visibleHoles.find((h) => h.status === "active") ?? visibleHoles[0];
-  const statusLabel = stats.captureState === "recording" ? "Capturing" : stats.captureState === "paused" ? "Paused" : "Stopped";
+      .sort((a, b) => +new Date(b.lastActive) - +new Date(a.lastActive));
+  }, [holes, query]);
 
   function updateSelection(id: string, selected: boolean) {
     setSelectedIds((ids) => selected ? Array.from(new Set([...ids, id])) : ids.filter((x) => x !== id));
@@ -175,7 +165,7 @@ export default function Dashboard() {
         <div className="flex flex-wrap items-center justify-between gap-5">
           <div>
             <div className="rh-faint mb-2 text-[11px] font-semibold uppercase tracking-[0.22em]">
-              Library
+              {holes.length} investigations · {stats.pages} captured pages
             </div>
             <h1 className="rh-display rh-ink text-[clamp(42px,7vw,72px)] font-semibold leading-none tracking-[-0.035em]">
               Rabbit holes
@@ -190,51 +180,12 @@ export default function Dashboard() {
           </div>
         ) : (
           <>
-            <div className="mt-8 flex flex-col gap-5">
-              {latest && (
-                <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[14px] text-[var(--rh-muted)]">
-                  <span className="inline-flex items-center gap-2 font-semibold text-[var(--rh-ink)]">
-                    <span className={`h-2 w-2 rounded-full ${stats.captureState === "recording" ? "bg-[#5f8a5c]" : stats.captureState === "paused" ? "bg-[#c7ae84]" : "bg-[#b8795f]"}`} />
-                    {statusLabel}
-                  </span>
-                  {typeof stats.elapsedMs === "number" && <span>{formatElapsed(stats.elapsedMs)}</span>}
-                  <span>{stats.pages} pages</span>
-                  <span>{stats.searches} searches</span>
-                  <span>{stats.tabs} tabs</span>
-                  <span className="rh-faint">{stats.source === "extension" ? "extension" : syncLabel}</span>
-                </div>
-              )}
-
-              <ToolbarFrame className="p-3">
-                <div className="flex flex-wrap gap-2">
-                  <Input
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search"
-                    className="min-w-[220px] flex-1"
-                  />
-                  <Select value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} className="w-[128px]">
-                    <option value="active">Active</option>
-                    <option value="favorites">Favorites</option>
-                    <option value="archived">Archived</option>
-                    <option value="all">All</option>
-                  </Select>
-                  <Select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} className="w-[138px]">
-                    <option value="recent">Recent</option>
-                    <option value="pages">Pages</option>
-                    <option value="confidence">Match</option>
-                  </Select>
-                </div>
-              </ToolbarFrame>
-            </div>
-
-            <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-[13px] text-[var(--rh-muted)]">
-              <span>{visibleHoles.length} shown · {holes.length} total</span>
-              {query || filter !== "active" || sort !== "recent" ? (
-                <button className="font-semibold text-[var(--rh-ink)]" onClick={() => { setQuery(""); setFilter("active"); setSort("recent"); }}>
-                  Reset view
-                </button>
-              ) : null}
+            <div className="mt-8 max-w-[420px]">
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search rabbit holes"
+              />
             </div>
 
             {selectedIds.length > 0 && (
@@ -253,7 +204,7 @@ export default function Dashboard() {
                 <p className="rh-muted mx-auto mt-2 max-w-[46ch] text-[15px] leading-6">
                   Clear the search, switch filters, or build a fresh rabbit hole after browsing something new.
                 </p>
-                <Button variant="primary" className="mt-5" onClick={() => { setQuery(""); setFilter("active"); }}>
+                <Button variant="primary" className="mt-5" onClick={() => setQuery("")}>
                   Reset library view
                 </Button>
               </Card>
