@@ -14,11 +14,11 @@ const reveal = {
 };
 
 const exampleStats = [
-  ["Storage", "Local by default"],
-  ["AI", "Your provider"],
-  ["Current question", "How does vLLM schedule requests?"],
-  ["Last stop", "DistServe section 4"],
-  ["Next", "Sarathi"],
+  ["Question", "How does vLLM schedule requests?"],
+  ["Visited", "24 pages"],
+  ["Current position", "DistServe section 4"],
+  ["Open questions", "Compare against Sarathi · Investigate prefix locality"],
+  ["Next", "Continue investigation"],
 ];
 
 export default function Landing() {
@@ -37,11 +37,11 @@ export default function Landing() {
         <div className="mx-auto flex h-[72px] w-full max-w-[1180px] items-center justify-between px-5 sm:px-8">
           <Link href="/" className="no-underline"><Wordmark className="text-[24px]" /></Link>
           <nav className="flex items-center gap-3 text-[14px] font-semibold">
-            <a href="#about" className="hidden rounded-full px-4 py-2 text-[var(--rh-muted)] transition hover:text-[var(--rh-ink)] sm:inline-flex">About</a>
-            <Link href="/install" className="hidden rounded-full px-4 py-2 text-[var(--rh-muted)] no-underline transition hover:text-[var(--rh-ink)] sm:inline-flex">Install</Link>
+            <Link href="/install" className="hidden rounded-full px-4 py-2 text-[var(--rh-muted)] no-underline transition hover:text-[var(--rh-ink)] sm:inline-flex">Docs</Link>
             <a href="https://github.com/armaan-25/Rabbit-Holes" className="hidden rounded-full px-4 py-2 text-[var(--rh-muted)] no-underline transition hover:text-[var(--rh-ink)] sm:inline-flex">GitHub</a>
+            <Link href="/login" className="hidden rounded-full px-4 py-2 text-[var(--rh-muted)] no-underline transition hover:text-[var(--rh-ink)] sm:inline-flex">Sign In</Link>
             <button onClick={() => setInstallOpen(true)} className="rounded-full bg-[var(--rh-primary)] px-5 py-2.5 text-[var(--rh-primary-text)] transition hover:-translate-y-0.5">
-              Download
+              Get Started
             </button>
           </nav>
         </div>
@@ -50,19 +50,18 @@ export default function Landing() {
       <main>
         <section className="mx-auto grid min-h-[calc(100vh-72px)] w-full max-w-[1180px] items-center gap-14 px-5 py-20 sm:px-8 lg:grid-cols-[0.96fr_1.04fr]">
           <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}>
-            <div className="rh-faint mb-7 text-[12px] font-semibold uppercase tracking-[0.24em]">Browser extension · Local first · Bring your own AI</div>
-            <h1 className="rh-display max-w-[10ch] text-[clamp(64px,9vw,118px)] font-semibold leading-[0.92] tracking-[-0.035em] text-[var(--rh-ink)]">
+            <h1 className="rh-display max-w-[9ch] text-[clamp(68px,9vw,122px)] font-semibold leading-[0.9] tracking-[-0.04em] text-[var(--rh-ink)]">
               Follow ideas, not tabs.
             </h1>
-            <p className="rh-muted mt-7 max-w-[34ch] text-[22px] leading-[1.45]">
-              Rabbit Holes is a browser companion for learning on the internet. Install it, point it at your model, and keep the trail.
+            <p className="rh-muted mt-7 max-w-[31ch] text-[23px] leading-[1.4]">
+              Rabbit Hole remembers what you were trying to understand.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-3">
               <button onClick={() => setInstallOpen(true)} className="rounded-full bg-[var(--rh-primary)] px-7 py-4 text-[17px] font-semibold text-[var(--rh-primary-text)] transition hover:-translate-y-0.5">
-                Download Extension
+                Install Extension
               </button>
               <a href="#example" className="rounded-full border border-[var(--rh-line-strong)] px-7 py-4 text-[17px] font-semibold text-[var(--rh-ink)] no-underline transition hover:-translate-y-0.5 hover:border-[var(--rh-ink)]">
-                See Example
+                See Example Investigation
               </a>
             </div>
           </motion.div>
@@ -74,45 +73,101 @@ export default function Landing() {
 
         <section id="example" className="mx-auto w-full max-w-[1180px] scroll-mt-28 px-5 py-24 sm:px-8">
           <motion.div {...reveal} className="mb-10 max-w-[780px]">
-            <div className="rh-faint mb-4 text-[12px] font-semibold uppercase tracking-[0.24em]">The extension is the product</div>
+            <div className="rh-faint mb-4 text-[12px] font-semibold uppercase tracking-[0.24em]">Finished investigation</div>
             <h2 className="rh-display text-[clamp(42px,6vw,76px)] font-semibold leading-[0.98] tracking-[-0.025em] text-[var(--rh-ink)]">
-              A tool you install, configure, and own.
+              Pick up exactly where you left off.
+            </h2>
+          </motion.div>
+          <motion.div {...reveal} transition={{ ...reveal.transition, delay: 0.08 }}>
+            <FinishedInvestigation />
+          </motion.div>
+        </section>
+
+        <section className="mx-auto grid w-full max-w-[1180px] gap-8 px-5 py-24 sm:px-8 lg:grid-cols-[0.72fr_1fr] lg:items-center">
+          <motion.div {...reveal}>
+            <div className="rh-faint mb-4 text-[12px] font-semibold uppercase tracking-[0.24em]">Replay</div>
+            <h2 className="rh-display text-[clamp(42px,6vw,76px)] font-semibold leading-[0.98] tracking-[-0.025em] text-[var(--rh-ink)]">
+              Friday closes. Monday continues.
+            </h2>
+            <p className="rh-muted mt-5 max-w-[32ch] text-[20px] leading-[1.5]">
+              Rewind the path, see the last useful stop, and keep reading without rebuilding the thread.
+            </p>
+          </motion.div>
+          <motion.div {...reveal} transition={{ ...reveal.transition, delay: 0.08 }}>
+            <ReplayArtifact />
+          </motion.div>
+        </section>
+
+        <section className="mx-auto w-full max-w-[1180px] px-5 py-24 sm:px-8">
+          <motion.div {...reveal} className="mb-10 max-w-[780px]">
+            <div className="rh-faint mb-4 text-[12px] font-semibold uppercase tracking-[0.24em]">Map</div>
+            <h2 className="rh-display text-[clamp(42px,6vw,76px)] font-semibold leading-[0.98] tracking-[-0.025em] text-[var(--rh-ink)]">
+              See the route you actually took.
             </h2>
           </motion.div>
           <motion.div {...reveal} transition={{ ...reveal.transition, delay: 0.08 }}><LandingDemo /></motion.div>
         </section>
 
-        <section id="about" className="mx-auto grid w-full max-w-[1180px] gap-6 px-5 py-20 sm:px-8 lg:grid-cols-3">
-          {[
-            ["Local first", "Investigations, browsing metadata, summaries, and settings live on your machine by default."],
-            ["Bring your own model", "OpenAI, Anthropic, OpenRouter, Gemini, Ollama, LM Studio, or any OpenAI-compatible endpoint."],
-            ["Hackable", "The core is provider-agnostic: extension, local storage, AI adapter, optional sync later."],
-          ].map(([title, body], i) => (
-            <motion.div key={title} {...reveal} transition={{ ...reveal.transition, delay: i * 0.06 }} className="rounded-[28px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-8">
-              <div className="rh-faint mb-12 text-[12px] font-semibold uppercase tracking-[0.22em]">0{i + 1}</div>
-              <h3 className="rh-display text-[30px] font-semibold leading-tight text-[var(--rh-ink)]">{title}</h3>
-              <p className="rh-muted mt-3 text-[18px] leading-[1.55]">{body}</p>
-            </motion.div>
-          ))}
+        <section id="install" className="mx-auto w-full max-w-[980px] px-5 py-24 text-center sm:px-8">
+          <motion.div {...reveal} className="rounded-[34px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-10 sm:p-16">
+            <div className="rh-faint mb-5 text-[12px] font-semibold uppercase tracking-[0.24em]">Install</div>
+            <h2 className="rh-display text-[clamp(44px,6vw,82px)] font-semibold leading-[0.96] tracking-[-0.03em] text-[var(--rh-ink)]">
+              Add it to your browser.
+            </h2>
+            <p className="rh-muted mx-auto mt-5 max-w-[30ch] text-[20px] leading-[1.5]">
+              Sign in after install if you want sync. The extension is still the tool.
+            </p>
+            <div className="mt-9 flex justify-center">
+              <button onClick={() => setInstallOpen(true)} className="rounded-full bg-[var(--rh-primary)] px-8 py-4 text-[17px] font-semibold text-[var(--rh-primary-text)] transition hover:-translate-y-0.5">
+                Install Extension
+              </button>
+            </div>
+          </motion.div>
         </section>
 
-        <section className="mx-auto w-full max-w-[1180px] px-5 py-24 sm:px-8">
-          <motion.div {...reveal} className="rounded-[34px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-8 sm:p-12 lg:p-16">
-            <div className="grid gap-10 lg:grid-cols-[1fr_0.78fr] lg:items-end">
-              <div>
-                <div className="rh-faint mb-4 text-[12px] font-semibold uppercase tracking-[0.24em]">Configuration</div>
-                <h2 className="rh-display max-w-[11ch] text-[clamp(44px,6vw,78px)] font-semibold leading-[0.98] tracking-[-0.025em] text-[var(--rh-ink)]">
-                  Paste a key. Start browsing.
-                </h2>
+        <section id="about" className="mx-auto w-full max-w-[1180px] px-5 py-20 sm:px-8">
+          <motion.div {...reveal} className="mb-10 max-w-[720px]">
+            <div className="rh-faint mb-4 text-[12px] font-semibold uppercase tracking-[0.24em]">FAQ</div>
+            <h2 className="rh-display text-[clamp(42px,6vw,76px)] font-semibold leading-[0.98] tracking-[-0.025em] text-[var(--rh-ink)]">
+              Everything you need to know about Rabbit Holes.
+            </h2>
+          </motion.div>
+          <motion.div {...reveal} transition={{ ...reveal.transition, delay: 0.08 }} className="divide-y divide-[var(--rh-line)] rounded-[34px] border border-[var(--rh-line)] bg-[var(--rh-surface)]">
+            {[
+              [
+                "Do I need an account?",
+                "Not to understand the tool. Install the extension first. Sign in only when you want sync or account-backed features.",
+              ],
+              [
+                "Where does my work get saved?",
+                "On your device by default. Rabbit Holes keeps the trail of pages, searches, summaries, and settings locally.",
+              ],
+              [
+                "What does it remember?",
+                "The question you were circling, the pages that mattered, the route between them, and the point where you stopped.",
+              ],
+              [
+                "What does it build?",
+                "A finished investigation: summary, route, replay, open questions, and a place to continue.",
+              ],
+              [
+                "Which browsers work best?",
+                "Chrome, Edge, Brave, Arc, and other Chromium browsers work best today. Safari support is not the first target because the extension APIs are different.",
+              ],
+              [
+                "Can I use my own model?",
+                "Yes. OpenAI, Anthropic, OpenRouter, Gemini, Ollama, LM Studio, and compatible endpoints are supported in settings.",
+              ],
+              [
+                "Are there usage limits?",
+                "No product-side model limits. Your limits come from your browser, your machine, and the provider you choose.",
+              ],
+            ].map(([question, answer]) => (
+              <div key={question} className="grid gap-4 p-7 sm:p-9 lg:grid-cols-[0.42fr_0.58fr]">
+                <h3 className="text-[13px] font-bold uppercase tracking-[0.18em] text-[var(--rh-ink)]">{question}</h3>
+                <p className="rh-muted text-[18px] leading-[1.58]">{answer}</p>
               </div>
-              <div>
-                <pre className="overflow-hidden rounded-[22px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] p-5 text-[14px] leading-7 text-[var(--rh-ink-soft)]">{`provider:\n  type: openrouter\napiKey: sk-or-...\nmodel: anthropic/claude-sonnet-4`}</pre>
-                <div className="mt-7 flex flex-wrap gap-3">
-                  <button onClick={() => setInstallOpen(true)} className="rounded-full bg-[var(--rh-primary)] px-7 py-4 text-[16px] font-semibold text-[var(--rh-primary-text)] transition hover:-translate-y-0.5">Download Extension</button>
-                  <Link href="/settings" className="rounded-full border border-[var(--rh-line-strong)] px-7 py-4 text-[16px] font-semibold text-[var(--rh-ink)] no-underline transition hover:-translate-y-0.5 hover:border-[var(--rh-ink)]">Open Settings</Link>
-                </div>
-              </div>
-            </div>
+            ))}
           </motion.div>
         </section>
       </main>
@@ -155,6 +210,77 @@ function ExampleArtifact() {
   );
 }
 
+function FinishedInvestigation() {
+  return (
+    <div className="rounded-[34px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-8 sm:p-10">
+      <div className="grid gap-10 lg:grid-cols-[0.78fr_1fr] lg:items-end">
+        <div>
+          <div className="rh-faint mb-4 text-[12px] font-semibold uppercase tracking-[0.24em]">AI Systems</div>
+          <h3 className="rh-display max-w-[10ch] text-[clamp(48px,7vw,92px)] font-semibold leading-[0.93] tracking-[-0.035em] text-[var(--rh-ink)]">
+            How does vLLM schedule requests?
+          </h3>
+        </div>
+        <div className="divide-y divide-[var(--rh-line)] rounded-[28px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)]">
+          {[
+            ["Started", "Friday afternoon"],
+            ["Visited", "24 pages"],
+            ["Current position", "DistServe section 4"],
+            ["Last useful stop", "PagedAttention notes"],
+          ].map(([label, value]) => (
+            <div key={label} className="grid gap-3 p-5 sm:grid-cols-[160px_1fr]">
+              <div className="rh-faint text-[12px] font-semibold uppercase tracking-[0.18em]">{label}</div>
+              <div className="text-[21px] leading-tight text-[var(--rh-ink)]">{value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        {["Compare against Sarathi", "Investigate prefix locality"].map((question) => (
+          <div key={question} className="rounded-[22px] border border-[var(--rh-line)] bg-[var(--rh-surface)] px-5 py-4 text-[17px] font-semibold text-[var(--rh-ink-soft)]">
+            {question}
+          </div>
+        ))}
+      </div>
+      <div className="mt-8">
+        <a href="#install" className="inline-flex rounded-full bg-[var(--rh-primary)] px-6 py-3 text-[15px] font-semibold text-[var(--rh-primary-text)] no-underline">
+          Continue Investigation →
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function ReplayArtifact() {
+  const rows = [
+    ["Friday 4:18 PM", "Searched vLLM scheduling"],
+    ["Friday 4:31 PM", "Opened PagedAttention"],
+    ["Friday 5:04 PM", "Read DistServe section 4"],
+    ["Monday 9:12 AM", "Continue from DistServe"],
+  ];
+
+  return (
+    <div className="rounded-[34px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-7 sm:p-9">
+      <div className="mb-7 flex items-center justify-between gap-4">
+        <div>
+          <div className="rh-faint text-[12px] font-semibold uppercase tracking-[0.22em]">Investigation replay</div>
+          <h3 className="rh-display mt-2 text-[38px] font-semibold leading-none text-[var(--rh-ink)]">AI Systems</h3>
+        </div>
+        <button className="rounded-full border border-[var(--rh-line-strong)] px-5 py-2.5 text-[14px] font-semibold text-[var(--rh-ink)]">
+          Play
+        </button>
+      </div>
+      <div className="space-y-3">
+        {rows.map(([time, event], index) => (
+          <div key={event} className="grid gap-4 rounded-[22px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] p-5 sm:grid-cols-[150px_1fr]">
+            <div className="rh-faint text-[12px] font-semibold uppercase tracking-[0.16em]">{time}</div>
+            <div className={index === rows.length - 1 ? "text-[20px] font-semibold text-[var(--rh-ink)]" : "text-[20px] text-[var(--rh-ink-soft)]"}>{event}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function InstallInstructionsPopup({ onClose }: { onClose: () => void }) {
   return (
     <motion.div className="fixed inset-0 z-[90] grid place-items-center bg-[#120e0a]/58 px-4 backdrop-blur-md" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
@@ -171,7 +297,7 @@ function InstallInstructionsPopup({ onClose }: { onClose: () => void }) {
           <li>2. Open <span className="font-semibold">chrome://extensions</span>.</li>
           <li>3. Turn on Developer mode.</li>
           <li>4. Load the unzipped folder.</li>
-          <li>5. Open Settings and choose your AI provider.</li>
+          <li>5. Open Settings and choose your model provider.</li>
         </ol>
         <div className="mt-7 flex flex-wrap gap-3">
           <a href="/downloads/rabbit-holes-extension.zip" download className="rounded-full bg-[var(--rh-primary)] px-6 py-3 text-[15px] font-semibold text-[var(--rh-primary-text)] no-underline">Download zip</a>
