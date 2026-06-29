@@ -1,6 +1,5 @@
 // Rabbit Holes extension configuration.
-// Staging pivot: local-first capture is the core path. No hosted backend or
-// Supabase session is required for normal use.
+// Staging pivot: local-first capture is the core path. No hosted backend is required.
 export const WEB_URL = "https://userabbitholes.com";
 
 // Domains we never capture (auth pages, banking, etc.).

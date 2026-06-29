@@ -44,6 +44,48 @@ export function writeAiProviderConfig(config: AiProviderConfig): void {
   window.localStorage.setItem(AI_PROVIDER_STORAGE_KEY, JSON.stringify(config));
 }
 
+type ExtensionConfig = {
+  settings?: Record<string, boolean> | null;
+  aiProvider?: AiProviderConfig | null;
+};
+
+function extensionRequest<T>(requestType: string, responseType: string, payload: Record<string, unknown> = {}, timeoutMs = 800): Promise<T | null> {
+  if (typeof window === "undefined") return Promise.resolve(null);
+  const requestId = crypto.randomUUID();
+  return new Promise((resolve) => {
+    const timeout = window.setTimeout(() => {
+      window.removeEventListener("message", onMessage);
+      resolve(null);
+    }, timeoutMs);
+
+    function onMessage(event: MessageEvent) {
+      if (event.source !== window) return;
+      if (event.data?.type !== responseType || event.data.requestId !== requestId) return;
+      window.clearTimeout(timeout);
+      window.removeEventListener("message", onMessage);
+      resolve(event.data as T);
+    }
+
+    window.addEventListener("message", onMessage);
+    window.postMessage({ type: requestType, requestId, ...payload }, window.location.origin);
+  });
+}
+
+export async function readExtensionConfig(): Promise<ExtensionConfig | null> {
+  const response = await extensionRequest<ExtensionConfig & { type: string }>("rabbit-holes:get-config", "rabbit-holes:config");
+  return response ? { settings: response.settings ?? null, aiProvider: response.aiProvider ?? null } : null;
+}
+
+export async function writeExtensionConfig(config: ExtensionConfig): Promise<boolean> {
+  const response = await extensionRequest<{ ok?: boolean }>("rabbit-holes:set-config", "rabbit-holes:config-updated", config as Record<string, unknown>);
+  return Boolean(response?.ok);
+}
+
+export async function clearExtensionLocalData(): Promise<boolean> {
+  const response = await extensionRequest<{ ok?: boolean }>("rabbit-holes:clear-local-data", "rabbit-holes:local-data-cleared");
+  return Boolean(response?.ok);
+}
+
 export function providerReady(config: AiProviderConfig): boolean {
   const option = providerOption(config.type);
   if (!config.model.trim()) return false;

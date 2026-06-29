@@ -156,7 +156,6 @@ const SEARCH_ENGINES = [
 
 function isCapturable(url) {
   if (!url || !/^https?:/.test(url)) return false;
-  if (url.startsWith(`${WEB_URL}/rabbit-auth`)) return false;
   const host = hostnameOf(url);
   return !IGNORED_DOMAINS.includes(host);
 }
@@ -334,4 +333,9 @@ chrome.idle.onStateChanged.addListener(() => {});
 chrome.alarms.create("settings", { periodInMinutes: 5 });
 chrome.alarms.onAlarm.addListener((a) => {
   if (a.name === "settings") loadSettings();
+});
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== "local" || !changes.settings?.newValue) return;
+  settings = { ...SETTINGS_DEFAULTS, ...changes.settings.newValue };
 });

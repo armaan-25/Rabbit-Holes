@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { RabbitHole } from "@/lib/types";
 import { BunnyO } from "@/components/Logo";
-import { AI_PROVIDER_OPTIONS, DEFAULT_AI_PROVIDER, providerOption, providerReady, readAiProviderConfig, writeAiProviderConfig, type AiProviderConfig, type AiProviderType } from "@/lib/ai-provider-config";
+import { AI_PROVIDER_OPTIONS, DEFAULT_AI_PROVIDER, clearExtensionLocalData, providerOption, providerReady, readAiProviderConfig, readExtensionConfig, writeAiProviderConfig, writeExtensionConfig, type AiProviderConfig, type AiProviderType } from "@/lib/ai-provider-config";
 
 type Row = { id: string; name: string; body: string; default: boolean; tone?: string };
 
@@ -55,6 +55,7 @@ function readHoles(): RabbitHole[] {
 }
 
 export default function SettingsPage() {
+  const importInputRef = useRef<HTMLInputElement | null>(null);
   const [settings, setSettings] = useState<Record<string, boolean>>(defaults);
   const [provider, setProvider] = useState<AiProviderConfig>(DEFAULT_AI_PROVIDER);
   const [savedAt, setSavedAt] = useState<string>("");
@@ -63,13 +64,32 @@ export default function SettingsPage() {
   const ready = providerReady(provider);
 
   useEffect(() => {
-    setSettings(readLocalSettings());
-    setProvider(readAiProviderConfig());
+    const localSettings = readLocalSettings();
+    const localProvider = readAiProviderConfig();
+    setSettings(localSettings);
+    setProvider(localProvider);
+    readExtensionConfig().then((extensionConfig) => {
+      if (extensionConfig?.settings) {
+        const merged = { ...defaults(), ...extensionConfig.settings };
+        setSettings(merged);
+        window.localStorage.setItem(LOCAL_SETTINGS_KEY, JSON.stringify(merged));
+      } else {
+        void writeExtensionConfig({ settings: localSettings });
+      }
+
+      if (extensionConfig?.aiProvider) {
+        setProvider(extensionConfig.aiProvider);
+        writeAiProviderConfig(extensionConfig.aiProvider);
+      } else {
+        void writeExtensionConfig({ aiProvider: localProvider });
+      }
+    });
   }, []);
 
   function persistSettings(next: Record<string, boolean>) {
     setSettings(next);
     window.localStorage.setItem(LOCAL_SETTINGS_KEY, JSON.stringify(next));
+    void writeExtensionConfig({ settings: next });
     setSavedAt("Saved locally");
   }
 
@@ -80,6 +100,7 @@ export default function SettingsPage() {
   function updateProvider(next: AiProviderConfig) {
     setProvider(next);
     writeAiProviderConfig(next);
+    void writeExtensionConfig({ aiProvider: next });
     setSavedAt("Provider saved locally");
   }
 
@@ -114,8 +135,36 @@ export default function SettingsPage() {
     if (!window.confirm("Erase local Rabbit Holes data on this device? This cannot be undone.")) return;
     window.localStorage.removeItem(LIVE_HOLES_KEY);
     window.localStorage.removeItem(LOCAL_SETTINGS_KEY);
+    window.localStorage.removeItem("rabbit-hole-ai-provider");
     setSettings(defaults());
+    setProvider(DEFAULT_AI_PROVIDER);
+    void clearExtensionLocalData();
+    void writeExtensionConfig({ settings: defaults() });
     setDataMsg("Local Rabbit Holes data cleared.");
+  }
+
+  async function importData(file: File | null) {
+    if (!file) return;
+    try {
+      const payload = JSON.parse(await file.text()) as { settings?: Record<string, boolean>; aiProvider?: AiProviderConfig; holes?: RabbitHole[] };
+      if (payload.settings) {
+        const next = { ...defaults(), ...payload.settings };
+        setSettings(next);
+        window.localStorage.setItem(LOCAL_SETTINGS_KEY, JSON.stringify(next));
+        await writeExtensionConfig({ settings: next });
+      }
+      if (payload.aiProvider && payload.aiProvider.apiKey !== "[redacted]") {
+        setProvider(payload.aiProvider);
+        writeAiProviderConfig(payload.aiProvider);
+        await writeExtensionConfig({ aiProvider: payload.aiProvider });
+      }
+      if (Array.isArray(payload.holes)) window.localStorage.setItem(LIVE_HOLES_KEY, JSON.stringify(payload.holes));
+      setDataMsg(`Imported ${Array.isArray(payload.holes) ? payload.holes.length : 0} local hole${payload.holes?.length === 1 ? "" : "s"}.`);
+    } catch {
+      setDataMsg("Import failed. Choose a Rabbit Holes JSON export.");
+    } finally {
+      if (importInputRef.current) importInputRef.current.value = "";
+    }
   }
 
   return (
@@ -174,14 +223,16 @@ export default function SettingsPage() {
 
         <section className="mt-8">
           <SectionLabel>Your data</SectionLabel>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-4">
             <ActionCard title="Export everything" body="Download local settings and investigations as JSON." onClick={exportData} />
+            <ActionCard title="Import JSON" body="Restore a local Rabbit Holes export on this device." onClick={() => importInputRef.current?.click()} />
             <ActionCard title="Clear dormant holes" body="Tidy away investigations gone quiet for 30+ days." onClick={clearDormant} />
             <button onClick={resetFresh} className="rounded-[16px] border border-[#e5b8ad] bg-[var(--rh-surface)] p-5 text-left transition hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(70,45,20,.08)]">
               <h3 className="text-[16px] font-bold text-[#b54831]">Reset local data</h3>
               <p className="mt-1 text-[14px] leading-snug text-[#b05b49]">Erase local rabbit holes on this device.</p>
             </button>
           </div>
+          <input ref={importInputRef} type="file" accept="application/json,.json" className="hidden" onChange={(event) => void importData(event.target.files?.[0] ?? null)} />
           {dataMsg && <p className="rh-muted mt-4 text-[14px]">{dataMsg}</p>}
         </section>
       </main>

@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 
 /**
- * Shared fresh-account empty state. Uses the canonical design tokens so it
+ * Shared local-first empty state. Uses the canonical design tokens so it
  * inherits dark mode automatically.
  */
 export function EmptyHoles({

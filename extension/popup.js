@@ -162,7 +162,7 @@ async function setCaptureState(state) {
   }
 }
 
-// state: "in" (app panel), "out" (sign in), "expired" (sign in again).
+// state: "in" (local capture panel), "out" (provider setup), "expired" (provider setup).
 function setAuthView(state) {
   const signedOut = state !== "in";
   document.getElementById("auth-panel").classList.toggle("signed-out", signedOut);

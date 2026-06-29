@@ -1,4 +1,5 @@
 import type { RabbitHole } from "./types";
+import { generateJson } from "./ai-provider";
 
 export class ApiError extends Error {
   constructor(
@@ -46,7 +47,38 @@ export interface AskAnswer {
 
 export async function askHole(hole: RabbitHole, question: string, history: ChatTurn[]): Promise<AskAnswer> {
   const relevantPages = hole.pages.slice(0, 5);
-  const citations = relevantPages.map((page) => page.url).filter(Boolean);
+  const context = holeContext(hole);
+  const generated = await generateJson<AskAnswer>(
+    `Answer the user's question about this local browser investigation.
+
+Question:
+${question}
+
+Previous turns:
+${history.map((turn) => `${turn.role}: ${turn.content}`).join("\n") || "None"}
+
+Investigation JSON:
+${JSON.stringify(context, null, 2)}
+
+Return JSON:
+{
+  "answer": "clear answer grounded in the provided pages only",
+  "citations": ["page id", "page id"]
+}
+
+Only cite page ids that appear in the investigation JSON.`,
+    { temperature: 0.15, maxTokens: 700 },
+  );
+  if (generated?.answer) {
+    return {
+      answer: generated.answer,
+      citations: Array.isArray(generated.citations)
+        ? generated.citations.filter((id) => hole.pages.some((page) => page.id === id)).slice(0, 5)
+        : [],
+    };
+  }
+
+  const citations = relevantPages.map((page) => page.id);
   const focus = hole.summary.topics.slice(0, 3).join(", ") || hole.title;
   const previous = history.length ? ` Based on the previous ${history.length} turns,` : "";
   return {
@@ -71,6 +103,34 @@ export interface Brief {
 export async function synthesizeHole(hole: RabbitHole): Promise<Brief> {
   const topics = hole.summary.topics.length ? hole.summary.topics : hole.domains;
   const pageTitles = hole.pages.slice(0, 4).map((p) => p.title);
+  const generated = await generateJson<Brief>(
+    `Create a concise research brief from this local browser investigation.
+
+Investigation JSON:
+${JSON.stringify(holeContext(hole), null, 2)}
+
+Return JSON with exactly these fields:
+{
+  "summary": "2-3 sentence synthesis",
+  "comparison": [{"title": "source group", "points": ["point"]}],
+  "contradictions": ["possible disagreement or empty array"],
+  "open_questions": ["question"],
+  "next_steps": ["action"]
+}
+
+Do not invent sources. Stay grounded in captured pages and searches.`,
+    { temperature: 0.2, maxTokens: 1000 },
+  );
+  if (generated?.summary) {
+    return {
+      summary: generated.summary,
+      comparison: Array.isArray(generated.comparison) ? generated.comparison : [],
+      contradictions: Array.isArray(generated.contradictions) ? generated.contradictions : [],
+      open_questions: Array.isArray(generated.open_questions) ? generated.open_questions : [],
+      next_steps: Array.isArray(generated.next_steps) ? generated.next_steps : [],
+    };
+  }
+
   return {
     summary: `${hole.title} is a local investigation built from ${hole.pages.length} pages and ${hole.searches.length} searches. It appears to center on ${topics.slice(0, 3).join(", ") || "one browsing thread"}.`,
     comparison: pageTitles.length
