@@ -90,6 +90,16 @@
       return;
     }
 
+    if (event.data?.type === "rabbit-holes:get-events") {
+      try {
+        const { events = [] } = await chrome.storage.local.get(["events"]);
+        window.postMessage({ type: "rabbit-holes:events", requestId, events }, window.location.origin);
+      } catch {
+        window.postMessage({ type: "rabbit-holes:events", requestId, events: [] }, window.location.origin);
+      }
+      return;
+    }
+
     if (event.data?.type === "rabbit-holes:set-capture") {
       try {
         const res = await chrome.runtime.sendMessage({ type: "setCaptureState", state: event.data.state });
@@ -109,12 +119,7 @@
     }
 
     if (event.data?.type === "rabbit-holes:flush") {
-      try {
-        const res = await chrome.runtime.sendMessage({ type: "flush" });
-        window.postMessage({ type: "rabbit-holes:flush-complete", requestId, ok: Boolean(res?.ok), buffered: res?.buffered ?? null }, window.location.origin);
-      } catch {
-        window.postMessage({ type: "rabbit-holes:flush-complete", requestId, ok: false }, window.location.origin);
-      }
+      window.postMessage({ type: "rabbit-holes:flush-complete", requestId, ok: true, local: true }, window.location.origin);
     }
   });
 })();

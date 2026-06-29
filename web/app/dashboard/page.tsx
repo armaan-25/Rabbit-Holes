@@ -3,7 +3,7 @@
 import { HoleCard } from "@/components/HoleCard";
 import { EmptyHoles } from "@/components/EmptyHoles";
 import { BuildNotice, DiscoverButton, RabbitHoleLoading } from "@/components/DiscoverButton";
-import { ClusterError, clusterBuildState, clusterHoleToRabbitHole, forgetClusterContext, markDiscoveriesSeen, markDiscoveryUnseen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
+import { clusterBuildState, clusterHoleToRabbitHole, forgetClusterContext, markDiscoveriesSeen, markDiscoveryUnseen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
 import { bulkPatchBackendHoles, patchBackendHole, preGenerateHoleBriefs } from "@/lib/api";
 import { useLibraryHoles } from "@/hooks/useHoles";
@@ -136,9 +136,9 @@ export default function Dashboard() {
         console.error("cluster failed", err);
         if (!cancelled) {
           window.history.replaceState(null, "", "/dashboard");
-          const status = err instanceof ClusterError ? err.status : undefined;
+          const status = undefined;
           setRouteErrorStatus(status);
-          setSyncLabel(status === 401 || status === 403 ? "sign in again" : status === 429 ? "rate limited" : status && status >= 500 ? "service error" : "connection issue");
+          setSyncLabel("local build issue");
           setRouteBuildState("error");
         }
       }

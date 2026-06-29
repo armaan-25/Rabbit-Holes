@@ -49,7 +49,7 @@ export function CommandPalette() {
       { label: "Timeline", hint: "Replay curiosity", href: "/timeline", glyph: "≣" },
       {
         label: "Run clustering",
-        hint: "Trigger from backend /cluster",
+        hint: "Build from local extension history",
         href: "#discover",
         glyph: "✨",
         action: () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { ClusterError, clusterBuildState, clusterHoleToRabbitHole, markDiscoveriesSeen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
+import { clusterBuildState, clusterHoleToRabbitHole, markDiscoveriesSeen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
 import type { CSSProperties } from "react";
 import { useState } from "react";
@@ -60,9 +60,9 @@ export function DiscoverButton() {
       window.setTimeout(() => (shown.length > 1 ? triggerMany(shown) : trigger(shown[0])), 80);
     } catch (err) {
       console.error("cluster failed", err);
-      const status = err instanceof ClusterError ? err.status : undefined;
+      const status = undefined;
       setErrorStatus(status);
-      setLabel(status === 401 || status === 403 ? "Sign in again" : status === 429 ? "Rate limited" : "Could not build");
+      setLabel("Could not build");
       setNotice("error");
     } finally {
       setBusy(false);
@@ -155,19 +155,13 @@ export function BuildNotice({ type, stats, errorStatus, onClose }: { readonly ty
   const duplicate = type === "duplicate";
   const unclear = type === "unclear";
   if (empty || duplicate || unclear) {
-    const hasVisibleHistory = stats.pages >= 3 || stats.searches >= 1;
-    const syncLag = empty && hasVisibleHistory;
-    const eyebrow = syncLag ? "History not synced yet" : empty ? "Not enough history" : duplicate ? "Already up to date" : "No clear thread yet";
-    const title = syncLag
-      ? "Rabbit Holes can see local activity, but it has not reached the backend yet."
-      : empty
+    const eyebrow = empty ? "Not enough history" : duplicate ? "Already up to date" : "No clear thread yet";
+    const title = empty
         ? "Uh oh, not enough search history to make a rabbit hole."
       : duplicate
         ? "You already built this rabbit hole."
         : "There is history, but no clear rabbit hole yet.";
-    const body = syncLag
-      ? "The extension popup can be ahead of the server. Keep this tab open for a moment, reload the extension if needed, then build again."
-      : empty
+    const body = empty
         ? "Browse a few related searches and pages first. Rabbit Holes needs a real trail before it can cluster an investigation."
       : duplicate
         ? "Your current browsing trail has already been clustered. Browse a few new related pages or searches, then build again."
@@ -239,21 +233,9 @@ export function BuildNotice({ type, stats, errorStatus, onClose }: { readonly ty
     );
   }
   const title =
-    errorStatus === 401 || errorStatus === 403
-      ? "Sign in again to build rabbit holes"
-      : errorStatus === 429
-        ? "Rabbit Holes is rate limited"
-        : errorStatus && errorStatus >= 500
-          ? "The clustering service hit an error"
-          : "Backend is not reachable";
+    "Could not build this rabbit hole";
   const body =
-    errorStatus === 401 || errorStatus === 403
-      ? "Your browser session did not include a valid auth token. Sign out, sign back in, then build again."
-      : errorStatus === 429
-        ? "Too many clustering requests were made recently. Wait a bit, then try again."
-        : errorStatus && errorStatus >= 500
-          ? "The backend is reachable, but clustering failed inside the service. Try again after the backend redeploy finishes."
-          : "The app could not reach the clustering service. Try again after the backend finishes waking up or redeploying.";
+    "Rabbit Holes could not read enough local browser activity from the extension. Keep browsing on one thread, reload the extension if needed, then try again.";
   return (
     <div className="fixed inset-0 z-[75] grid place-items-center bg-[#140d08]/72 px-4 backdrop-blur-[8px]">
       <div className="rh-surface w-full max-w-[560px] rounded-[28px] border p-7 text-center shadow-[0_34px_90px_rgba(18,11,5,.42)]">

@@ -1,7 +1,5 @@
 import type { RabbitHole } from "./types";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend-production-4e5a6.up.railway.app";
-
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -15,32 +13,10 @@ export class ApiError extends Error {
 
 export function apiErrorMessage(error: unknown, action: string): string {
   if (!(error instanceof ApiError)) return `Could not ${action}. Try again in a moment.`;
-  if (error.status === 401 || error.status === 403) return `Sign in again to ${action}.`;
-  if (error.status === 429) return `Rabbit Holes is rate limited right now. Wait a bit, then try again.`;
-  if (error.status && error.status >= 500) return `The backend is reachable, but ${action} failed inside the service. Try again after the backend redeploy finishes.`;
-  if (typeof error.status === "number") return `Could not ${action}. The backend returned ${error.status}.`;
-  return `Could not reach the Rabbit Holes backend. Check the deployment, then try again.`;
+  return `Could not ${action}. Check your local provider settings, then try again.`;
 }
 
-async function apiErrorFromResponse(res: Response, label: string): Promise<ApiError> {
-  let detail: unknown = null;
-  try {
-    detail = await res.json();
-  } catch {
-    detail = await res.text().catch(() => null);
-  }
-  return new ApiError(`${label} failed: ${res.status}`, res.status, detail);
-}
-
-async function authHeaders(extra: HeadersInit = {}): Promise<HeadersInit> {
-  if (typeof window === "undefined") return extra;
-  const { supabase } = await import("@/lib/supabase/client");
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
-  return token ? { ...extra, Authorization: `Bearer ${token}` } : extra;
-}
-
-/** The compact context the backend AI endpoints consume for one rabbit hole. */
+/** The compact context local/provider adapters consume for one rabbit hole. */
 export function holeContext(hole: RabbitHole) {
   return {
     title: hole.title,
@@ -69,18 +45,14 @@ export interface AskAnswer {
 }
 
 export async function askHole(hole: RabbitHole, question: string, history: ChatTurn[]): Promise<AskAnswer> {
-  let res: Response;
-  try {
-    res = await fetch(`${BACKEND_URL}/ask`, {
-      method: "POST",
-      headers: await authHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ hole: holeContext(hole), question, history }),
-    });
-  } catch (error) {
-    throw new ApiError("Could not reach the Rabbit Holes backend.", undefined, error);
-  }
-  if (!res.ok) throw await apiErrorFromResponse(res, "ask");
-  return res.json();
+  const relevantPages = hole.pages.slice(0, 5);
+  const citations = relevantPages.map((page) => page.url).filter(Boolean);
+  const focus = hole.summary.topics.slice(0, 3).join(", ") || hole.title;
+  const previous = history.length ? ` Based on the previous ${history.length} turns,` : "";
+  return {
+    answer: `${previous} this investigation is mostly about ${focus}. For "${question}", start with ${relevantPages[0]?.title || "the first captured page"} and compare it against ${relevantPages[1]?.title || "the next source"}. Configure a model provider in Settings when you want a generated answer instead of this local summary.`,
+    citations,
+  };
 }
 
 export interface ComparisonItem {
@@ -97,18 +69,20 @@ export interface Brief {
 }
 
 export async function synthesizeHole(hole: RabbitHole): Promise<Brief> {
-  let res: Response;
-  try {
-    res = await fetch(`${BACKEND_URL}/synthesize`, {
-      method: "POST",
-      headers: await authHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ hole: holeContext(hole) }),
-    });
-  } catch (error) {
-    throw new ApiError("Could not reach the Rabbit Holes backend.", undefined, error);
-  }
-  if (!res.ok) throw await apiErrorFromResponse(res, "synthesize");
-  return res.json();
+  const topics = hole.summary.topics.length ? hole.summary.topics : hole.domains;
+  const pageTitles = hole.pages.slice(0, 4).map((p) => p.title);
+  return {
+    summary: `${hole.title} is a local investigation built from ${hole.pages.length} pages and ${hole.searches.length} searches. It appears to center on ${topics.slice(0, 3).join(", ") || "one browsing thread"}.`,
+    comparison: pageTitles.length
+      ? [{ title: "Main sources", points: pageTitles.map((title) => `Captured: ${title}`) }]
+      : [],
+    contradictions: [],
+    open_questions: hole.summary.questions.length ? hole.summary.questions : ["What is the strongest next source?", "What changed your understanding?"],
+    next_steps: [
+      hole.summary.links[0]?.label ? `Return to ${hole.summary.links[0].label}.` : "Open the most relevant captured page.",
+      "Configure a model provider in Settings for richer generated synthesis.",
+    ],
+  };
 }
 
 export function briefCacheKey(holeId: string): string {
@@ -154,26 +128,16 @@ export async function preGenerateHoleBriefs(holes: RabbitHole[]): Promise<void> 
 }
 
 export async function exportBackendData(): Promise<unknown | null> {
-  let res: Response;
-  try {
-    res = await fetch(`${BACKEND_URL}/export`, { headers: await authHeaders() });
-  } catch (error) {
-    throw new ApiError("Could not reach the Rabbit Holes backend.", undefined, error);
-  }
-  if (res.status === 401) return null;
-  if (!res.ok) throw await apiErrorFromResponse(res, "export");
-  return res.json();
+  if (typeof window === "undefined") return null;
+  return {
+    exportedAt: new Date().toISOString(),
+    holes: JSON.parse(window.localStorage.getItem("rabbit-hole-live-holes") || "[]"),
+    provider: JSON.parse(window.localStorage.getItem("rabbit-hole-ai-provider") || "null"),
+  };
 }
 
 export async function clearBackendData(): Promise<void> {
-  let res: Response;
-  try {
-    res = await fetch(`${BACKEND_URL}/clear`, { method: "POST", headers: await authHeaders({ "Content-Type": "application/json" }) });
-  } catch (error) {
-    throw new ApiError("Could not reach the Rabbit Holes backend.", undefined, error);
-  }
-  if (res.status === 401) return;
-  if (!res.ok) throw await apiErrorFromResponse(res, "clear data");
+  if (typeof window !== "undefined") window.localStorage.removeItem("rabbit-hole-live-holes");
 }
 
 export type HolePatch = {
@@ -183,32 +147,11 @@ export type HolePatch = {
 };
 
 export async function patchBackendHole(id: string, patch: HolePatch): Promise<void> {
-  let res: Response;
-  try {
-    res = await fetch(`${BACKEND_URL}/holes/${encodeURIComponent(id)}`, {
-      method: "PATCH",
-      headers: await authHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify(patch),
-    });
-  } catch (error) {
-    throw new ApiError("Could not reach the Rabbit Holes backend.", undefined, error);
-  }
-  if (res.status === 401) return;
-  if (!res.ok) throw await apiErrorFromResponse(res, "update hole");
+  void id;
+  void patch;
 }
 
 export async function bulkPatchBackendHoles(ids: string[], action: "favorite" | "unfavorite" | "archive" | "restore" | "delete"): Promise<void> {
-  if (!ids.length) return;
-  let res: Response;
-  try {
-    res = await fetch(`${BACKEND_URL}/holes/bulk`, {
-      method: "POST",
-      headers: await authHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ ids, action }),
-    });
-  } catch (error) {
-    throw new ApiError("Could not reach the Rabbit Holes backend.", undefined, error);
-  }
-  if (res.status === 401) return;
-  if (!res.ok) throw await apiErrorFromResponse(res, "update holes");
+  void ids;
+  void action;
 }

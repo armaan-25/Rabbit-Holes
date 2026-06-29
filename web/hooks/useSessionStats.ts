@@ -1,9 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://backend-production-4e5a6.up.railway.app";
 
 export type CaptureState = "recording" | "paused" | "stopped";
 
@@ -21,7 +18,7 @@ export interface SessionStats {
   captureState: CaptureState;
   elapsedMs?: number;
   capturedTabs?: CapturedTab[];
-  source: "extension" | "backend";
+  source: "extension" | "local";
 }
 
 const EMPTY_STATS: SessionStats = {
@@ -29,7 +26,7 @@ const EMPTY_STATS: SessionStats = {
   searches: 0,
   tabs: 0,
   captureState: "recording",
-  source: "backend",
+  source: "local",
 };
 
 export function formatElapsed(ms = 0): string {
@@ -38,24 +35,6 @@ export function formatElapsed(ms = 0): string {
   const m = Math.floor((total % 3600) / 60);
   const s = total % 60;
   return `${h ? `${h}:` : ""}${h ? String(m).padStart(2, "0") : String(m)}:${String(s).padStart(2, "0")}`;
-}
-
-async function fetchBackendStats(): Promise<SessionStats | null> {
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
-  if (!token) return null;
-
-  const res = await fetch(`${BACKEND_URL}/stats`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) return null;
-  const stats = (await res.json()) as Partial<SessionStats>;
-  return {
-    ...EMPTY_STATS,
-    ...stats,
-    captureState: (stats.captureState as CaptureState) ?? "recording",
-    source: "backend",
-  };
 }
 
 function readExtensionStats(timeoutMs = 450): Promise<SessionStats | null> {
@@ -130,7 +109,7 @@ export function removeCapturedTab(url: string, timeoutMs = 1500): Promise<boolea
   });
 }
 
-/** Ask the extension to push its local event buffer to the backend before clustering. */
+/** Legacy compatibility: clustering is local-first, so flushing is no longer required. */
 export function flushExtensionEvents(timeoutMs = 1800): Promise<boolean> {
   if (typeof window === "undefined") return Promise.resolve(false);
   const requestId = crypto.randomUUID();
@@ -167,8 +146,7 @@ export function useSessionStats(): SessionStats {
         return;
       }
 
-      const backendStats = await fetchBackendStats().catch(() => null);
-      if (active && backendStats) setStats(backendStats);
+      if (active) setStats(EMPTY_STATS);
     }
 
     void load();

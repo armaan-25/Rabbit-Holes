@@ -42,7 +42,7 @@ The model is an interchangeable component. Rabbit Holes owns the capture, invest
 ```text
 extension/   Chrome extension: capture, popup UI, local event trail.
 web/         Next.js app: landing/docs, local settings, dashboard/viewer.
-backend/     FastAPI prototype: hosted clustering path while local-provider core is being extracted.
+backend/     Legacy FastAPI prototype. Not required for the local-first core path.
 ```
 
 ## Current architecture direction
@@ -82,7 +82,7 @@ Open `http://localhost:3000`.
 
 ## Backend status
 
-The backend still exists as a prototype service for clustering and synthesis. The staging pivot is moving the product toward local-first provider adapters so hosted inference, accounts, usage limits, and paid plans are not required for the core product.
+The backend is no longer required for the staging product path. Capture, clustering, summaries, replay, maps, and settings are local-first. Keep the backend only as a legacy prototype or optional future sync/service experiment.
 
 ## Security notes
 
