@@ -171,81 +171,77 @@ export default function Dashboard() {
       {routeBuildState === "duplicate" && <BuildNotice type="duplicate" stats={stats} onClose={() => setRouteBuildState("idle")} />}
       {routeBuildState === "unclear" && <BuildNotice type="unclear" stats={stats} onClose={() => setRouteBuildState("idle")} />}
       {routeBuildState === "error" && <BuildNotice type="error" stats={stats} errorStatus={routeErrorStatus} onClose={() => setRouteBuildState("idle")} />}
-      <AppFrame>
-        <div className="flex flex-wrap items-end justify-between gap-6">
+      <AppFrame className="mx-auto max-w-[1240px]">
+        <div className="flex flex-wrap items-center justify-between gap-5">
           <div>
-            <div className="rh-faint mb-2 text-[12px] font-semibold uppercase tracking-[0.22em]">
-              Your rabbit holes · {holes.length} total
+            <div className="rh-faint mb-2 text-[11px] font-semibold uppercase tracking-[0.22em]">
+              Library
             </div>
-            <h1 className="rh-display rh-ink text-[42px] font-semibold leading-none tracking-normal">
+            <h1 className="rh-display rh-ink text-[clamp(42px,7vw,72px)] font-semibold leading-none tracking-[-0.035em]">
               Rabbit holes
             </h1>
           </div>
-          <div className="flex items-center gap-3">
-            <Card className="hidden items-center gap-5 rounded-xl px-4 py-2.5 sm:flex">
-              <HeaderStat n={stats.pages} label="pages" />
-              <HeaderStat n={stats.searches} label="searches" />
-              <HeaderStat n={stats.tabs} label="tabs" accent />
-            </Card>
-            <DiscoverButton />
-          </div>
+          <DiscoverButton />
         </div>
 
         {holes.length === 0 ? (
-          <div className="mt-12">
+          <div className="mt-14">
             <EmptyHoles eyebrow="Your rabbit holes" />
           </div>
         ) : (
           <>
-            {latest && (
-              <Card className="mt-6 flex items-center gap-3 rounded-2xl px-5 py-4">
-                <span className={`h-2 w-2 shrink-0 rounded-full ${stats.captureState === "recording" ? "bg-[#5f8a5c]" : stats.captureState === "paused" ? "bg-[#c7ae84]" : "bg-[#b8795f]"}`} />
-                <div className="min-w-0 truncate text-[15px] text-[var(--rh-muted)]">
-                  <span className="font-semibold text-[var(--rh-ink)]">{statusLabel}</span>
-                  {typeof stats.elapsedMs === "number" ? <span className="font-semibold"> · {formatElapsed(stats.elapsedMs)}</span> : null}
-                  {" "}— {stats.pages} pages · {stats.searches} searches · {stats.tabs} tabs
+            <div className="mt-8 flex flex-col gap-5">
+              {latest && (
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[14px] text-[var(--rh-muted)]">
+                  <span className="inline-flex items-center gap-2 font-semibold text-[var(--rh-ink)]">
+                    <span className={`h-2 w-2 rounded-full ${stats.captureState === "recording" ? "bg-[#5f8a5c]" : stats.captureState === "paused" ? "bg-[#c7ae84]" : "bg-[#b8795f]"}`} />
+                    {statusLabel}
+                  </span>
+                  {typeof stats.elapsedMs === "number" && <span>{formatElapsed(stats.elapsedMs)}</span>}
+                  <span>{stats.pages} pages</span>
+                  <span>{stats.searches} searches</span>
+                  <span>{stats.tabs} tabs</span>
+                  <span className="rh-faint">{stats.source === "extension" ? "extension" : syncLabel}</span>
                 </div>
-                <div className="rh-faint ml-auto hidden text-[12px] sm:block">{stats.source === "extension" ? "extension" : syncLabel}</div>
-              </Card>
-            )}
+              )}
 
-            <ToolbarFrame className="mt-7">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <h2 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#a8967d]">
-                    Library
-                  </h2>
-                  <p className="mt-1 text-[14px] text-[#6a5a48]">
-                    Search, favorite, archive, and clean up old investigations.
-                  </p>
-                </div>
-                <div className="flex flex-1 flex-wrap gap-2 lg:max-w-[760px] lg:justify-end">
+              <ToolbarFrame className="p-3">
+                <div className="flex flex-wrap gap-2">
                   <Input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search holes, domains, topics..."
+                    placeholder="Search"
                     className="min-w-[220px] flex-1"
                   />
-                  <Select value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} className="w-[132px]">
+                  <Select value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} className="w-[128px]">
                     <option value="active">Active</option>
                     <option value="favorites">Favorites</option>
                     <option value="archived">Archived</option>
                     <option value="all">All</option>
                   </Select>
-                  <Select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} className="w-[150px]">
+                  <Select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} className="w-[138px]">
                     <option value="recent">Recent</option>
-                    <option value="pages">Most pages</option>
-                    <option value="confidence">Confidence</option>
+                    <option value="pages">Pages</option>
+                    <option value="confidence">Match</option>
                   </Select>
                 </div>
-              </div>
-            </ToolbarFrame>
+              </ToolbarFrame>
+            </div>
+
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-[13px] text-[var(--rh-muted)]">
+              <span>{visibleHoles.length} shown · {holes.length} total</span>
+              {query || filter !== "active" || sort !== "recent" ? (
+                <button className="font-semibold text-[var(--rh-ink)]" onClick={() => { setQuery(""); setFilter("active"); setSort("recent"); }}>
+                  Reset view
+                </button>
+              ) : null}
+            </div>
 
             {selectedIds.length > 0 && (
-              <div className="sticky top-4 z-10 mt-4 flex flex-wrap items-center gap-3 rounded-[18px] border border-[#5f8a5c42] bg-[var(--rh-surface)]/95 px-4 py-3 shadow-[0_12px_34px_rgba(70,45,20,.12)] backdrop-blur">
-                <div className="mr-auto text-[14px] font-semibold text-[#37502f]">{selectedIds.length} selected</div>
-                <Button size="sm" onClick={() => bulk("favorite")}>Favorite</Button>
-                <Button size="sm" onClick={() => bulk("archive")}>Archive</Button>
+              <div className="mt-4 flex flex-wrap items-center gap-2 rounded-[16px] border border-[var(--rh-line)] bg-[var(--rh-surface)] px-3 py-3">
+                <div className="mr-auto px-1 text-[13px] font-semibold text-[var(--rh-ink)]">{selectedIds.length} selected</div>
+                <Button size="sm" variant="ghost" onClick={() => bulk("favorite")}>Favorite</Button>
+                <Button size="sm" variant="ghost" onClick={() => bulk("archive")}>Archive</Button>
                 <Button size="sm" variant="danger" onClick={() => setConfirmBulkDelete(true)}>Delete</Button>
                 <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>Clear</Button>
               </div>
@@ -262,7 +258,7 @@ export default function Dashboard() {
                 </Button>
               </Card>
             ) : (
-              <div className="mt-4 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(340px,1fr))] xl:[grid-template-columns:repeat(auto-fit,minmax(372px,1fr))]">
+              <div className="mt-4 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(320px,1fr))] xl:[grid-template-columns:repeat(auto-fit,minmax(360px,1fr))]">
                 {visibleHoles.map((h) => (
                   <HoleCard
                     key={h.id}
@@ -276,24 +272,9 @@ export default function Dashboard() {
                 ))}
               </div>
             )}
-
-            <p className="rh-muted mt-8 text-center text-[13px] italic">
-              Smart history for your research.
-            </p>
           </>
         )}
       </AppFrame>
-    </div>
-  );
-}
-
-function HeaderStat({ n, label, accent }: { readonly n: number; readonly label: string; readonly accent?: boolean }) {
-  return (
-    <div className="flex flex-col">
-      <span className={`text-[19px] font-semibold tabular-nums ${accent ? "text-[#5f8a5c]" : "text-[var(--rh-ink)]"}`}>
-        {n}
-      </span>
-      <span className="rh-faint text-[10px] uppercase tracking-[0.14em]">{label}</span>
     </div>
   );
 }
