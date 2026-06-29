@@ -23,7 +23,7 @@ const MOBILE_NAV = [
   { href: "/settings", label: "Settings", glyph: "⚙" },
 ];
 
-const CHROMELESS_PATHS = ["/"];
+const CHROMELESS_PATHS = ["/", "/docs", "/install", "/privacy", "/terms", "/login"];
 
 function isChromelessPath(pathname: string) {
   return CHROMELESS_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
