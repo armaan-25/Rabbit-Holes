@@ -5,13 +5,6 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Wordmark } from "@/components/Logo";
 
-const exampleStats = [
-  ["Question", "How does vLLM schedule requests?"],
-  ["Visited", "24 pages"],
-  ["Last stop", "DistServe section 4"],
-  ["Next", "Compare against Sarathi"],
-];
-
 export default function Landing() {
   const [installOpen, setInstallOpen] = useState(false);
 
@@ -40,8 +33,8 @@ export default function Landing() {
         <section className="mx-auto flex min-h-[calc(100vh-76px)] w-full max-w-[1160px] flex-col items-center justify-center px-5 pb-16 pt-8 text-center sm:px-8">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
             <div className="rh-faint mb-4 text-[12px] font-semibold uppercase tracking-[0.26em]">Follow ideas, not tabs.</div>
-            <h1 className="rh-display mx-auto max-w-[11ch] text-[clamp(54px,8vw,104px)] font-semibold leading-[0.92] tracking-[-0.045em] text-[var(--rh-ink)]">
-              Your browser, remembered.
+            <h1 className="rh-display mx-auto max-w-[11ch] text-[clamp(58px,8vw,108px)] font-semibold leading-[0.92] tracking-[-0.045em] text-[var(--rh-ink)]">
+              Never lose your train of thought.
             </h1>
             <p className="rh-muted mx-auto mt-6 max-w-[33ch] text-[21px] leading-[1.45]">
               Rabbit Holes remembers what you were trying to understand.
@@ -50,24 +43,14 @@ export default function Landing() {
               <button onClick={() => setInstallOpen(true)} className="rounded-full bg-[var(--rh-primary)] px-7 py-4 text-[17px] font-semibold text-[var(--rh-primary-text)] transition hover:-translate-y-0.5">
                 Install Extension
               </button>
-              <Link href="/docs" className="rounded-full border border-[var(--rh-line-strong)] px-7 py-4 text-[17px] font-semibold text-[var(--rh-ink)] no-underline transition hover:-translate-y-0.5">
-                Read Docs
-              </Link>
             </div>
           </motion.div>
 
           <motion.div className="mt-12 w-full" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}>
-            <MockDemoFlow />
+            <MockDemoFlow onInstall={() => setInstallOpen(true)} />
           </motion.div>
         </section>
 
-        <section className="mx-auto w-full max-w-[1160px] px-5 py-20 sm:px-8">
-          <div className="grid gap-5 lg:grid-cols-3">
-            <ValueCard title="Local first" body="Your trail, settings, and investigations live in browser storage by default." />
-            <ValueCard title="Bring your own AI" body="Use OpenAI, Anthropic, OpenRouter, Gemini, Ollama, LM Studio, or a compatible endpoint." />
-            <ValueCard title="Install and browse" body="The extension quietly keeps context while you research normally." />
-          </div>
-        </section>
       </main>
 
       <footer className="mx-auto flex w-full max-w-[1160px] flex-col justify-between gap-4 px-5 py-10 text-[14px] text-[var(--rh-muted)] sm:flex-row sm:px-8">
@@ -83,7 +66,7 @@ export default function Landing() {
   );
 }
 
-function MockDemoFlow() {
+function MockDemoFlow({ onInstall }: { onInstall: () => void }) {
   const tabs = ["vLLM docs", "PagedAttention", "DistServe paper", "Sarathi"];
   const events = [
     ["search", "vLLM request scheduling"],
@@ -113,12 +96,9 @@ function MockDemoFlow() {
       `}</style>
       <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <div className="rh-faint text-[12px] font-semibold uppercase tracking-[0.22em]">Demo flow</div>
-          <h2 className="rh-display mt-2 text-[42px] font-semibold leading-none tracking-[-0.03em] text-[var(--rh-ink)]">From tabs to thread.</h2>
+          <div className="rh-faint text-[12px] font-semibold uppercase tracking-[0.22em]">Friday to Monday</div>
+          <h2 className="rh-display mt-2 text-[42px] font-semibold leading-none tracking-[-0.03em] text-[var(--rh-ink)]">Close the laptop. Come back here.</h2>
         </div>
-        <p className="rh-muted max-w-[34ch] text-[16px] leading-7">
-          Browse normally. Rabbit Holes keeps the trail and turns it into something you can return to.
-        </p>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[1fr_80px_0.82fr] lg:items-center">
@@ -154,62 +134,26 @@ function MockDemoFlow() {
           </div>
         </div>
 
-        <div className="rounded-[26px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] p-6 opacity-0 [animation:rh-demo-card_4.8s_cubic-bezier(.22,1,.36,1)_infinite]">
-          <div className="rh-faint text-[11px] font-semibold uppercase tracking-[0.22em]">Generated rabbit hole</div>
+        <div className="rounded-[26px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] p-6 text-left opacity-0 [animation:rh-demo-card_4.8s_cubic-bezier(.22,1,.36,1)_infinite]">
+          <div className="rh-faint text-[11px] font-semibold uppercase tracking-[0.22em]">Current investigation</div>
           <h3 className="rh-display mt-3 text-[42px] font-semibold leading-none tracking-[-0.03em] text-[var(--rh-ink)]">AI Systems</h3>
-          <p className="rh-muted mt-4 text-[17px] leading-7">How does vLLM schedule requests across long-running inference workloads?</p>
-          <div className="mt-6 grid grid-cols-3 gap-3">
+          <div className="mt-7 divide-y divide-[var(--rh-line)] rounded-[20px] border border-[var(--rh-line)] bg-[var(--rh-surface)]">
             {[
-              ["24", "pages"],
-              ["6", "searches"],
-              ["4", "questions"],
-            ].map(([value, label]) => (
-              <div key={label} className="rounded-[18px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-4 text-center">
-                <div className="rh-display text-[30px] font-semibold leading-none text-[var(--rh-ink)]">{value}</div>
-                <div className="rh-faint mt-2 text-[10px] font-bold uppercase tracking-[0.16em]">{label}</div>
+              ["Current question", "How does vLLM schedule requests?"],
+              ["Last stop", "DistServe — Section 4"],
+              ["Next suggested reading", "Sarathi"],
+            ].map(([label, value]) => (
+              <div key={label} className="p-4">
+                <div className="rh-faint text-[10px] font-bold uppercase tracking-[0.18em]">{label}</div>
+                <div className="mt-1 text-[18px] font-semibold leading-snug text-[var(--rh-ink-soft)]">{value}</div>
               </div>
             ))}
           </div>
-          <div className="mt-6 rounded-[18px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-4 text-[16px] font-semibold text-[var(--rh-ink-soft)]">
-            Continue from DistServe section 4.
-          </div>
+          <button onClick={onInstall} className="mt-6 rounded-full bg-[var(--rh-primary)] px-5 py-3 text-[15px] font-semibold text-[var(--rh-primary-text)] transition hover:-translate-y-0.5">
+            Continue Investigation →
+          </button>
         </div>
       </div>
-    </section>
-  );
-}
-
-function ExampleArtifact() {
-  return (
-    <div className="rounded-[34px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-7 shadow-[0_18px_50px_rgba(26,16,9,.08)] sm:p-9">
-      <div className="mb-10 flex items-start justify-between gap-6">
-        <div>
-          <div className="rh-faint text-[12px] font-semibold uppercase tracking-[0.22em]">Investigation</div>
-          <h2 className="rh-display mt-3 text-[48px] font-semibold leading-none tracking-[-0.03em] text-[var(--rh-ink)]">AI Systems</h2>
-        </div>
-        <div className="mt-2 h-2.5 w-2.5 rounded-full bg-[var(--rh-green)]" />
-      </div>
-      <div className="divide-y divide-[var(--rh-line)]">
-        {exampleStats.map(([label, value]) => (
-          <div key={label} className="grid gap-3 py-5 sm:grid-cols-[142px_1fr]">
-            <div className="rh-faint text-[12px] font-semibold uppercase tracking-[0.18em]">{label}</div>
-            <div className="text-[22px] leading-tight text-[var(--rh-ink-soft)]">{value}</div>
-          </div>
-        ))}
-      </div>
-      <div className="mt-8 rounded-[24px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] p-5">
-        <div className="rh-faint text-[11px] font-semibold uppercase tracking-[0.2em]">Open question</div>
-        <p className="mt-3 text-[20px] leading-snug text-[var(--rh-ink)]">What changes when requests have long shared prefixes?</p>
-      </div>
-    </div>
-  );
-}
-
-function ValueCard({ title, body }: { title: string; body: string }) {
-  return (
-    <section className="rounded-[26px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-7">
-      <h2 className="rh-display text-[30px] font-semibold tracking-[-0.02em] text-[var(--rh-ink)]">{title}</h2>
-      <p className="rh-muted mt-3 text-[17px] leading-7">{body}</p>
     </section>
   );
 }
