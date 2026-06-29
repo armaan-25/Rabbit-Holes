@@ -4,6 +4,7 @@ import "reactflow/dist/style.css";
 import { MobileNav, Sidebar } from "@/components/Sidebar";
 import { PluginHost } from "@/components/PluginHost";
 import { YouAreHere } from "@/components/shared/YouAreHere";
+import { AuthGate } from "@/components/AuthGate";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://userabbitholes.com"),
@@ -50,15 +51,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="grain min-h-screen">
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <main className="relative flex-1 overflow-x-hidden">
-            {children}
-          </main>
-        </div>
-        <YouAreHere />
-        <MobileNav />
-        <PluginHost />
+        <AuthGate>
+          <div className="flex min-h-screen">
+            <Sidebar />
+            <main className="relative flex-1 overflow-x-hidden">
+              {children}
+            </main>
+          </div>
+          <YouAreHere />
+          <MobileNav />
+          <PluginHost />
+        </AuthGate>
       </body>
     </html>
   );

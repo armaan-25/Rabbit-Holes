@@ -10,6 +10,7 @@ import { formatElapsed, removeCapturedTab, setExtensionCapture, useSessionStats,
 import { ThemeToggle } from "./ThemeToggle";
 import { Wordmark } from "./Logo";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { clearRabbitSession, readRabbitSession } from "@/lib/local-auth";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", glyph: "⊞" },
@@ -316,20 +317,41 @@ function MiniStat({ n, label }: { readonly n: number; readonly label: string }) 
 }
 
 function SidebarAccount() {
+  const [email, setEmail] = useState("Signed in");
+
+  useEffect(() => {
+    function sync() {
+      setEmail(readRabbitSession()?.email || "Signed in");
+    }
+    sync();
+    window.addEventListener("rabbit-hole-session-changed", sync);
+    return () => window.removeEventListener("rabbit-hole-session-changed", sync);
+  }, []);
+
+  function signOut() {
+    clearRabbitSession();
+    window.location.href = "/login";
+  }
+
   return (
     <div className="rh-surface mt-4 rounded-[16px] border p-3 shadow-[0_2px_12px_rgba(70,45,20,.05)]">
       <div className="flex items-center gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[var(--rh-line)] bg-[var(--rh-surface-2)] text-[13px] font-semibold text-[var(--rh-green)]">
-          AI
+          {email.slice(0, 1).toUpperCase()}
         </span>
         <div className="min-w-0">
-          <div className="truncate text-[14px] font-semibold text-[var(--rh-ink)]">Local-first mode</div>
-          <div className="rh-muted text-[12px]">Bring your own AI provider</div>
+          <div className="truncate text-[14px] font-semibold text-[var(--rh-ink)]">{email}</div>
+          <div className="rh-muted text-[12px]">Local workspace</div>
         </div>
       </div>
-      <Link href="/settings" className="rh-surface-2 mt-3 block rounded-[11px] border px-3 py-2 text-center text-[13px] font-semibold">
-        Configure AI
-      </Link>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <Link href="/settings" className="rh-surface-2 rounded-[11px] border px-3 py-2 text-center text-[13px] font-semibold">
+          Settings
+        </Link>
+        <button onClick={signOut} className="rh-surface-2 rounded-[11px] border px-3 py-2 text-center text-[13px] font-semibold text-[var(--rh-muted)]">
+          Sign out
+        </button>
+      </div>
     </div>
   );
 }
