@@ -3,14 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import type { User } from "@supabase/supabase-js";
 import { ACCENTS, STATUS_META } from "@/lib/ui";
 import { useApp } from "@/lib/store";
 import { useHoles } from "@/hooks/useHoles";
 import { formatElapsed, removeCapturedTab, setExtensionCapture, useSessionStats, type CaptureState, type SessionStats } from "@/hooks/useSessionStats";
 import { ThemeToggle } from "./ThemeToggle";
 import { Wordmark } from "./Logo";
-import { supabase } from "@/lib/supabase/client";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const NAV = [
@@ -318,65 +316,20 @@ function MiniStat({ n, label }: { readonly n: number; readonly label: string }) 
 }
 
 function SidebarAccount() {
-  const [user, setUser] = useState<User | null>(null);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    void supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user ?? null);
-      setReady(true);
-    });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setReady(true);
-    });
-    return () => listener.subscription.unsubscribe();
-  }, []);
-
-  async function signOut() {
-    await supabase.auth.signOut();
-    setUser(null);
-  }
-
-  if (!ready) {
-    return (
-        <div className="rh-surface mt-4 rounded-[16px] border p-3 shadow-[0_2px_12px_rgba(70,45,20,.05)]">
-        <div className="h-10 rounded-[12px] bg-[var(--rh-surface-2)]" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="rh-surface mt-4 rounded-[16px] border p-3 shadow-[0_2px_12px_rgba(70,45,20,.05)]">
-        <div className="rh-muted mb-3 text-[12px] leading-5">Sign in to save sessions across devices.</div>
-        <Link href="/login?next=/dashboard" className="rh-primary block rounded-[12px] px-4 py-2.5 text-center text-[14px] font-semibold">
-          Sign in
-        </Link>
-        <Link href="/signup?next=/dashboard" className="rh-surface-2 mt-2 block rounded-[12px] border px-4 py-2.5 text-center text-[14px] font-semibold">
-          Create account
-        </Link>
-      </div>
-    );
-  }
-
-  const email = user.email ?? "Account";
-  const initial = email[0]?.toUpperCase() ?? "R";
-
   return (
     <div className="rh-surface mt-4 rounded-[16px] border p-3 shadow-[0_2px_12px_rgba(70,45,20,.05)]">
       <div className="flex items-center gap-3">
-        <span className="rh-primary grid h-10 w-10 shrink-0 place-items-center rounded-full text-[14px] font-semibold">
-          {initial}
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[var(--rh-line)] bg-[var(--rh-surface-2)] text-[13px] font-semibold text-[var(--rh-green)]">
+          AI
         </span>
         <div className="min-w-0">
-          <div className="truncate text-[14px] font-semibold text-[var(--rh-ink)]">{email}</div>
-          <div className="rh-muted text-[12px]">Signed in</div>
+          <div className="truncate text-[14px] font-semibold text-[var(--rh-ink)]">Local-first mode</div>
+          <div className="rh-muted text-[12px]">Bring your own AI provider</div>
         </div>
       </div>
-      <button onClick={signOut} className="rh-surface-2 mt-3 w-full rounded-[11px] border px-3 py-2 text-[13px] font-semibold text-[#a8472a]">
-        Log out
-      </button>
+      <Link href="/settings" className="rh-surface-2 mt-3 block rounded-[11px] border px-3 py-2 text-center text-[13px] font-semibold">
+        Configure AI
+      </Link>
     </div>
   );
 }
