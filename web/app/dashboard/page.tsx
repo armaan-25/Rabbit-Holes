@@ -149,7 +149,7 @@ export default function Dashboard() {
   }, [setLiveHoles, triggerDiscovery, triggerDiscoveries]);
 
   return (
-    <div className="rh-paper min-h-screen px-5 py-8 sm:px-8 xl:px-12">
+    <div className={holes.length === 0 ? "rh-paper min-h-screen" : "rh-paper min-h-screen px-5 py-8 sm:px-8 xl:px-12"}>
       <ConfirmDialog
         open={confirmBulkDelete}
         eyebrow="Delete rabbit holes"
