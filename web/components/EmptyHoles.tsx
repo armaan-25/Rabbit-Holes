@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 import { DiscoverButton } from "@/components/DiscoverButton";
@@ -36,12 +35,6 @@ export function EmptyHoles({
         >
           Download extension ↓
         </ButtonLink>
-        <Link
-          href="/settings"
-          className="inline-flex h-12 shrink-0 items-center justify-center rounded-full px-4 text-[15px] font-semibold text-[var(--rh-muted)] no-underline transition hover:text-[var(--rh-ink)]"
-        >
-          Settings
-        </Link>
       </div>
     </Card>
   );

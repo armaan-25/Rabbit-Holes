@@ -31,7 +31,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
 
     setReady(false);
     const next = encodeURIComponent(`${pathname}${window.location.search || ""}`);
-    router.replace(`/login?next=${next}`);
+    router.replace(`/signup?next=${next}`);
   }, [pathname, publicRoute, router]);
 
   if (!ready && !publicRoute) {

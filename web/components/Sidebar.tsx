@@ -17,10 +17,7 @@ const NAV = [
   { href: "/heatmap", label: "Heatmap", glyph: "▦" },
 ];
 
-const MOBILE_NAV = [
-  ...NAV,
-  { href: "/settings", label: "Settings", glyph: "⚙" },
-];
+const MOBILE_NAV = NAV;
 
 const CHROMELESS_PATHS = ["/", "/login", "/signup", "/auth/callback", "/extension-auth", "/rabbit-auth", "/onboarding"];
 
@@ -89,16 +86,6 @@ export function Sidebar() {
 
       <CaptureCard stats={stats} />
 
-      <div className="mt-3 flex items-center gap-2">
-        <Link
-          href="/settings"
-          className={`rh-surface flex h-10 flex-1 items-center justify-center gap-2 rounded-[11px] border text-[13.5px] font-medium transition ${
-            pathname === "/settings" ? "text-[var(--rh-ink)]" : "rh-muted hover:text-[var(--rh-ink)]"
-          }`}
-        >
-          <span className="text-[15px]">⚙</span> Settings
-        </Link>
-      </div>
       <SidebarAccount />
     </aside>
   );
@@ -109,7 +96,7 @@ export function MobileNav() {
   if (isChromelessPath(pathname)) return null;
 
   return (
-    <nav className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 rounded-[20px] border border-[#785a3224] bg-[#1f150f]/92 p-2 shadow-[0_18px_48px_rgba(18,11,5,.32)] backdrop-blur md:hidden">
+    <nav className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-4 rounded-[20px] border border-[#785a3224] bg-[#1f150f]/92 p-2 shadow-[0_18px_48px_rgba(18,11,5,.32)] backdrop-blur md:hidden">
       {MOBILE_NAV.map((n) => {
         const active = pathname === n.href;
         return (

@@ -200,9 +200,16 @@ export default function SettingsPage() {
             <div className="grid gap-5 md:grid-cols-[240px_1fr]">
               <div>
                 <label className="rh-faint text-[11px] font-bold uppercase tracking-[0.2em]">Provider</label>
-                <select value={provider.type} onChange={(e) => changeProvider(e.target.value as AiProviderType)} className="mt-2 w-full rounded-[12px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-3 py-3 text-[15px] text-[var(--rh-ink)] outline-none">
+                <div className="relative mt-2 w-full">
+                  <select
+                    value={provider.type}
+                    onChange={(e) => changeProvider(e.target.value as AiProviderType)}
+                    className="h-[50px] w-full appearance-none rounded-[14px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-4 pr-12 text-[15px] font-semibold text-[var(--rh-ink)] outline-none transition hover:border-[var(--rh-line-strong)] focus:border-[var(--rh-line-strong)]"
+                  >
                   {AI_PROVIDER_OPTIONS.map((option) => <option key={option.type} value={option.type}>{option.label}</option>)}
-                </select>
+                  </select>
+                  <span className="pointer-events-none absolute right-4 top-1/2 h-2 w-2 -translate-y-[65%] rotate-45 border-b-2 border-r-2 border-[var(--rh-muted)]" />
+                </div>
               </div>
               <div className="rh-muted self-end text-[15px] leading-7">{selectedProvider.description}</div>
             </div>

@@ -21,33 +21,36 @@ export default function Landing() {
       <header className="mx-auto flex h-[76px] w-full max-w-[1160px] items-center justify-between gap-4 px-5 sm:px-8">
         <div className="flex min-w-0 items-center gap-6">
           <Link href="/" className="shrink-0 no-underline"><Wordmark className="text-[23px]" /></Link>
-          <nav className="hidden items-center gap-5 text-[14px] font-semibold md:flex">
-            <Link href="/dashboard" className="text-[var(--rh-ink-soft)] no-underline transition hover:text-[var(--rh-ink)]">Dashboard</Link>
-            <Link href="/docs" className="text-[var(--rh-ink-soft)] no-underline transition hover:text-[var(--rh-ink)]">Docs</Link>
-            <button onClick={() => setInstallOpen(true)} className="text-[var(--rh-ink-soft)] transition hover:text-[var(--rh-ink)]">Download</button>
-            <a href="https://github.com/armaan-25/Rabbit-Holes" className="text-[var(--rh-ink-soft)] no-underline transition hover:text-[var(--rh-ink)]">GitHub</a>
-          </nav>
         </div>
-        <Link href="/dashboard" className="shrink-0 rounded-full bg-[var(--rh-primary)] px-5 py-2.5 text-[14px] font-semibold text-[var(--rh-primary-text)] no-underline transition hover:-translate-y-0.5">
-          Dashboard
-        </Link>
+        <nav className="hidden items-center gap-3 text-[15px] font-semibold md:flex">
+          <Link href="/dashboard" className="rounded-full border border-[var(--rh-line)] px-5 py-3 text-[var(--rh-ink-soft)] no-underline transition hover:-translate-y-0.5 hover:border-[var(--rh-line-strong)] hover:text-[var(--rh-ink)]">Dashboard</Link>
+          <Link href="/docs" className="rounded-full border border-[var(--rh-line)] px-5 py-3 text-[var(--rh-ink-soft)] no-underline transition hover:-translate-y-0.5 hover:border-[var(--rh-line-strong)] hover:text-[var(--rh-ink)]">Docs</Link>
+          <button onClick={() => setInstallOpen(true)} className="rounded-full border border-[var(--rh-line)] px-5 py-3 text-[var(--rh-ink-soft)] transition hover:-translate-y-0.5 hover:border-[var(--rh-line-strong)] hover:text-[var(--rh-ink)]">Download</button>
+          <a href="https://github.com/armaan-25/Rabbit-Holes" className="rounded-full border border-[var(--rh-line)] px-5 py-3 text-[var(--rh-ink-soft)] no-underline transition hover:-translate-y-0.5 hover:border-[var(--rh-line-strong)] hover:text-[var(--rh-ink)]">GitHub</a>
+        </nav>
       </header>
 
       <main>
         <section className="mx-auto flex min-h-[calc(100vh-76px)] w-full max-w-[1160px] flex-col items-center justify-center px-5 pb-16 pt-8 text-center sm:px-8">
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-            <div className="rh-faint mb-4 text-[12px] font-semibold uppercase tracking-[0.26em]">Follow ideas, not tabs.</div>
+          <motion.div initial="hidden" animate="show" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08 } } }}>
+            <motion.div variants={landingWordVariants} className="rh-faint mb-4 text-[12px] font-semibold uppercase tracking-[0.26em]">
+              Follow ideas, not tabs.
+            </motion.div>
             <h1 className="rh-display mx-auto max-w-[11ch] text-[clamp(58px,8vw,108px)] font-semibold leading-[0.92] tracking-[-0.045em] text-[var(--rh-ink)]">
-              Never lose your train of thought.
+              {"Never lose your train of thought.".split(" ").map((word, index) => (
+                <motion.span
+                  key={`${word}-${index}`}
+                  variants={landingWordVariants}
+                  className="inline-block origin-bottom will-change-transform"
+                >
+                  {word}
+                  {index < 5 ? "\u00a0" : ""}
+                </motion.span>
+              ))}
             </h1>
-            <p className="rh-muted mx-auto mt-6 max-w-[33ch] text-[21px] leading-[1.45]">
+            <motion.p variants={landingWordVariants} className="rh-muted mx-auto mt-6 max-w-[33ch] text-[21px] leading-[1.45]">
               Rabbit Holes remembers what you were trying to understand.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <button onClick={() => setInstallOpen(true)} className="rounded-full bg-[var(--rh-primary)] px-7 py-4 text-[17px] font-semibold text-[var(--rh-primary-text)] transition hover:-translate-y-0.5">
-                Install Extension
-              </button>
-            </div>
+            </motion.p>
           </motion.div>
         </section>
 
@@ -76,6 +79,23 @@ export default function Landing() {
     </div>
   );
 }
+
+const landingWordVariants = {
+  hidden: {
+    opacity: 0,
+    y: 22,
+    filter: "blur(8px)",
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.68,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+};
 
 function MockDemoFlow({ onInstall }: { onInstall: () => void }) {
   const tabs = ["Google", "Apple", "Google", "Meta"];
@@ -175,27 +195,29 @@ function MockDemoFlow({ onInstall }: { onInstall: () => void }) {
 
 function InstallInstructionsPopup({ onClose }: { onClose: () => void }) {
   return (
-    <motion.div className="fixed inset-0 z-[90] grid place-items-center bg-[#120e0a]/58 px-4 backdrop-blur-md" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
-      <motion.div className="w-full max-w-[520px] rounded-[30px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-7 shadow-[0_28px_90px_rgba(18,11,5,.25)]" initial={{ y: 14, scale: 0.98, opacity: 0 }} animate={{ y: 0, scale: 1, opacity: 1 }} exit={{ y: 8, scale: 0.98, opacity: 0 }} transition={{ duration: 0.22 }} onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="rh-faint text-[12px] font-semibold uppercase tracking-[0.22em]">Manual install</div>
-            <h2 className="rh-display mt-2 text-[38px] font-semibold leading-tight text-[var(--rh-ink)]">Install Rabbit Holes</h2>
+    <motion.div className="fixed inset-0 z-[90] bg-[#120e0a]/58 px-4 backdrop-blur-md" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+      <div className="fixed left-1/2 top-1/2 w-[calc(100vw-32px)] max-w-[520px] -translate-x-1/2 -translate-y-1/2">
+        <motion.div className="rounded-[30px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-7 shadow-[0_28px_90px_rgba(18,11,5,.25)]" initial={{ y: 14, scale: 0.98, opacity: 0 }} animate={{ y: 0, scale: 1, opacity: 1 }} exit={{ y: 8, scale: 0.98, opacity: 0 }} transition={{ duration: 0.22 }} onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="rh-faint text-[12px] font-semibold uppercase tracking-[0.22em]">Manual install</div>
+              <h2 className="rh-display mt-2 text-[38px] font-semibold leading-tight text-[var(--rh-ink)]">Install Rabbit Holes</h2>
+            </div>
+            <button onClick={onClose} aria-label="Close" className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[var(--rh-line)] text-[var(--rh-muted)]">x</button>
           </div>
-          <button onClick={onClose} aria-label="Close" className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[var(--rh-line)] text-[var(--rh-muted)]">x</button>
-        </div>
-        <ol className="mt-7 space-y-3 text-[16px] leading-7 text-[var(--rh-ink-soft)]">
-          <li>1. Download and unzip the extension.</li>
-          <li>2. Open <span className="font-semibold">chrome://extensions</span>.</li>
-          <li>3. Turn on Developer mode.</li>
-          <li>4. Load the unzipped folder.</li>
-          <li>5. Open Settings and choose your model provider.</li>
-        </ol>
-        <div className="mt-7 flex flex-wrap gap-3">
-          <a href="/downloads/rabbit-holes-extension.zip" download className="rounded-full bg-[var(--rh-primary)] px-6 py-3 text-[15px] font-semibold text-[var(--rh-primary-text)] no-underline">Download zip</a>
-          <Link href="/docs" className="rounded-full border border-[var(--rh-line)] px-6 py-3 text-[15px] font-semibold no-underline">Full steps</Link>
-        </div>
-      </motion.div>
+          <ol className="mt-7 space-y-3 text-[16px] leading-7 text-[var(--rh-ink-soft)]">
+            <li>1. Download and unzip the extension.</li>
+            <li>2. Open <span className="font-semibold">chrome://extensions</span>.</li>
+            <li>3. Turn on Developer mode.</li>
+            <li>4. Load the unzipped folder.</li>
+            <li>5. Open Settings and choose your model provider.</li>
+          </ol>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <a href="/downloads/rabbit-holes-extension.zip" download className="rounded-full bg-[var(--rh-primary)] px-6 py-3 text-[15px] font-semibold text-[var(--rh-primary-text)] no-underline">Download zip</a>
+            <Link href="/docs" className="rounded-full border border-[var(--rh-line)] px-6 py-3 text-[15px] font-semibold no-underline">Full steps</Link>
+          </div>
+        </motion.div>
+      </div>
     </motion.div>
   );
 }
