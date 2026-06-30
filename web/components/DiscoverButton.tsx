@@ -83,7 +83,7 @@ export function DiscoverButton({
         disabled={busy}
         className={`${variant === "primary" ? "rh-primary border-transparent" : "rh-surface border-[var(--rh-line)]"} group relative inline-flex items-center justify-center overflow-hidden rounded-full border px-5 py-2.5 text-[13px] font-semibold transition hover:border-[var(--rh-line-strong)] hover:brightness-105 disabled:cursor-wait disabled:opacity-65 ${className}`}
       >
-        <span className="relative inline-flex items-center gap-2">{label}</span>
+        <span className="relative inline-flex items-center gap-2 whitespace-nowrap">{label}</span>
       </button>
       {busy && <RabbitHoleLoading />}
       {notice === "empty" && <BuildNotice type="empty" stats={stats} onClose={() => setNotice(null)} />}

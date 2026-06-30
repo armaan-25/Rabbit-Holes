@@ -25,20 +25,20 @@ export function EmptyHoles({
         {hint ??
           "Install the extension and browse normally. As you go down a rabbit hole, your searches and pages get clustered into investigations that show up here."}
       </p>
-      <div className="mt-7 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
-        <DiscoverButton variant="primary" className="min-h-12 rounded-full px-8 text-[15px]" />
+      <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
+        <DiscoverButton variant="primary" className="h-12 min-w-[190px] px-7 text-[15px]" />
         <ButtonLink
           href="/downloads/rabbit-holes-extension.zip"
           download
           variant="secondary"
           size="lg"
-          className="min-w-[188px]"
+          className="min-w-[190px] whitespace-nowrap"
         >
           Download extension ↓
         </ButtonLink>
         <Link
           href="/settings"
-          className="inline-flex h-12 shrink-0 items-center justify-center rounded-full px-5 text-[15px] font-semibold text-[var(--rh-muted)] no-underline transition hover:bg-[var(--rh-surface-2)] hover:text-[var(--rh-ink)]"
+          className="inline-flex h-12 shrink-0 items-center justify-center rounded-full px-4 text-[15px] font-semibold text-[var(--rh-muted)] no-underline transition hover:text-[var(--rh-ink)]"
         >
           Settings
         </Link>
