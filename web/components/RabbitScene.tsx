@@ -1,11 +1,10 @@
 "use client";
 
+import { RabbitEars } from "@/components/Logo";
+
 /**
- * RabbitScene — the watercolor hare hopping around its burrow on a clean white
- * canvas. Static (no animation): a soft grey hole, the rabbit at the rim, and
- * two fainter copies that trace the path it hopped around the hole.
- *
- * The artwork is loaded from /public/assets/images/rabbit-hole-hero.png.
+ * RabbitScene — a minimal rabbit-ears mark around a burrow on a clean white
+ * canvas. Static and asset-free.
  */
 
 interface Hop {
@@ -29,7 +28,7 @@ const HOPS: Hop[] = [
 export function RabbitScene({ className = "" }: { readonly className?: string }) {
   return (
     <div className={`relative h-full w-full overflow-hidden bg-white ${className}`}>
-      {/* soft watercolor burrow */}
+      {/* soft burrow */}
       <div
         className="absolute left-1/2 top-[78%] -translate-x-1/2 -translate-y-1/2"
         style={{
@@ -51,25 +50,23 @@ export function RabbitScene({ className = "" }: { readonly className?: string })
         }}
       />
 
-      {/* the rabbit, hopping around the rim */}
+      {/* the rabbit-ears mark, hopping around the rim */}
       {HOPS.map((hop, i) => (
-        <img
+        <div
           key={`${hop.left}-${hop.top}`}
-          src="/assets/images/rabbit-hole-hero.png"
-          alt={i === HOPS.length - 1 ? "Watercolor rabbit at its burrow" : ""}
           aria-hidden={i !== HOPS.length - 1}
-          onError={(e) => {
-            (e.currentTarget as HTMLImageElement).style.display = "none";
-          }}
-          className="pointer-events-none absolute select-none"
+          className="pointer-events-none absolute grid select-none place-items-center rounded-full border border-[#d9cdbb] bg-white text-[#2a2018] shadow-[0_8px_24px_rgba(42,32,24,.10)]"
           style={{
             left: `${hop.left}%`,
             top: `${hop.top}%`,
+            width: `${hop.h}px`,
             height: `${hop.h}px`,
             opacity: hop.opacity,
             transform: `translate(-50%, -50%) rotate(${hop.rotate}deg) scaleX(${hop.flip ? -1 : 1})`,
           }}
-        />
+        >
+          <RabbitEars className="h-[48%] w-[48%]" />
+        </div>
       ))}
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { RabbitEars } from "@/components/Logo";
 
 const STEPS = ["Capture", "Cluster", "Holes", "Map", "Ask"] as const;
 const DURATION = 3400;
@@ -133,7 +134,7 @@ const Cluster = () => (
       animate={{ scale: [1, 1.06, 1] }}
       transition={{ duration: 1.6, repeat: Infinity }}
     >
-      <img src="/assets/images/rabbit-hole-hero.png" alt="" className="h-12 w-12 object-contain" />
+      <RabbitEars className="h-10 w-10 text-[#21170f]" />
     </motion.div>
     <div className="rh-display mt-5 text-[26px] font-semibold text-[#f6ecd9]">Building rabbit holes...</div>
     <div className="mt-2 max-w-[44ch] text-[15px] text-[#cdbd9f]">Clustering the session into the questions you were actually chasing.</div>
@@ -245,13 +246,6 @@ const Map = () => (
     <div className="relative h-[420px] overflow-hidden rounded-[18px] border border-[#4a3928] bg-[#1b130d] sm:h-[470px]">
       <div className="absolute inset-0 opacity-[0.28]" style={{ backgroundImage: "radial-gradient(#6d5639 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
-        <defs>
-          {(["amber", "brown", "green"] as const).map((tone) => (
-            <marker key={tone} id={MAP_TONE[tone].marker} viewBox="0 0 12 12" markerWidth="9" markerHeight="9" refX="9" refY="6" orient="auto" markerUnits="strokeWidth">
-              <path d="M1,1 L10,6 L1,11" fill="none" stroke={MAP_TONE[tone].stroke} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </marker>
-          ))}
-        </defs>
         {MAP_EDGES.map((edge, idx) => {
           const a = mapNode(edge.from);
           const b = mapNode(edge.to);
@@ -260,22 +254,33 @@ const Map = () => (
           const tx = b.x - 7;
           const mx = (sx + tx) / 2;
           return (
-            <motion.path
-              key={`${edge.from}-${edge.to}`}
-              d={`M ${sx} ${a.y} H ${mx} V ${b.y} H ${tx}`}
-              fill="none"
-              stroke={tone.stroke}
-              strokeWidth="0.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeDasharray={tone.dash}
-              vectorEffect="non-scaling-stroke"
-              opacity={tone.opacity}
-              markerEnd={`url(#${tone.marker})`}
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{ delay: 0.1 + idx * 0.07, duration: 0.6, ease: "easeOut" }}
-            />
+            <g key={`${edge.from}-${edge.to}`} opacity={tone.opacity}>
+              <motion.path
+                d={`M ${sx} ${a.y} H ${mx} V ${b.y} H ${tx - 1.2}`}
+                fill="none"
+                stroke={tone.stroke}
+                strokeWidth="0.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeDasharray={tone.dash}
+                vectorEffect="non-scaling-stroke"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ delay: 0.1 + idx * 0.07, duration: 0.6, ease: "easeOut" }}
+              />
+              <motion.path
+                d={`M ${tx - 1.6} ${b.y - 1.1} L ${tx} ${b.y} L ${tx - 1.6} ${b.y + 1.1}`}
+                fill="none"
+                stroke={tone.stroke}
+                strokeWidth="0.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 + idx * 0.07, duration: 0.18 }}
+              />
+            </g>
           );
         })}
       </svg>

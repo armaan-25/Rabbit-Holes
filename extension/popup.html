@@ -103,7 +103,7 @@
       .controls button.primary { color: #1a1009; border-color: transparent; background: var(--cream); }
       .controls button.danger { color: #d7a08b; border-color: rgba(184,121,95,.32); background: rgba(184,121,95,.1); }
       .controls button.danger:hover { background: rgba(184,121,95,.18); }
-      .watercolor {
+      .rabbit-action {
         position: relative; width: 100%; min-height: 48px; overflow: hidden;
         background: linear-gradient(180deg, #302417, #1d150e); color: var(--cream); font-size: 15px;
       }
@@ -123,7 +123,7 @@
       .auth-panel p { margin-bottom: 12px; color: var(--cream-2); font-size: 14px; line-height: 1.35; }
       .app-panel.signed-out { display: none; }
       .auth-panel.signed-out { display: block; }
-      .watercolor::before {
+      .rabbit-action::before {
         content: ""; position: absolute; inset: 0; opacity: .68;
         background: radial-gradient(80% 120% at 20% 20%, rgba(180,143,88,.23), transparent 55%), radial-gradient(90% 120% at 90% 80%, rgba(95,138,92,.14), transparent 58%);
       }
@@ -233,7 +233,7 @@
 
     <div class="auth-panel" id="auth-panel">
       <p id="auth-msg">Checking session...</p>
-      <button class="watercolor" id="signin"><span>Open settings</span></button>
+      <button class="rabbit-action" id="signin"><span>Open settings</span></button>
     </div>
 
     <div class="app-panel" id="app-panel">
@@ -257,7 +257,7 @@
         </div>
       </div>
 
-      <button class="watercolor" id="cluster"><span>Build rabbit holes</span></button>
+      <button class="rabbit-action" id="cluster"><span>Build rabbit holes</span></button>
 
       <details class="captured" id="captured-details">
         <summary>
