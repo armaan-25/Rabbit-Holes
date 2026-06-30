@@ -2,7 +2,6 @@
 
 import { clusterBuildState, clusterHoleToRabbitHole, markDiscoveriesSeen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
-import type { CSSProperties } from "react";
 import { useState } from "react";
 import { flushExtensionEvents, useSessionStats } from "@/hooks/useSessionStats";
 import { preGenerateHoleBriefs } from "@/lib/api";
@@ -95,25 +94,10 @@ export function DiscoverButton({
   );
 }
 
-const WORDS = [
-  { text: "searches", x: "-34%", y: "-32%", d: "0s" },
-  { text: "links", x: "24%", y: "-34%", d: ".16s" },
-  { text: "tabs", x: "33%", y: "18%", d: ".32s" },
-  { text: "pages", x: "-30%", y: "22%", d: ".48s" },
-  { text: "notes", x: "-6%", y: "36%", d: ".64s" },
-  { text: "questions", x: "10%", y: "-10%", d: ".8s" },
-];
-
 export function RabbitHoleLoading() {
   return (
     <div className="fixed inset-0 z-[70] grid place-items-center overflow-hidden bg-[#140d08]/76 px-4 backdrop-blur-[8px]">
       <style>{`
-        @keyframes word-to-hole {
-          0% { transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1); opacity: 0; filter: blur(0); }
-          16% { opacity: .78; }
-          74% { opacity: .52; }
-          100% { transform: translate(-50%, -50%) scale(.22); opacity: 0; filter: blur(2px); }
-        }
         @keyframes load-bar {
           0% { transform: translateX(-100%); }
           52% { transform: translateX(-18%); }
@@ -124,19 +108,6 @@ export function RabbitHoleLoading() {
       <div className="relative flex max-h-[88vh] w-full max-w-[760px] flex-col overflow-hidden rounded-[34px] border border-[#f3e8d442] bg-[#17100b] shadow-[0_40px_130px_rgba(18,11,5,.58)]">
         <div className="relative flex min-h-[330px] flex-1 items-center justify-center overflow-hidden bg-[#21170f] px-6 py-8">
           <div className="relative grid h-[280px] w-full max-w-[560px] place-items-center overflow-hidden rounded-[28px]">
-            {WORDS.map((word) => (
-              <span
-                key={word.text}
-                className="absolute left-1/2 top-1/2 z-20 rh-display select-none whitespace-nowrap text-[26px] italic tracking-wide text-[#ead8b8]/75"
-                style={{
-                  "--x": word.x,
-                  "--y": word.y,
-                  animation: `word-to-hole 2.45s cubic-bezier(.52,0,.18,1) ${word.d} infinite`,
-                } as CSSProperties}
-              >
-                {word.text}
-              </span>
-            ))}
             <div className="absolute inset-x-20 bottom-8 top-8 z-0 rounded-full bg-[#17100b]/18 blur-3xl" />
             <div className="relative z-30 grid h-[132px] w-[132px] place-items-center rounded-full border border-[#f3e8d42b] bg-[#17100b]/92 text-[#f6ecd9] shadow-[0_18px_58px_rgba(18,11,5,.36)]">
               <RabbitEars className="h-16 w-16" />
