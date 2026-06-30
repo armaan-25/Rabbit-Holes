@@ -27,18 +27,6 @@ export function LandingDemo() {
       onMouseLeave={() => setPaused(false)}
     >
       <div className="overflow-hidden rounded-[20px] border border-[#4a3928] bg-[#21170f]">
-        {/* title bar */}
-        <div className="flex items-center gap-3 border-b border-[#4a3928] bg-[#2a2118] px-4 py-3">
-          <div className="flex gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-[#d98a5f]" />
-            <span className="h-3 w-3 rounded-full bg-[#c7ae84]" />
-            <span className="h-3 w-3 rounded-full bg-[#6a8050]" />
-          </div>
-          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-[#5b4731] bg-[#21170f] px-4 py-1 text-[12.5px] text-[#d8c8ad]">
-            <span>●</span> Rabbit Holes
-          </div>
-        </div>
-
         {/* step tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto border-b border-[#4a3928] bg-[#1d140d] px-3 py-2.5">
           {STEPS.map((s, idx) => (
