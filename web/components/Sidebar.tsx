@@ -9,6 +9,7 @@ import { formatElapsed, removeCapturedTab, setExtensionCapture, useSessionStats,
 import { Wordmark } from "./Logo";
 import { clearRabbitSession, readRabbitSession } from "@/lib/local-auth";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { DiscoverButton } from "@/components/DiscoverButton";
 
 const NAV = [
   { href: "/dashboard", label: "Investigations", glyph: "⊞" },
@@ -101,6 +102,48 @@ export function Sidebar() {
       </div>
       <SidebarAccount />
     </aside>
+  );
+}
+
+export function AppTopBar() {
+  const pathname = usePathname();
+  const holes = useHoles();
+  const stats = useSessionStats();
+
+  if (isChromelessPath(pathname)) return null;
+
+  return (
+    <div className="sticky top-0 z-30 border-b border-[var(--rh-line)] bg-[var(--rh-paper)]/92 px-5 py-5 backdrop-blur md:px-8 xl:px-12">
+      <div className="mx-auto flex max-w-[1320px] flex-wrap items-end justify-between gap-5">
+        <div className="min-w-0">
+          <div className="rh-faint mb-1.5 text-[11px] font-semibold uppercase tracking-[0.22em]">
+            Your rabbit holes · {holes.length} total
+          </div>
+          <div className="rh-display rh-ink truncate text-[clamp(32px,4vw,54px)] font-semibold leading-none tracking-[-0.02em]">
+            Rabbit holes
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="hidden items-center gap-5 rounded-[18px] border border-[var(--rh-line)] bg-[var(--rh-surface)] px-5 py-3 sm:flex">
+            <TopBarStat n={stats.pages} label="pages" />
+            <TopBarStat n={stats.searches} label="searches" />
+            <TopBarStat n={stats.tabs} label="tabs" accent />
+          </div>
+          <DiscoverButton />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TopBarStat({ n, label, accent }: { readonly n: number; readonly label: string; readonly accent?: boolean }) {
+  return (
+    <div className="flex min-w-12 flex-col">
+      <span className={`text-[22px] font-semibold leading-none tabular-nums ${accent ? "text-[#5f8a5c]" : "text-[var(--rh-ink)]"}`}>
+        {n}
+      </span>
+      <span className="rh-faint mt-1 text-[10px] uppercase tracking-[0.14em]">{label}</span>
+    </div>
   );
 }
 

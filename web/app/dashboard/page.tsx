@@ -2,7 +2,7 @@
 
 import { HoleCard } from "@/components/HoleCard";
 import { EmptyHoles } from "@/components/EmptyHoles";
-import { BuildNotice, DiscoverButton, RabbitHoleLoading } from "@/components/DiscoverButton";
+import { BuildNotice, RabbitHoleLoading } from "@/components/DiscoverButton";
 import { ClusterError, clusterBuildState, clusterHoleToRabbitHole, forgetClusterContext, markDiscoveriesSeen, markDiscoveryUnseen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
 import { bulkPatchBackendHoles, patchBackendHole, preGenerateHoleBriefs } from "@/lib/api";
@@ -169,27 +169,8 @@ export default function Dashboard() {
       {routeBuildState === "unclear" && <BuildNotice type="unclear" stats={stats} onClose={() => setRouteBuildState("idle")} />}
       {routeBuildState === "error" && <BuildNotice type="error" stats={stats} errorStatus={routeErrorStatus} onClose={() => setRouteBuildState("idle")} />}
       <AppFrame>
-        <div className="flex flex-wrap items-end justify-between gap-6">
-          <div>
-            <div className="rh-faint mb-2 text-[12px] font-semibold uppercase tracking-[0.22em]">
-              Your rabbit holes · {holes.length} total
-            </div>
-            <h1 className="rh-display rh-ink text-[42px] font-semibold leading-none tracking-normal">
-              Rabbit holes
-            </h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <Card className="hidden items-center gap-5 rounded-xl px-4 py-2.5 sm:flex">
-              <HeaderStat n={stats.pages} label="pages" />
-              <HeaderStat n={stats.searches} label="searches" />
-              <HeaderStat n={stats.tabs} label="tabs" accent />
-            </Card>
-            <DiscoverButton />
-          </div>
-        </div>
-
         {holes.length === 0 ? (
-          <div className="mt-12">
+          <div className="mt-8">
             <EmptyHoles eyebrow="Your rabbit holes" />
           </div>
         ) : (
@@ -268,17 +249,6 @@ export default function Dashboard() {
           </>
         )}
       </AppFrame>
-    </div>
-  );
-}
-
-function HeaderStat({ n, label, accent }: { readonly n: number; readonly label: string; readonly accent?: boolean }) {
-  return (
-    <div className="flex flex-col">
-      <span className={`text-[19px] font-semibold tabular-nums ${accent ? "text-[#5f8a5c]" : "text-[var(--rh-ink)]"}`}>
-        {n}
-      </span>
-      <span className="rh-faint text-[10px] uppercase tracking-[0.14em]">{label}</span>
     </div>
   );
 }
