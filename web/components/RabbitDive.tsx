@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useApp } from "@/lib/store";
 import { ACCENTS } from "@/lib/ui";
+import { RabbitEars } from "@/components/Logo";
 
 const RESULT_WORDS = ["tabs", "questions", "links", "notes", "context", "patterns"];
 
@@ -53,16 +54,12 @@ export function RabbitDive() {
               ))}
 
               <motion.div
-                className="absolute inset-x-0 bottom-[10px] mx-auto h-[300px] w-[540px]"
+                className="absolute inset-x-0 bottom-[86px] mx-auto grid h-[150px] w-[150px] place-items-center rounded-full border border-[#f3e8d438] bg-[#17100b] text-[#f6ecd9] shadow-[0_22px_70px_rgba(18,11,5,.34)]"
                 initial={{ y: 18, scale: 0.94, opacity: 0 }}
                 animate={{ y: 0, scale: 1, opacity: 1 }}
                 transition={{ delay: 0.12, duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
               >
-                <img
-                  src="/assets/images/rabbit-hole-hero.png"
-                  alt=""
-                  className="relative h-full w-full object-contain drop-shadow-[0_18px_36px_rgba(18,11,5,.28)]"
-                />
+                <RabbitEars className="h-16 w-16" />
               </motion.div>
             </div>
 

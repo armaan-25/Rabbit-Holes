@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
+import { DiscoverButton } from "@/components/DiscoverButton";
 
 /**
  * Shared fresh-account empty state. Uses the canonical design tokens so it
@@ -24,18 +25,20 @@ export function EmptyHoles({
         {hint ??
           "Install the extension and browse normally. As you go down a rabbit hole, your searches and pages get clustered into investigations that show up here."}
       </p>
-      <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+      <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
+        <DiscoverButton variant="primary" className="h-12 min-w-[190px] px-7 text-[15px]" />
         <ButtonLink
           href="/downloads/rabbit-holes-extension.zip"
           download
-          variant="primary"
+          variant="secondary"
           size="lg"
+          className="min-w-[190px] whitespace-nowrap"
         >
           Download extension ↓
         </ButtonLink>
         <Link
           href="/settings"
-          className="inline-flex h-12 shrink-0 items-center justify-center rounded-full border border-[var(--rh-line)] bg-[var(--rh-surface-2)] px-7 text-[15px] font-semibold text-[var(--rh-ink-soft)] no-underline transition hover:-translate-y-0.5 hover:border-[var(--rh-line-strong)] hover:text-[var(--rh-ink)]"
+          className="inline-flex h-12 shrink-0 items-center justify-center rounded-full px-4 text-[15px] font-semibold text-[var(--rh-muted)] no-underline transition hover:text-[var(--rh-ink)]"
         >
           Settings
         </Link>

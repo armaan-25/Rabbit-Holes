@@ -3,18 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import type { User } from "@supabase/supabase-js";
 import { ACCENTS, STATUS_META } from "@/lib/ui";
-import { useApp } from "@/lib/store";
 import { useHoles } from "@/hooks/useHoles";
 import { formatElapsed, removeCapturedTab, setExtensionCapture, useSessionStats, type CaptureState, type SessionStats } from "@/hooks/useSessionStats";
-import { ThemeToggle } from "./ThemeToggle";
 import { Wordmark } from "./Logo";
-import { supabase } from "@/lib/supabase/client";
+import { clearRabbitSession, readRabbitSession } from "@/lib/local-auth";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const NAV = [
-  { href: "/dashboard", label: "Dashboard", glyph: "⊞" },
+  { href: "/dashboard", label: "Investigations", glyph: "⊞" },
   { href: "/map", label: "Map", glyph: "⌗" },
   { href: "/timeline", label: "Timeline", glyph: "≣" },
   { href: "/heatmap", label: "Heatmap", glyph: "▦" },
@@ -33,7 +30,6 @@ function isChromelessPath(pathname: string) {
 
 export function Sidebar() {
   const pathname = usePathname();
-  const togglePalette = useApp((s) => s.togglePalette);
   const holes = useHoles();
   const stats = useSessionStats();
 
@@ -43,20 +39,8 @@ export function Sidebar() {
     <aside className="rh-sidebar sticky top-0 z-20 hidden h-screen w-[352px] shrink-0 flex-col border-r px-7 py-8 md:flex">
       <Link href="/" className="mb-8 block min-w-0 px-2 no-underline">
         <Wordmark className="max-w-full text-[22px]" />
-        <div className="rh-muted mt-1.5 text-[13px] italic">Smart history for your research.</div>
+        <div className="rh-muted mt-1.5 text-[13px] italic">Follow ideas, not tabs.</div>
       </Link>
-
-      <button
-        onClick={togglePalette}
-        className="rh-surface mb-6 flex items-center justify-between rounded-[11px] border px-4 py-3 text-[14px] transition"
-      >
-        <span className="flex min-w-0 items-center gap-2">
-          <span className="text-[16px]">⌕</span> Quick jump
-        </span>
-        <kbd className="rh-surface-2 rounded border px-2 py-0.5 font-mono text-[10px] rh-muted">
-          ⌘K
-        </kbd>
-      </button>
 
       <nav className="space-y-1">
         {NAV.map((n) => {
@@ -78,10 +62,7 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="rh-faint mb-3 mt-7 px-3 text-[11px] font-semibold uppercase tracking-[0.16em]">
-        Rabbit Holes
-      </div>
-      <div className="flex-1 space-y-1 overflow-y-auto">
+      <div className="mt-7 flex-1 space-y-1 overflow-y-auto">
         {holes.map((h) => {
           const active = pathname === `/holes/${h.id}`;
           const accent = ACCENTS[h.accent];
@@ -117,7 +98,6 @@ export function Sidebar() {
         >
           <span className="text-[15px]">⚙</span> Settings
         </Link>
-        <ThemeToggle />
       </div>
       <SidebarAccount />
     </aside>
@@ -318,65 +298,53 @@ function MiniStat({ n, label }: { readonly n: number; readonly label: string }) 
 }
 
 function SidebarAccount() {
-  const [user, setUser] = useState<User | null>(null);
-  const [ready, setReady] = useState(false);
+  const [email, setEmail] = useState("Signed in");
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    void supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user ?? null);
-      setReady(true);
-    });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setReady(true);
-    });
-    return () => listener.subscription.unsubscribe();
+    function sync() {
+      setEmail(readRabbitSession()?.email || "Signed in");
+    }
+    sync();
+    window.addEventListener("rabbit-hole-session-changed", sync);
+    return () => window.removeEventListener("rabbit-hole-session-changed", sync);
   }, []);
 
-  async function signOut() {
-    await supabase.auth.signOut();
-    setUser(null);
+  function signOut() {
+    clearRabbitSession();
+    window.location.href = "/login";
   }
 
-  if (!ready) {
-    return (
-        <div className="rh-surface mt-4 rounded-[16px] border p-3 shadow-[0_2px_12px_rgba(70,45,20,.05)]">
-        <div className="h-10 rounded-[12px] bg-[var(--rh-surface-2)]" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="rh-surface mt-4 rounded-[16px] border p-3 shadow-[0_2px_12px_rgba(70,45,20,.05)]">
-        <div className="rh-muted mb-3 text-[12px] leading-5">Sign in to save sessions across devices.</div>
-        <Link href="/login?next=/dashboard" className="rh-primary block rounded-[12px] px-4 py-2.5 text-center text-[14px] font-semibold">
-          Sign in
-        </Link>
-        <Link href="/signup?next=/dashboard" className="rh-surface-2 mt-2 block rounded-[12px] border px-4 py-2.5 text-center text-[14px] font-semibold">
-          Create account
-        </Link>
-      </div>
-    );
-  }
-
-  const email = user.email ?? "Account";
   const initial = email[0]?.toUpperCase() ?? "R";
 
   return (
-    <div className="rh-surface mt-4 rounded-[16px] border p-3 shadow-[0_2px_12px_rgba(70,45,20,.05)]">
+    <div className="relative mt-4">
       <div className="flex items-center gap-3">
-        <span className="rh-primary grid h-10 w-10 shrink-0 place-items-center rounded-full text-[14px] font-semibold">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[var(--rh-line)] bg-[var(--rh-surface-2)] text-[14px] font-semibold text-[var(--rh-green)]">
           {initial}
         </span>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="truncate text-[14px] font-semibold text-[var(--rh-ink)]">{email}</div>
-          <div className="rh-muted text-[12px]">Signed in</div>
         </div>
+        <button
+          type="button"
+          onClick={() => setOpen((value) => !value)}
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-[18px] text-[var(--rh-muted)] transition hover:bg-[var(--rh-surface)] hover:text-[var(--rh-ink)]"
+          aria-label="Account menu"
+        >
+          …
+        </button>
       </div>
-      <button onClick={signOut} className="rh-surface-2 mt-3 w-full rounded-[11px] border px-3 py-2 text-[13px] font-semibold text-[#a8472a]">
-        Log out
-      </button>
+      {open && (
+        <div className="rh-surface absolute bottom-12 right-0 z-30 w-40 rounded-[14px] border p-1.5 shadow-[0_18px_48px_rgba(18,11,5,.18)]">
+          <Link href="/settings" className="block rounded-[10px] px-3 py-2 text-[13px] font-semibold no-underline hover:bg-[var(--rh-surface-2)]">
+            Settings
+          </Link>
+          <button onClick={signOut} className="block w-full rounded-[10px] px-3 py-2 text-left text-[13px] font-semibold text-[var(--rh-muted)] hover:bg-[var(--rh-surface-2)] hover:text-[var(--rh-ink)]">
+            Sign out
+          </button>
+        </div>
+      )}
     </div>
   );
 }

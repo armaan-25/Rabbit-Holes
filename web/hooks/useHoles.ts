@@ -2,26 +2,22 @@
 
 import { RABBIT_HOLES, getHole as getSeedHole } from "@/lib/data";
 import { useApp } from "@/lib/store";
-import { useSignedIn } from "@/lib/useAuth";
 import type { RabbitHole } from "@/lib/types";
 
 /**
- * Holes to render. A signed-in account shows only its own live holes (empty
- * until the extension clusters a session). The sample RABBIT_HOLES are demo
- * content for logged-out visitors exploring the marketing demo only.
+ * Holes to render. Local browser storage is the source of truth. Seed holes
+ * remain available only as stable demo/detail fixtures.
  */
 export function useHoles(): RabbitHole[] {
   const liveHoles = useApp((s) => s.liveHoles);
-  const signedIn = useSignedIn();
   if (liveHoles.length) return liveHoles.filter((h) => !h.archived);
-  return signedIn === false ? RABBIT_HOLES : [];
+  return [];
 }
 
 export function useLibraryHoles(): RabbitHole[] {
   const liveHoles = useApp((s) => s.liveHoles);
-  const signedIn = useSignedIn();
   if (liveHoles.length) return liveHoles;
-  return signedIn === false ? RABBIT_HOLES : [];
+  return [];
 }
 
 export function useHole(id: string): RabbitHole | undefined {

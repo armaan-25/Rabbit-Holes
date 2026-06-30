@@ -6,7 +6,7 @@ const STEPS = [
   ["Unzip", "Unzip the file and keep the folder somewhere stable. Chrome needs the folder to stay in place."],
   ["Open extensions", "Open chrome://extensions in Chrome, Brave, Arc, Edge, or Opera, then turn on Developer mode."],
   ["Load unpacked", "Click Load unpacked and select the unzipped Rabbit Holes extension folder."],
-  ["Pin and sign in", "Pin Rabbit Holes in your toolbar, open it, and sign in with the same account you use on the app."],
+  ["Configure AI", "Pin Rabbit Holes in your toolbar, open Settings, and choose OpenAI, Anthropic, OpenRouter, Gemini, Ollama, LM Studio, or an OpenAI-compatible endpoint."],
   ["Build", "Browse a few related pages or searches, then click Build rabbit holes to cluster the captured trail."],
 ];
 
@@ -26,7 +26,7 @@ export default function InstallPage() {
               <div className="rh-faint text-[11px] font-bold uppercase tracking-[0.22em]">Early access</div>
               <h2 className="rh-display rh-ink mt-2 text-[28px] font-semibold leading-tight">Install the working extension directly.</h2>
               <p className="rh-muted mt-2 max-w-[62ch] text-[15.5px] leading-7">
-                The public store listing is still being reviewed. Until it is approved, download the package and load it from Chrome&apos;s Extensions page.
+                The public store listing is still being reviewed. Until it is approved, download the package, load it from Chrome&apos;s Extensions page, and configure your own AI provider.
               </p>
             </div>
             <div className="shrink-0 rounded-full border border-[var(--rh-line)] bg-[var(--rh-surface-2)] px-4 py-2 text-[13px] font-semibold text-[var(--rh-ink-soft)]">
@@ -54,7 +54,7 @@ export default function InstallPage() {
         <div className="rh-surface mt-8 rounded-[20px] border p-6">
           <h2 className="rh-display rh-ink text-[24px] font-semibold">Send this to a tester</h2>
           <p className="rh-muted mt-3 text-[15.5px] leading-7">
-            Rabbit Holes is available as a direct install while the store listing is reviewed: visit this page, download the zip, unzip it, open chrome://extensions, enable Developer mode, click Load unpacked, select the unzipped folder, pin Rabbit Holes, sign in, browse a few related pages, then click Build rabbit holes.
+            Rabbit Holes is available as a direct install while the store listing is reviewed: visit this page, download the zip, unzip it, open chrome://extensions, enable Developer mode, click Load unpacked, select the unzipped folder, pin Rabbit Holes, configure your AI provider, browse a few related pages, then click Build rabbit holes.
           </p>
         </div>
       </div>

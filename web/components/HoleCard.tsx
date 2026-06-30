@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { RabbitHole } from "@/lib/types";
-import { ACCENTS, KIND_META, faviconFor } from "@/lib/ui";
+import { ACCENTS } from "@/lib/ui";
 import { relativeTime } from "@/lib/format";
 import { StatusBadge } from "./atoms";
 import { Button } from "@/components/ui/button";
@@ -55,7 +55,7 @@ export function HoleCard({
         }}
       />
       <Link href={`/holes/${hole.id}`} className="group block">
-        <Card className={`relative min-h-[292px] overflow-hidden rounded-[20px] p-6 text-left transition duration-200 group-hover:border-[var(--rh-line-strong)] ${selected ? "border-[#5f8a5c] ring-2 ring-[#5f8a5c33]" : ""}`}>
+        <Card className={`relative min-h-[238px] overflow-hidden rounded-[20px] p-6 text-left transition duration-200 group-hover:border-[var(--rh-line-strong)] ${selected ? "border-[#5f8a5c] ring-2 ring-[#5f8a5c33]" : ""}`}>
           {hole.status === "active" && (
             <>
               <div className="pointer-events-none absolute inset-0 rounded-[20px] shadow-[0_0_0_1px_rgba(95,138,92,.24),0_12px_34px_rgba(95,138,92,.12)]" />
@@ -137,7 +137,7 @@ export function HoleCard({
             <h3 className="rh-display rh-ink line-clamp-2 text-[23px] font-semibold leading-[1.12] tracking-normal">
               {hole.title}
             </h3>
-            <p className="rh-muted mt-2 line-clamp-3 min-h-[46px] text-[15.5px] leading-[1.5]">
+            <p className="rh-muted mt-2 line-clamp-2 min-h-[44px] text-[15.5px] leading-[1.45]">
               {hole.description}
             </p>
 
@@ -154,40 +154,13 @@ export function HoleCard({
             </div>
 
             <div className="mt-5 flex flex-wrap gap-2 border-t border-[var(--rh-line)] pt-4">
-              {counts.map((k) => (
+              {counts.slice(0, 3).map((k) => (
                 <Badge key={k.label} className="items-baseline rounded-[9px] border-0 px-2.5 py-1.5">
                   <span className="text-[15px] font-semibold tabular-nums text-[var(--rh-ink)]">{k.n}</span>
                   <span className="text-[12.5px] text-[var(--rh-muted)]">{k.label}</span>
                 </Badge>
               ))}
-              <div className="ml-auto flex items-center gap-1">
-                {hole.pages.slice(0, 4).map((p) => {
-                  const meta = KIND_META[p.kind];
-                  return (
-                    <span
-                      key={p.id}
-                      title={p.domain}
-                      className="grid h-6 w-6 place-items-center overflow-hidden rounded-[7px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] text-[11px] font-semibold"
-                      style={{ color: meta.color }}
-                    >
-                      {p.domain && p.domain !== "unknown" ? (
-                        <img src={faviconFor(p.domain)} alt="" className="h-4 w-4 rounded-sm" />
-                      ) : (
-                        meta.glyph
-                      )}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between">
-              <div className="flex -space-x-2">
-                {hole.domains.slice(0, 4).map((d) => (
-                  <img key={d} src={faviconFor(d)} alt={d} className="h-7 w-7 rounded-full border border-[var(--rh-surface)] bg-[var(--rh-surface-3)]" />
-                ))}
-              </div>
-              <span className="rh-muted text-[13px]">
+              <span className="rh-muted ml-auto text-[13px]">
                 Open →
               </span>
             </div>

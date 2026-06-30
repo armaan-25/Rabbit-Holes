@@ -1,13 +1,13 @@
 "use client";
 
 import { HoleCard } from "@/components/HoleCard";
-import { EmptyHoles } from "@/components/EmptyHoles";
-import { BuildNotice, DiscoverButton, RabbitHoleLoading } from "@/components/DiscoverButton";
+import { EmptyHolesPage } from "@/components/EmptyHoles";
+import { BuildNotice, RabbitHoleLoading } from "@/components/DiscoverButton";
 import { ClusterError, clusterBuildState, clusterHoleToRabbitHole, forgetClusterContext, markDiscoveriesSeen, markDiscoveryUnseen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
 import { bulkPatchBackendHoles, patchBackendHole, preGenerateHoleBriefs } from "@/lib/api";
 import { useLibraryHoles } from "@/hooks/useHoles";
-import { flushExtensionEvents, formatElapsed, useSessionStats } from "@/hooks/useSessionStats";
+import { flushExtensionEvents, useSessionStats } from "@/hooks/useSessionStats";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -51,9 +51,6 @@ export default function Dashboard() {
         return +new Date(b.lastActive) - +new Date(a.lastActive);
       });
   }, [filter, holes, query, sort]);
-  const latest = visibleHoles.find((h) => h.status === "active") ?? visibleHoles[0];
-  const statusLabel = stats.captureState === "recording" ? "Capturing" : stats.captureState === "paused" ? "Paused" : "Stopped";
-
   function updateSelection(id: string, selected: boolean) {
     setSelectedIds((ids) => selected ? Array.from(new Set([...ids, id])) : ids.filter((x) => x !== id));
   }
@@ -152,7 +149,7 @@ export default function Dashboard() {
   }, [setLiveHoles, triggerDiscovery, triggerDiscoveries]);
 
   return (
-    <div className="rh-paper min-h-screen px-5 py-8 sm:px-8 xl:px-12">
+    <div className={holes.length === 0 ? "rh-paper min-h-screen" : "rh-paper min-h-screen px-5 py-8 sm:px-8 xl:px-12"}>
       <ConfirmDialog
         open={confirmBulkDelete}
         eyebrow="Delete rabbit holes"
@@ -171,45 +168,12 @@ export default function Dashboard() {
       {routeBuildState === "duplicate" && <BuildNotice type="duplicate" stats={stats} onClose={() => setRouteBuildState("idle")} />}
       {routeBuildState === "unclear" && <BuildNotice type="unclear" stats={stats} onClose={() => setRouteBuildState("idle")} />}
       {routeBuildState === "error" && <BuildNotice type="error" stats={stats} errorStatus={routeErrorStatus} onClose={() => setRouteBuildState("idle")} />}
-      <AppFrame>
-        <div className="flex flex-wrap items-end justify-between gap-6">
+      {holes.length === 0 ? (
+        <EmptyHolesPage eyebrow="Your rabbit holes" />
+      ) : (
+        <AppFrame>
           <div>
-            <div className="rh-faint mb-2 text-[12px] font-semibold uppercase tracking-[0.22em]">
-              Your rabbit holes · {holes.length} total
-            </div>
-            <h1 className="rh-display rh-ink text-[42px] font-semibold leading-none tracking-normal">
-              Rabbit holes
-            </h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <Card className="hidden items-center gap-5 rounded-xl px-4 py-2.5 sm:flex">
-              <HeaderStat n={stats.pages} label="pages" />
-              <HeaderStat n={stats.searches} label="searches" />
-              <HeaderStat n={stats.tabs} label="tabs" accent />
-            </Card>
-            <DiscoverButton />
-          </div>
-        </div>
-
-        {holes.length === 0 ? (
-          <div className="mt-12">
-            <EmptyHoles eyebrow="Your rabbit holes" />
-          </div>
-        ) : (
-          <>
-            {latest && (
-              <Card className="mt-6 flex items-center gap-3 rounded-2xl px-5 py-4">
-                <span className={`h-2 w-2 shrink-0 rounded-full ${stats.captureState === "recording" ? "bg-[#5f8a5c]" : stats.captureState === "paused" ? "bg-[#c7ae84]" : "bg-[#b8795f]"}`} />
-                <div className="min-w-0 truncate text-[15px] text-[var(--rh-muted)]">
-                  <span className="font-semibold text-[var(--rh-ink)]">{statusLabel}</span>
-                  {typeof stats.elapsedMs === "number" ? <span className="font-semibold"> · {formatElapsed(stats.elapsedMs)}</span> : null}
-                  {" "}— {stats.pages} pages · {stats.searches} searches · {stats.tabs} tabs
-                </div>
-                <div className="rh-faint ml-auto hidden text-[12px] sm:block">{stats.source === "extension" ? "extension" : syncLabel}</div>
-              </Card>
-            )}
-
-            <ToolbarFrame className="mt-7">
+            <ToolbarFrame className="mt-8">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                   <h2 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#a8967d]">
@@ -280,20 +244,9 @@ export default function Dashboard() {
             <p className="rh-muted mt-8 text-center text-[13px] italic">
               Smart history for your research.
             </p>
-          </>
-        )}
-      </AppFrame>
-    </div>
-  );
-}
-
-function HeaderStat({ n, label, accent }: { readonly n: number; readonly label: string; readonly accent?: boolean }) {
-  return (
-    <div className="flex flex-col">
-      <span className={`text-[19px] font-semibold tabular-nums ${accent ? "text-[#5f8a5c]" : "text-[var(--rh-ink)]"}`}>
-        {n}
-      </span>
-      <span className="rh-faint text-[10px] uppercase tracking-[0.14em]">{label}</span>
+          </div>
+        </AppFrame>
+      )}
     </div>
   );
 }

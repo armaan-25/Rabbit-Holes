@@ -2,10 +2,9 @@
 
 import { FormEvent, Suspense, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Wordmark } from "@/components/Logo";
-import { authCallbackUrl, isExtensionAuthNext } from "@/lib/auth-urls";
+import { writeRabbitSession } from "@/lib/local-auth";
 
 export default function LoginPage() {
   return (
@@ -16,6 +15,7 @@ export default function LoginPage() {
 }
 
 function LoginForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/dashboard";
   const [email, setEmail] = useState("");
@@ -23,37 +23,29 @@ function LoginForm() {
   const [status, setStatus] = useState("");
   const [transitioning, setTransitioning] = useState(false);
 
+  function finish(value: string) {
+    writeRabbitSession(value);
+    router.replace(next.startsWith("/") ? next : "/dashboard");
+  }
+
   async function submit(e: FormEvent) {
     e.preventDefault();
     setTransitioning(true);
     setStatus("Signing in...");
-    const result = await supabase.auth.signInWithPassword({ email, password });
-
-    if (result.error) {
-      setTransitioning(false);
-      setStatus(result.error.message);
-      return;
-    }
-
-    // First-time accounts go through onboarding before their destination.
-    const isExtensionFlow = isExtensionAuthNext(next);
-    const onboarded = result.data.user?.user_metadata?.onboarded;
-    window.location.replace(onboarded || isExtensionFlow ? next : `/onboarding?next=${encodeURIComponent(next)}`);
+    await new Promise((resolve) => window.setTimeout(resolve, 220));
+    finish(email.trim());
   }
 
   async function google() {
     if (transitioning) return;
+    if (!email.trim()) {
+      setStatus("Enter your email first.");
+      return;
+    }
     setTransitioning(true);
     setStatus("Opening Google...");
-    await new Promise((resolve) => window.setTimeout(resolve, 180));
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: authCallbackUrl(next) },
-    });
-    if (error) {
-      setTransitioning(false);
-      setStatus(error.message);
-    }
+    await new Promise((resolve) => window.setTimeout(resolve, 220));
+    finish(email.trim());
   }
 
   return (

@@ -90,6 +90,49 @@
       return;
     }
 
+    if (event.data?.type === "rabbit-holes:get-events") {
+      try {
+        const { events = [] } = await chrome.storage.local.get(["events"]);
+        window.postMessage({ type: "rabbit-holes:events", requestId, events }, window.location.origin);
+      } catch {
+        window.postMessage({ type: "rabbit-holes:events", requestId, events: [] }, window.location.origin);
+      }
+      return;
+    }
+
+    if (event.data?.type === "rabbit-holes:get-config") {
+      try {
+        const { settings = null, aiProvider = null } = await chrome.storage.local.get(["settings", "aiProvider"]);
+        window.postMessage({ type: "rabbit-holes:config", requestId, settings, aiProvider }, window.location.origin);
+      } catch {
+        window.postMessage({ type: "rabbit-holes:config", requestId, settings: null, aiProvider: null }, window.location.origin);
+      }
+      return;
+    }
+
+    if (event.data?.type === "rabbit-holes:set-config") {
+      try {
+        const patch = {};
+        if (event.data.settings && typeof event.data.settings === "object") patch.settings = event.data.settings;
+        if (event.data.aiProvider && typeof event.data.aiProvider === "object") patch.aiProvider = event.data.aiProvider;
+        await chrome.storage.local.set(patch);
+        window.postMessage({ type: "rabbit-holes:config-updated", requestId, ok: true }, window.location.origin);
+      } catch {
+        window.postMessage({ type: "rabbit-holes:config-updated", requestId, ok: false }, window.location.origin);
+      }
+      return;
+    }
+
+    if (event.data?.type === "rabbit-holes:clear-local-data") {
+      try {
+        await chrome.storage.local.remove(["events", "lastCapture", "aiProvider"]);
+        window.postMessage({ type: "rabbit-holes:local-data-cleared", requestId, ok: true }, window.location.origin);
+      } catch {
+        window.postMessage({ type: "rabbit-holes:local-data-cleared", requestId, ok: false }, window.location.origin);
+      }
+      return;
+    }
+
     if (event.data?.type === "rabbit-holes:set-capture") {
       try {
         const res = await chrome.runtime.sendMessage({ type: "setCaptureState", state: event.data.state });
@@ -109,12 +152,7 @@
     }
 
     if (event.data?.type === "rabbit-holes:flush") {
-      try {
-        const res = await chrome.runtime.sendMessage({ type: "flush" });
-        window.postMessage({ type: "rabbit-holes:flush-complete", requestId, ok: Boolean(res?.ok), buffered: res?.buffered ?? null }, window.location.origin);
-      } catch {
-        window.postMessage({ type: "rabbit-holes:flush-complete", requestId, ok: false }, window.location.origin);
-      }
+      window.postMessage({ type: "rabbit-holes:flush-complete", requestId, ok: true, local: true }, window.location.origin);
     }
   });
 })();

@@ -1,104 +1,89 @@
-# 🐇 Rabbit Holes
+# Rabbit Holes
 
-**Follow ideas, not tabs.**
+Rabbit Holes is a local-first browser companion for learning on the internet.
 
-Browsers understand tabs, windows, and bookmarks. Rabbit Holes understand
-*investigations*. It watches your browsing and automatically organizes it into
-structured "rabbit holes" — the questions you were actually chasing — with a
-map of how you got there, a replayable timeline, extracted entities, and a
-context-restore so you can pick an investigation back up later.
+It keeps the trail behind a research session: searches, pages, jumps, maps, timelines, and summaries. The extension is the product. The website is documentation, onboarding, and a viewer.
 
-This is **not** a productivity app, a note-taking app, or Notion. The product is
-the context graph. AI is used only to cluster, name, and summarize.
+## Positioning
 
----
+Rabbit Holes is not a hosted AI browser-history platform. It is closer to developer tooling like GitLens, Continue, Aider, Browser Use, or MCP Inspector:
 
-## Architecture
+- install the extension
+- capture research locally
+- bring your own AI provider
+- keep your data portable
+- self-host or hack on the stack if you want
 
+## Bring your own AI
+
+The AI layer is provider-agnostic. The intended configuration shape is:
+
+```yaml
+provider:
+  type: openrouter
+apiKey: sk-or-...
+model: anthropic/claude-sonnet-4
 ```
-extension/   Chrome MV3 — captures tab opens/closes, URL visits, search
-             queries, navigation chains, timestamps; batches → backend.
-backend/     FastAPI — ingests events, clusters them into rabbit holes via
-             the Anthropic API (Claude Opus 4.8), serves the web app.
-web/         Next.js + TypeScript + Tailwind + Framer Motion + React Flow —
-             the dashboard, rabbit-hole detail, map graph, and timeline.
+
+Supported provider targets:
+
+- OpenAI
+- Anthropic
+- OpenRouter
+- Gemini
+- Ollama
+- LM Studio
+- OpenAI-compatible endpoints
+
+The model is an interchangeable component. Rabbit Holes owns the capture, investigation detection, replay, organization, and UX.
+
+## Repository layout
+
+```text
+extension/   Chrome extension: capture, popup UI, local event trail.
+web/         Next.js app: landing/docs, local settings, dashboard/viewer.
+backend/     Legacy FastAPI prototype. Not required for the local-first core path.
 ```
 
-The web app ships with rich seed data, so it looks and runs great with no
-backend. Wire the backend + extension in to capture your own browsing.
+## Current architecture direction
 
----
+```text
+Browser Extension
+  -> Rabbit Hole Core
+  -> Local Storage
+  -> AI Provider Adapter
+       -> Anthropic
+       -> OpenAI
+       -> OpenRouter
+       -> Gemini
+       -> Ollama
+       -> LM Studio
+       -> OpenAI-compatible
+  -> Optional Cloud Sync later
+```
 
 ## Run the web app
 
 ```bash
 cd web
 npm install
-npm run dev      # http://localhost:3000
+npm run dev
 ```
 
-Set `NEXT_PUBLIC_BACKEND_URL` if your backend is not on `http://localhost:8000`.
-Use **🕳 Build rabbit holes** in the dashboard, or `⌘K` → **Run clustering**,
-to fire the rabbit-diving animation from a live `/cluster` response.
+Open `http://localhost:3000`.
 
-Pages:
-- **/** — dashboard of rabbit holes (cards à la Arc/Linear) + the painterly hero
-- **/holes/[id]** — the detail page: overview, map, timeline, entities, pages
-- **/map** — the graph of your curiosity (React Flow)
-- **/timeline** — replay your investigations, grouped by day
-- `⌘K` — command palette
+## Load the extension manually
 
-## Run the backend
+1. Open `chrome://extensions`.
+2. Enable Developer mode.
+3. Click **Load unpacked**.
+4. Select the `extension/` folder.
+5. Open Rabbit Holes settings and configure your AI provider.
 
-```bash
-cd backend
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env      # then add your ANTHROPIC_API_KEY
-uvicorn app.main:app --reload --port 8000
-```
+## Backend status
 
-Once both services are running, open a few searches/visits in the extension,
-then click **🕳 Build rabbit holes** (dashboard) or **Run clustering** (`⌘K`)
-to trigger discovery animation when new clusters are returned.
+The backend is no longer required for the staging product path. Capture, clustering, summaries, replay, maps, and settings are local-first. Keep the backend only as a legacy prototype or optional future sync/service experiment.
 
-Endpoints: `POST /events` (ingest), `POST /cluster` (run the AI layer),
-`GET /signals`, `GET /stats`, `GET /export`, `POST /clear`, `GET /health`.
+## Security notes
 
-Default backend safety limits are intentionally conservative and can be tuned
-with env vars:
-
-```bash
-RATE_LIMIT_EVENTS_PER_MIN=240
-RATE_LIMIT_CLUSTER_PER_HOUR=20
-RATE_LIMIT_AI_PER_HOUR=60
-RATE_LIMIT_READS_PER_MIN=120
-```
-
-## Load the extension
-
-1. Visit `chrome://extensions`, enable **Developer mode**.
-2. **Load unpacked** → select the `extension/` folder.
-3. Browse. Click the 🐇 to see capture stats and build rabbit holes.
-
-Point `extension/config.js` `BACKEND_URL` at your backend.
-
-## Launch checklist
-
-- Replace Railway test URLs with the real production domain in Supabase, Google
-  OAuth, `extension/config.js`, CORS (`WEB_ORIGIN`), and landing-page links.
-- Publish the Chrome Web Store listing or keep `/install` clearly labeled as a
-  developer-mode install flow.
-- Review `/privacy` and `/terms` against your real legal entity and Chrome Web
-  Store listing. Support email is currently `aa5851@columbia.edu`.
-- Confirm `/cluster`, `/ask`, `/synthesize`, `/export`, and `/clear` work on
-  the production Railway backend with a signed-in account.
-- Keep `RATE_LIMIT_*` env vars set before opening access.
-
----
-
-## ⚠️ Security note
-
-`backend/.env` holds your `ANTHROPIC_API_KEY` and is **gitignored**. If a key was
-ever shared in plaintext (chat, a screenshot, a commit), rotate it at
-<https://console.anthropic.com/settings/keys>.
+Do not commit API keys. User provider keys should live in local extension/app storage or an explicit self-hosted environment.

@@ -2,10 +2,9 @@
 
 import { FormEvent, Suspense, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Wordmark } from "@/components/Logo";
-import { authCallbackUrl } from "@/lib/auth-urls";
+import { writeRabbitSession } from "@/lib/local-auth";
 
 export default function SignupPage() {
   return (
@@ -16,6 +15,7 @@ export default function SignupPage() {
 }
 
 function SignupForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/dashboard";
   const [email, setEmail] = useState("");
@@ -27,21 +27,9 @@ function SignupForm() {
     e.preventDefault();
     setBusy(true);
     setStatus("Creating account...");
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: authCallbackUrl(next) },
-    });
-    setBusy(false);
-    if (error) {
-      setStatus(error.message);
-      return;
-    }
-    if (!data.session) {
-      setStatus("Check your email to confirm your account.");
-      return;
-    }
-    window.location.replace(`/onboarding?next=${encodeURIComponent(next)}`);
+    await new Promise((resolve) => window.setTimeout(resolve, 220));
+    writeRabbitSession(email.trim());
+    router.replace(next.startsWith("/") ? next : "/dashboard");
   }
 
   return (

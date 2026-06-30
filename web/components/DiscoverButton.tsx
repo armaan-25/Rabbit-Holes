@@ -1,14 +1,20 @@
 "use client";
 
-import { ClusterError, clusterBuildState, clusterHoleToRabbitHole, markDiscoveriesSeen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
+import { clusterBuildState, clusterHoleToRabbitHole, markDiscoveriesSeen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
-import type { CSSProperties } from "react";
 import { useState } from "react";
 import { flushExtensionEvents, useSessionStats } from "@/hooks/useSessionStats";
 import { preGenerateHoleBriefs } from "@/lib/api";
+import { RabbitEars } from "@/components/Logo";
 
 /** Triggers the discovery overlay from a real /cluster response. */
-export function DiscoverButton() {
+export function DiscoverButton({
+  className = "",
+  variant = "surface",
+}: {
+  readonly className?: string;
+  readonly variant?: "surface" | "primary";
+}) {
   const trigger = useApp((s) => s.triggerDiscovery);
   const triggerMany = useApp((s) => s.triggerDiscoveries);
   const setLiveHoles = useApp((s) => s.setLiveHoles);
@@ -60,9 +66,9 @@ export function DiscoverButton() {
       window.setTimeout(() => (shown.length > 1 ? triggerMany(shown) : trigger(shown[0])), 80);
     } catch (err) {
       console.error("cluster failed", err);
-      const status = err instanceof ClusterError ? err.status : undefined;
+      const status = undefined;
       setErrorStatus(status);
-      setLabel(status === 401 || status === 403 ? "Sign in again" : status === 429 ? "Rate limited" : "Could not build");
+      setLabel("Could not build");
       setNotice("error");
     } finally {
       setBusy(false);
@@ -75,9 +81,9 @@ export function DiscoverButton() {
       <button
         onClick={discover}
         disabled={busy}
-        className="rh-surface group relative overflow-hidden rounded-[14px] border px-4 py-2.5 text-[13px] font-semibold shadow-[0_4px_18px_rgba(70,45,20,.06)] transition hover:border-[var(--rh-line-strong)] disabled:cursor-wait disabled:opacity-65"
+        className={`${variant === "primary" ? "rh-primary border-transparent" : "rh-surface border-[var(--rh-line)]"} group relative inline-flex items-center justify-center overflow-hidden rounded-full border px-5 py-2.5 text-[13px] font-semibold transition hover:border-[var(--rh-line-strong)] hover:brightness-105 disabled:cursor-wait disabled:opacity-65 ${className}`}
       >
-        <span className="relative inline-flex items-center gap-2">{label}</span>
+        <span className="relative inline-flex items-center gap-2 whitespace-nowrap">{label}</span>
       </button>
       {busy && <RabbitHoleLoading />}
       {notice === "empty" && <BuildNotice type="empty" stats={stats} onClose={() => setNotice(null)} />}
@@ -88,25 +94,10 @@ export function DiscoverButton() {
   );
 }
 
-const WORDS = [
-  { text: "tabs", x: "-245px", y: "-132px", d: "0s" },
-  { text: "searches", x: "248px", y: "-112px", d: ".16s" },
-  { text: "links", x: "-238px", y: "92px", d: ".32s" },
-  { text: "questions", x: "230px", y: "92px", d: ".48s" },
-  { text: "notes", x: "-62px", y: "-170px", d: ".64s" },
-  { text: "pages", x: "54px", y: "154px", d: ".8s" },
-];
-
 export function RabbitHoleLoading() {
   return (
     <div className="fixed inset-0 z-[70] grid place-items-center overflow-hidden bg-[#140d08]/76 px-4 backdrop-blur-[8px]">
       <style>{`
-        @keyframes word-to-hole {
-          0% { transform: translate(var(--x), var(--y)) scale(1); opacity: 0; filter: blur(0); }
-          12% { opacity: .78; }
-          70% { opacity: .5; }
-          100% { transform: translate(0, 32px) scale(.16); opacity: 0; filter: blur(2px); }
-        }
         @keyframes load-bar {
           0% { transform: translateX(-100%); }
           52% { transform: translateX(-18%); }
@@ -115,26 +106,12 @@ export function RabbitHoleLoading() {
       `}</style>
 
       <div className="relative flex max-h-[88vh] w-full max-w-[760px] flex-col overflow-hidden rounded-[34px] border border-[#f3e8d442] bg-[#17100b] shadow-[0_40px_130px_rgba(18,11,5,.58)]">
-        <div className="relative flex min-h-[350px] flex-1 items-center justify-center overflow-hidden bg-[#21170f] px-6 pb-10 pt-10">
-          <div className="relative grid place-items-center">
-            {WORDS.map((word) => (
-              <span
-                key={word.text}
-                className="absolute left-1/2 top-1/2 z-10 rh-display select-none text-[27px] italic tracking-wide text-[#d7c3a1]/80"
-                style={{
-                  "--x": word.x,
-                  "--y": word.y,
-                  animation: `word-to-hole 2.45s cubic-bezier(.52,0,.18,1) ${word.d} infinite`,
-                } as CSSProperties}
-              >
-                {word.text}
-              </span>
-            ))}
-            <img
-              src="/assets/images/rabbit-hole-hero.png"
-              alt=""
-              className="relative z-20 h-auto w-[520px] max-h-[44vh] max-w-full object-contain"
-            />
+        <div className="relative flex min-h-[330px] flex-1 items-center justify-center overflow-hidden bg-[#21170f] px-6 py-8">
+          <div className="relative grid h-[280px] w-full max-w-[560px] place-items-center overflow-hidden rounded-[28px]">
+            <div className="absolute inset-x-20 bottom-8 top-8 z-0 rounded-full bg-[#17100b]/18 blur-3xl" />
+            <div className="relative z-30 grid h-[132px] w-[132px] place-items-center rounded-full border border-[#f3e8d42b] bg-[#17100b]/92 text-[#f6ecd9] shadow-[0_18px_58px_rgba(18,11,5,.36)]">
+              <RabbitEars className="h-16 w-16" />
+            </div>
           </div>
         </div>
 
@@ -155,19 +132,13 @@ export function BuildNotice({ type, stats, errorStatus, onClose }: { readonly ty
   const duplicate = type === "duplicate";
   const unclear = type === "unclear";
   if (empty || duplicate || unclear) {
-    const hasVisibleHistory = stats.pages >= 3 || stats.searches >= 1;
-    const syncLag = empty && hasVisibleHistory;
-    const eyebrow = syncLag ? "History not synced yet" : empty ? "Not enough history" : duplicate ? "Already up to date" : "No clear thread yet";
-    const title = syncLag
-      ? "Rabbit Holes can see local activity, but it has not reached the backend yet."
-      : empty
+    const eyebrow = empty ? "Not enough history" : duplicate ? "Already up to date" : "No clear thread yet";
+    const title = empty
         ? "Uh oh, not enough search history to make a rabbit hole."
       : duplicate
         ? "You already built this rabbit hole."
         : "There is history, but no clear rabbit hole yet.";
-    const body = syncLag
-      ? "The extension popup can be ahead of the server. Keep this tab open for a moment, reload the extension if needed, then build again."
-      : empty
+    const body = empty
         ? "Browse a few related searches and pages first. Rabbit Holes needs a real trail before it can cluster an investigation."
       : duplicate
         ? "Your current browsing trail has already been clustered. Browse a few new related pages or searches, then build again."
@@ -196,11 +167,9 @@ export function BuildNotice({ type, stats, errorStatus, onClose }: { readonly ty
                 {word}
               </span>
             ))}
-            <img
-              src="/assets/images/rabbit-hole-hero.png"
-              alt=""
-              className="absolute inset-x-0 bottom-[-8px] mx-auto h-[300px] w-[540px] object-contain drop-shadow-[0_18px_36px_rgba(18,11,5,.28)]"
-            />
+            <div className="absolute inset-x-0 bottom-[68px] mx-auto grid h-[150px] w-[150px] place-items-center rounded-full border border-[#f3e8d438] bg-[#17100b] text-[#f6ecd9] shadow-[0_22px_70px_rgba(18,11,5,.34)]">
+              <RabbitEars className="h-16 w-16" />
+            </div>
           </div>
 
           <div className="bg-[#17100b] px-9 py-8 text-[#f3e8d4]">
@@ -239,21 +208,9 @@ export function BuildNotice({ type, stats, errorStatus, onClose }: { readonly ty
     );
   }
   const title =
-    errorStatus === 401 || errorStatus === 403
-      ? "Sign in again to build rabbit holes"
-      : errorStatus === 429
-        ? "Rabbit Holes is rate limited"
-        : errorStatus && errorStatus >= 500
-          ? "The clustering service hit an error"
-          : "Backend is not reachable";
+    "Could not build this rabbit hole";
   const body =
-    errorStatus === 401 || errorStatus === 403
-      ? "Your browser session did not include a valid auth token. Sign out, sign back in, then build again."
-      : errorStatus === 429
-        ? "Too many clustering requests were made recently. Wait a bit, then try again."
-        : errorStatus && errorStatus >= 500
-          ? "The backend is reachable, but clustering failed inside the service. Try again after the backend redeploy finishes."
-          : "The app could not reach the clustering service. Try again after the backend finishes waking up or redeploying.";
+    "Rabbit Holes could not read enough local browser activity from the extension. Keep browsing on one thread, reload the extension if needed, then try again.";
   return (
     <div className="fixed inset-0 z-[75] grid place-items-center bg-[#140d08]/72 px-4 backdrop-blur-[8px]">
       <div className="rh-surface w-full max-w-[560px] rounded-[28px] border p-7 text-center shadow-[0_34px_90px_rgba(18,11,5,.42)]">

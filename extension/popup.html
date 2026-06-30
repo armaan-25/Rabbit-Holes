@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Rabbit Holes Beta</title>
+    <title>Rabbit Holes</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
@@ -54,19 +54,6 @@
         min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         font-family: "Playfair Display", Georgia, serif; font-size: 21px; font-weight: 700; line-height: .95;
       }
-      .beta-badge {
-        flex: 0 0 auto;
-        border: 1px solid rgba(194,112,63,.35);
-        border-radius: 999px;
-        padding: 2px 7px;
-        background: rgba(194,112,63,.10);
-        color: #d58a5d;
-        font-size: 9px;
-        font-weight: 800;
-        letter-spacing: .14em;
-        line-height: 1;
-        text-transform: uppercase;
-      }
       .icon-button {
         width: 36px; height: 36px; min-height: 36px; padding: 0; display: grid; place-items: center;
         border-radius: 12px; background: var(--ink); color: var(--cream-2); font-size: 15px;
@@ -103,7 +90,7 @@
       .controls button.primary { color: #1a1009; border-color: transparent; background: var(--cream); }
       .controls button.danger { color: #d7a08b; border-color: rgba(184,121,95,.32); background: rgba(184,121,95,.1); }
       .controls button.danger:hover { background: rgba(184,121,95,.18); }
-      .watercolor {
+      .rabbit-action {
         position: relative; width: 100%; min-height: 48px; overflow: hidden;
         background: linear-gradient(180deg, #302417, #1d150e); color: var(--cream); font-size: 15px;
       }
@@ -123,7 +110,7 @@
       .auth-panel p { margin-bottom: 12px; color: var(--cream-2); font-size: 14px; line-height: 1.35; }
       .app-panel.signed-out { display: none; }
       .auth-panel.signed-out { display: block; }
-      .watercolor::before {
+      .rabbit-action::before {
         content: ""; position: absolute; inset: 0; opacity: .68;
         background: radial-gradient(80% 120% at 20% 20%, rgba(180,143,88,.23), transparent 55%), radial-gradient(90% 120% at 90% 80%, rgba(95,138,92,.14), transparent 58%);
       }
@@ -226,17 +213,16 @@
     <div class="header">
       <button class="brand" id="brand-open" title="Open dashboard">
         <span class="title">Rabbit Holes</span>
-        <span class="beta-badge">Beta</span>
       </button>
       <button class="icon-button dashboard-link" id="open" title="Open dashboard">↗</button>
     </div>
 
     <div class="auth-panel" id="auth-panel">
       <p id="auth-msg">Checking session...</p>
-      <button class="watercolor" id="signin"><span>Sign in</span></button>
+      <button class="rabbit-action" id="signin"><span>Open settings</span></button>
     </div>
 
-    <div class="app-panel signed-out" id="app-panel">
+    <div class="app-panel" id="app-panel">
       <div class="summary">
         <div class="metric"><strong id="visits">0</strong><span>pages</span></div>
         <div class="divider"></div>
@@ -257,7 +243,7 @@
         </div>
       </div>
 
-      <button class="watercolor" id="cluster"><span>Build rabbit holes</span></button>
+      <button class="rabbit-action" id="cluster"><span>Build rabbit holes</span></button>
 
       <details class="captured" id="captured-details">
         <summary>
@@ -271,8 +257,8 @@
 
       <div class="account" id="account">
         <span class="account-dot"></span>
-        <span class="account-email" id="account-email">Signed in</span>
-        <button class="account-signout" id="signout">Sign out</button>
+        <span class="account-email" id="account-email">Local-first mode</span>
+        <button class="account-signout" id="signout">Settings</button>
       </div>
     </div>
 

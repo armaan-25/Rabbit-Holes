@@ -3,7 +3,6 @@ import { WEB_URL } from "./config.js";
 let captureState = "recording";
 let captureStartedAt = null;
 let captureElapsedMs = 0;
-let signedIn = false;
 let capturePending = false;
 
 function setClusterLabel(text) {
@@ -163,37 +162,22 @@ async function setCaptureState(state) {
   }
 }
 
-// state: "in" (app panel), "out" (sign in), "expired" (sign in again).
+// state: "in" (local capture panel), "out" (provider setup), "expired" (provider setup).
 function setAuthView(state) {
   const signedOut = state !== "in";
   document.getElementById("auth-panel").classList.toggle("signed-out", signedOut);
   document.getElementById("app-panel").classList.toggle("signed-out", signedOut);
   document.getElementById("auth-msg").textContent =
     state === "expired"
-      ? "Your session expired. Sign in again to keep capturing."
+      ? "Configure an AI provider to build rabbit holes."
       : state === "loading"
-        ? "Checking session..."
-        : "Sign in to save sessions to your Rabbit Holes account.";
+        ? "Loading local capture..."
+        : "Open settings to choose your AI provider.";
 }
 
 async function render() {
-  const auth = await chrome.runtime.sendMessage({ type: "getAuthState" }).catch(() => ({ signedIn: false }));
-  signedIn = Boolean(auth?.signedIn);
-  if (!signedIn) {
-    setAuthView("out");
-    return;
-  }
-
-  // Validate (and silently refresh) the token; if it can't be revived the session is dead.
-  const valid = await chrome.runtime.sendMessage({ type: "getValidToken" }).catch(() => null);
-  if (!valid?.token) {
-    signedIn = false;
-    setAuthView("expired");
-    return;
-  }
-
   setAuthView("in");
-  document.getElementById("account-email").textContent = auth.user?.email || "Signed in";
+  document.getElementById("account-email").textContent = "Local-first mode";
 
   const {
     events = [],
@@ -227,17 +211,12 @@ document.getElementById("brand-open").addEventListener("click", () => {
   chrome.tabs.create({ url: `${WEB_URL}/dashboard` });
 });
 
-document.getElementById("signin").addEventListener("click", async () => {
-  document.getElementById("auth-msg").textContent = "Opening sign in...";
-  await chrome.runtime.sendMessage({ type: "signOut" }).catch(() => {});
-  chrome.tabs.create({ url: `${WEB_URL}/login?next=${encodeURIComponent(`${WEB_URL}/extension-auth`)}` });
+document.getElementById("signin").addEventListener("click", () => {
+  chrome.tabs.create({ url: `${WEB_URL}/settings` });
 });
 
-document.getElementById("signout").addEventListener("click", async () => {
-  document.getElementById("account-email").textContent = "Signing out...";
-  await chrome.runtime.sendMessage({ type: "signOut" }).catch(() => {});
-  signedIn = false;
-  setAuthView("out");
+document.getElementById("signout").addEventListener("click", () => {
+  chrome.tabs.create({ url: `${WEB_URL}/settings` });
 });
 
 document.getElementById("record-toggle").addEventListener("click", () => {

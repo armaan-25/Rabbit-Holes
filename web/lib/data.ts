@@ -1,9 +1,8 @@
 import type { RabbitHole } from "./types";
 
 /**
- * Seed rabbit holes. In production these come from the FastAPI backend, which
- * clusters raw browsing events captured by the Chrome extension. The shape here
- * matches the API contract in backend/app/schemas.py exactly.
+ * Seed rabbit holes for demos and visual fixtures. Real investigations in the
+ * staging pivot come from extension-local browser storage.
  */
 
 const aiSystems: RabbitHole = {

@@ -1,6 +1,7 @@
 import type { RabbitHole } from "./types";
 import type { Discovery } from "./store";
 import { RABBIT_HOLES } from "./data";
+import { generateJson } from "./ai-provider";
 
 export interface ClusterEntity {
   id: string;
@@ -45,8 +46,6 @@ export interface ClusterResponse {
   source_signature?: string;
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://backend-production-4e5a6.up.railway.app";
-
 export class ClusterError extends Error {
   constructor(
     message: string,
@@ -60,6 +59,19 @@ export class ClusterError extends Error {
 const ACCENTS: RabbitHole["accent"][] = ["rabbit", "iris", "moss", "sky"];
 export const discoveredHoleIds = new Set<string>(RABBIT_HOLES.map((h) => h.id));
 const LAST_CLUSTER_SIGNATURE_KEY = "rabbit-hole-last-cluster-signature";
+
+interface CapturedEvent {
+  type: "visit" | "search" | "title" | "tab_open" | "tab_close" | string;
+  sessionId?: string;
+  tabId?: number;
+  url?: string | null;
+  domain?: string | null;
+  title?: string | null;
+  query?: string | null;
+  engine?: string | null;
+  at?: string | null;
+  referrer?: string | null;
+}
 
 export function buildHoleId(title: string, pageIds: string[] = []): string {
   const base = title
@@ -104,6 +116,24 @@ function hostnameOf(url?: string | null): string {
   }
 }
 
+function canonicalUrl(url?: string | null): string {
+  if (!url) return "";
+  try {
+    const u = new URL(url);
+    u.hash = "";
+    for (const key of [...u.searchParams.keys()]) {
+      const lower = key.toLowerCase();
+      if (lower.startsWith("utm_") || ["fbclid", "gclid", "mc_cid", "mc_eid", "igshid", "ref", "source"].includes(lower)) {
+        u.searchParams.delete(key);
+      }
+    }
+    u.hostname = u.hostname.replace(/^www\./, "");
+    return u.toString().replace(/\/$/, "");
+  } catch {
+    return String(url).split("#")[0];
+  }
+}
+
 function pageKind(url?: string | null, title?: string | null): RabbitHole["pages"][number]["kind"] {
   const haystack = `${url ?? ""} ${title ?? ""}`.toLowerCase();
   if (haystack.includes("github.com")) return "repo";
@@ -115,6 +145,15 @@ function pageKind(url?: string | null, title?: string | null): RabbitHole["pages
 
 function normalizeSearchQuery(query?: string | null): string {
   return (query ?? "").toLowerCase().trim().replace(/\s+/g, " ");
+}
+
+function titleWords(value: string): string[] {
+  return value
+    .toLowerCase()
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .split(/\s+/)
+    .filter((word) => word.length > 2 && !["www", "com", "org", "net", "the", "and", "for", "with", "from", "this", "that", "into", "about", "google", "search"].includes(word));
 }
 
 function dedupeSearches(searches: CapturedSearch[]): CapturedSearch[] {
@@ -130,6 +169,223 @@ function dedupeSearches(searches: CapturedSearch[]): CapturedSearch[] {
     cleaned.push(search);
   }
   return cleaned;
+}
+
+function readExtensionEvents(timeoutMs = 1200): Promise<CapturedEvent[]> {
+  if (typeof window === "undefined") return Promise.resolve([]);
+  const requestId = crypto.randomUUID();
+
+  return new Promise((resolve) => {
+    const timeout = window.setTimeout(() => {
+      window.removeEventListener("message", onMessage);
+      resolve([]);
+    }, timeoutMs);
+
+    function onMessage(event: MessageEvent) {
+      if (event.source !== window) return;
+      if (event.data?.type !== "rabbit-holes:events" || event.data.requestId !== requestId) return;
+      window.clearTimeout(timeout);
+      window.removeEventListener("message", onMessage);
+      resolve(Array.isArray(event.data.events) ? event.data.events : []);
+    }
+
+    window.addEventListener("message", onMessage);
+    window.postMessage({ type: "rabbit-holes:get-events", requestId }, window.location.origin);
+  });
+}
+
+function eventsToCaptured(events: CapturedEvent[]): { pages: CapturedPage[]; searches: CapturedSearch[] } {
+  const titlesByUrl = new Map<string, string>();
+  for (const event of events) {
+    if (event.type === "title" && event.url && event.title) titlesByUrl.set(canonicalUrl(event.url), event.title);
+  }
+
+  const pagesByUrl = new Map<string, CapturedPage>();
+  const searchesByKey = new Map<string, CapturedSearch>();
+  for (const event of events) {
+    if (event.type === "visit" && event.url) {
+      const url = canonicalUrl(event.url);
+      if (!url || pagesByUrl.has(url)) continue;
+      pagesByUrl.set(url, {
+        id: `p${pagesByUrl.size + 1}`,
+        url,
+        domain: event.domain || hostnameOf(url),
+        title: titlesByUrl.get(url) || event.title || hostnameOf(url) || url,
+        at: event.at || new Date().toISOString(),
+        referrer: event.referrer || null,
+      });
+    }
+    if (event.type === "search" && (event.query || event.url)) {
+      const query = normalizeSearchQuery(event.query || event.url);
+      if (!query || searchesByKey.has(query)) continue;
+      searchesByKey.set(query, {
+        id: `s${searchesByKey.size + 1}`,
+        query: event.query || query,
+        engine: event.engine || "Search",
+        url: event.url || null,
+        at: event.at || new Date().toISOString(),
+      });
+    }
+  }
+  return { pages: Array.from(pagesByUrl.values()), searches: Array.from(searchesByKey.values()) };
+}
+
+function buildLocalHole(pages: CapturedPage[], searches: CapturedSearch[], titleHint?: string): ClusterHole | null {
+  if (pages.length < 3 && searches.length < 1) return null;
+  const text = [
+    ...searches.map((s) => s.query || ""),
+    ...pages.map((p) => `${p.title || ""} ${p.domain || ""}`),
+  ].join(" ");
+  const words = titleWords(text);
+  const counts = new Map<string, number>();
+  for (const word of words) counts.set(word, (counts.get(word) || 0) + 1);
+  const topics = [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([word]) => word);
+  const domains = [...new Set(pages.map((p) => p.domain || hostnameOf(p.url)).filter(Boolean))];
+  const firstQuery = titleHint || searches[0]?.query?.trim();
+  const title = firstQuery
+    ? firstQuery.replace(/\b\w/g, (c) => c.toUpperCase()).slice(0, 52)
+    : topics.length
+      ? `${topics[0].replace(/\b\w/g, (c) => c.toUpperCase())} Research`
+      : "Current Investigation";
+  const questions = firstQuery
+    ? [`What did I learn about ${firstQuery}?`, `What should I read next?`]
+    : [`What connects these ${pages.length} pages?`, "Where should I continue?"];
+  const entities: ClusterEntity[] = [
+    ...domains.slice(0, 5).map((domain, i) => ({ id: `domain-${i + 1}`, name: domain, kind: domain.includes("github") ? "repo" as const : "tool" as const, mentions: pages.filter((p) => (p.domain || "").includes(domain)).length || 1 })),
+    ...topics.slice(0, 5).map((topic, i) => ({ id: `topic-${i + 1}`, name: topic, kind: "concept" as const, mentions: counts.get(topic) || 1 })),
+  ];
+  return {
+    client_id: buildHoleId(title, pages.map((p) => p.id)),
+    title,
+    description: `A local investigation built from ${pages.length} pages and ${searches.length} searches in this browser.`,
+    topics: topics.length ? topics : domains.slice(0, 4),
+    questions,
+    entities,
+    page_ids: pages.map((p) => p.id),
+    confidence: Math.min(0.95, 0.58 + Math.min(pages.length, 12) * 0.025 + Math.min(searches.length, 6) * 0.025),
+  };
+}
+
+function buildLocalHoles(pages: CapturedPage[], searches: CapturedSearch[]): ClusterHole[] {
+  const cleanSearches = dedupeSearches(searches);
+  if (pages.length < 3 && cleanSearches.length < 1) return [];
+  if (cleanSearches.length <= 1 || pages.length < 6) {
+    const hole = buildLocalHole(pages, cleanSearches);
+    return hole ? [hole] : [];
+  }
+
+  const sortedPages = [...pages].sort((a, b) => +new Date(a.at || 0) - +new Date(b.at || 0));
+  const sortedSearches = [...cleanSearches].sort((a, b) => +new Date(a.at || 0) - +new Date(b.at || 0));
+  const groups = sortedSearches.map((search) => ({ search, pages: [] as CapturedPage[] }));
+
+  for (const page of sortedPages) {
+    const pageTime = +new Date(page.at || 0);
+    let owner = 0;
+    for (let i = 0; i < sortedSearches.length; i += 1) {
+      const searchTime = +new Date(sortedSearches[i].at || 0);
+      if (!Number.isNaN(pageTime) && !Number.isNaN(searchTime) && searchTime <= pageTime) owner = i;
+    }
+    groups[owner]?.pages.push(page);
+  }
+
+  const holes = groups
+    .map((group) => buildLocalHole(group.pages, [group.search], group.search.query || undefined))
+    .filter(Boolean) as ClusterHole[];
+
+  if (holes.length) return holes.slice(0, 6);
+  const fallback = buildLocalHole(pages, cleanSearches);
+  return fallback ? [fallback] : [];
+}
+
+type ProviderCluster = {
+  holes?: Array<{
+    title?: string;
+    description?: string;
+    topics?: string[];
+    questions?: string[];
+    entities?: Array<Partial<ClusterEntity> & { name?: string }>;
+    page_ids?: string[];
+    confidence?: number;
+  }>;
+};
+
+async function buildProviderHoles(pages: CapturedPage[], searches: CapturedSearch[]): Promise<ClusterHole[] | null> {
+  if (pages.length < 3 && searches.length < 1) return null;
+  const pageIds = new Set(pages.map((page) => page.id));
+  const payload = {
+    searches: dedupeSearches(searches).slice(0, 20),
+    pages: pages.slice(0, 80).map((page) => ({
+      id: page.id,
+      title: page.title,
+      domain: page.domain,
+      url: page.url,
+      at: page.at,
+      referrer: page.referrer,
+    })),
+  };
+  const generated = await generateJson<ProviderCluster>(
+    `Cluster this browser session into one or more rabbit holes.
+
+Captured session:
+${JSON.stringify(payload, null, 2)}
+
+Rules:
+- Return only clusters that represent a coherent investigation.
+- Prefer 1-4 high quality clusters over many tiny clusters.
+- Use only page ids that appear above.
+- Do not include repeated duplicate topics.
+- Titles should be short and human, not generic.
+
+Return JSON:
+{
+  "holes": [
+    {
+      "title": "AI Systems",
+      "description": "What this investigation was trying to understand.",
+      "topics": ["topic"],
+      "questions": ["question"],
+      "entities": [{"id":"entity-1","name":"vLLM","kind":"repo","mentions":2}],
+      "page_ids": ["p1"],
+      "confidence": 0.86
+    }
+  ]
+}`,
+    { temperature: 0.15, maxTokens: 1600 },
+  );
+  const holes = generated?.holes;
+  if (!Array.isArray(holes)) return null;
+
+  const normalized = holes
+    .map((hole, index): ClusterHole | null => {
+      const ids = (hole.page_ids || []).filter((id) => pageIds.has(id));
+      if (ids.length < 2) return null;
+      const title = (hole.title || `Investigation ${index + 1}`).trim().slice(0, 64);
+      const entities: ClusterEntity[] = (hole.entities || [])
+        .filter((entity) => entity.name)
+        .slice(0, 12)
+        .map((entity, entityIndex) => ({
+          id: entity.id || `entity-${index + 1}-${entityIndex + 1}`,
+          name: String(entity.name),
+          kind: (entity.kind as ClusterEntity["kind"]) || "concept",
+          mentions: Number(entity.mentions || 1),
+        }));
+      return {
+        client_id: buildHoleId(title, ids),
+        title,
+        description: hole.description || `A local investigation built from ${ids.length} captured pages.`,
+        topics: Array.isArray(hole.topics) ? hole.topics.slice(0, 8) : [],
+        questions: Array.isArray(hole.questions) ? hole.questions.slice(0, 5) : [],
+        entities,
+        page_ids: ids,
+        confidence: Math.max(0.4, Math.min(0.98, Number(hole.confidence || 0.78))),
+      };
+    })
+    .filter(Boolean) as ClusterHole[];
+
+  return normalized.length ? normalized : null;
 }
 
 export function clusterHoleToRabbitHole(hole: ClusterHole, capturedPages: CapturedPage[] = [], capturedSearches: CapturedSearch[] = []): RabbitHole {
@@ -278,30 +534,15 @@ export function forgetClusterContext() {
   window.localStorage.removeItem(LAST_CLUSTER_SIGNATURE_KEY);
 }
 
-async function authHeaders(): Promise<HeadersInit> {
-  if (typeof window === "undefined") return {};
-  const { supabase } = await import("@/lib/supabase/client");
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
 export async function runCluster(): Promise<ClusterResponse> {
-  let res: Response;
-  try {
-    res = await fetch(`${BACKEND_URL}/cluster`, { method: "POST", headers: await authHeaders() });
-  } catch (error) {
-    throw new ClusterError("Could not reach the Rabbit Holes backend.", undefined, error);
-  }
-  if (!res.ok) {
-    let detail: unknown = null;
-    try {
-      detail = await res.json();
-    } catch {
-      detail = await res.text().catch(() => null);
-    }
-    throw new ClusterError(`cluster request failed: ${res.status}`, res.status, detail);
-  }
-  const data = (await res.json()) as ClusterResponse;
-  return { holes: data.holes ?? [], pages: data.pages ?? [], searches: data.searches ?? [], no_change: data.no_change, source_signature: data.source_signature };
+  const events = await readExtensionEvents();
+  const { pages, searches } = eventsToCaptured(events);
+  const holes = (await buildProviderHoles(pages, searches)) ?? buildLocalHoles(pages, searches);
+  const response: ClusterResponse = {
+    holes,
+    pages,
+    searches,
+    source_signature: JSON.stringify({ pages: pages.map((p) => p.url), searches: searches.map((s) => s.query) }),
+  };
+  return response;
 }
