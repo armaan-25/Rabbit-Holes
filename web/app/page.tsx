@@ -21,11 +21,11 @@ export default function Landing() {
       <header className="mx-auto flex h-[76px] w-full max-w-[1160px] items-center justify-between gap-4 px-5 sm:px-8">
         <div className="flex min-w-0 items-center gap-6">
           <Link href="/" className="shrink-0 no-underline"><Wordmark className="text-[23px]" /></Link>
-          <nav className="hidden items-center gap-2 text-[14px] font-semibold md:flex">
-            <Link href="/dashboard" className="rounded-full border border-[var(--rh-line)] bg-[var(--rh-surface)] px-4 py-2 text-[var(--rh-ink-soft)] no-underline transition hover:-translate-y-0.5 hover:text-[var(--rh-ink)]">Dashboard</Link>
-            <Link href="/docs" className="rounded-full border border-[var(--rh-line)] bg-[var(--rh-surface)] px-4 py-2 text-[var(--rh-ink-soft)] no-underline transition hover:-translate-y-0.5 hover:text-[var(--rh-ink)]">Docs</Link>
-            <button onClick={() => setInstallOpen(true)} className="rounded-full border border-[var(--rh-line)] bg-[var(--rh-surface)] px-4 py-2 text-[var(--rh-ink-soft)] transition hover:-translate-y-0.5 hover:text-[var(--rh-ink)]">Download</button>
-            <a href="https://github.com/armaan-25/Rabbit-Holes" className="rounded-full border border-[var(--rh-line)] bg-[var(--rh-surface)] px-4 py-2 text-[var(--rh-ink-soft)] no-underline transition hover:-translate-y-0.5 hover:text-[var(--rh-ink)]">GitHub</a>
+          <nav className="hidden items-center gap-5 text-[14px] font-semibold md:flex">
+            <Link href="/dashboard" className="text-[var(--rh-ink-soft)] no-underline transition hover:text-[var(--rh-ink)]">Dashboard</Link>
+            <Link href="/docs" className="text-[var(--rh-ink-soft)] no-underline transition hover:text-[var(--rh-ink)]">Docs</Link>
+            <button onClick={() => setInstallOpen(true)} className="text-[var(--rh-ink-soft)] transition hover:text-[var(--rh-ink)]">Download</button>
+            <a href="https://github.com/armaan-25/Rabbit-Holes" className="text-[var(--rh-ink-soft)] no-underline transition hover:text-[var(--rh-ink)]">GitHub</a>
           </nav>
         </div>
         <Link href="/login" className="shrink-0 rounded-full bg-[var(--rh-primary)] px-5 py-2.5 text-[14px] font-semibold text-[var(--rh-primary-text)] no-underline transition hover:-translate-y-0.5">

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import ReactFlow, { Background, Handle, MarkerType, Position, type Edge, type Node, type NodeProps } from "reactflow";
 import { RabbitEars } from "@/components/Logo";
 
 const STEPS = ["Capture", "Cluster", "Holes", "Map", "Ask"] as const;
@@ -195,41 +196,86 @@ const MAP_KIND: Record<MapKind, { label: string; bg: string; border: string; dot
   page: { label: "Page", bg: "#241c14", border: "#70583b", dot: "#8f7859" },
 };
 
-const MAP_NODES: { id: string; kind: MapKind; label: string; domain?: string; x: number; y: number }[] = [
-  { id: "s0", kind: "search", label: "vLLM", x: 13, y: 13 },
-  { id: "s1", kind: "search", label: "PagedAttention", x: 13, y: 30 },
-  { id: "s2", kind: "search", label: "DistServe", x: 13, y: 47 },
-  { id: "s3", kind: "search", label: "queueing theory", x: 13, y: 64 },
-  { id: "s4", kind: "search", label: "SGLang", x: 13, y: 81 },
-  { id: "r0", kind: "repo", label: "vllm repo", domain: "github.com", x: 48, y: 11 },
-  { id: "r1", kind: "doc", label: "vLLM docs", domain: "docs.vllm.ai", x: 48, y: 25.4 },
-  { id: "r2", kind: "paper", label: "PagedAttention paper", domain: "arxiv.org", x: 48, y: 39.8 },
-  { id: "r3", kind: "paper", label: "DistServe paper", domain: "arxiv.org", x: 48, y: 54.2 },
-  { id: "r4", kind: "page", label: "Queueing theory", domain: "wikipedia.org", x: 48, y: 68.6 },
-  { id: "r5", kind: "repo", label: "SGLang", domain: "github.com", x: 48, y: 83 },
-  { id: "d0", kind: "page", label: "Continuous batching", domain: "anyscale.com", x: 80, y: 41 },
-  { id: "d1", kind: "repo", label: "FlashAttention", domain: "github.com", x: 80, y: 61 },
-];
-
-const MAP_EDGES: { from: string; to: string; tone: "amber" | "brown" | "green" }[] = [
-  { from: "s0", to: "r0", tone: "amber" },
-  { from: "s0", to: "r1", tone: "amber" },
-  { from: "s1", to: "r2", tone: "amber" },
-  { from: "s2", to: "r3", tone: "amber" },
-  { from: "s3", to: "r4", tone: "amber" },
-  { from: "s4", to: "r5", tone: "amber" },
-  { from: "r2", to: "d0", tone: "brown" },
-  { from: "r3", to: "d0", tone: "brown" },
-  { from: "r3", to: "d1", tone: "green" },
-];
-
 const MAP_TONE = {
-  amber: { stroke: "#b77637", opacity: 0.6, dash: undefined as string | undefined, marker: "demo-arrow-amber" },
-  brown: { stroke: "#8a623a", opacity: 0.6, dash: undefined as string | undefined, marker: "demo-arrow-brown" },
-  green: { stroke: "#5f8a5c", opacity: 0.4, dash: "4 5" as string | undefined, marker: "demo-arrow-green" },
+  amber: { stroke: "#b77637", opacity: 0.62 },
+  brown: { stroke: "#8a623a", opacity: 0.58 },
+  green: { stroke: "#5f8a5c", opacity: 0.5 },
 } as const;
 
-const mapNode = (id: string) => MAP_NODES.find((n) => n.id === id)!;
+const demoNodeTypes = { demo: DemoMapNode };
+
+const demoMapNodes: Node[] = [
+  demoNode("s0", "search", "vLLM", undefined, 20, 28),
+  demoNode("s1", "search", "PagedAttention", undefined, 20, 116),
+  demoNode("s2", "search", "DistServe", undefined, 20, 204),
+  demoNode("s3", "search", "queueing theory", undefined, 20, 292),
+  demoNode("s4", "search", "SGLang", undefined, 20, 380),
+  demoNode("r0", "repo", "vllm repo", "github.com", 350, 20),
+  demoNode("r1", "doc", "vLLM docs", "docs.vllm.ai", 350, 100),
+  demoNode("r2", "paper", "PagedAttention paper", "arxiv.org", 350, 180),
+  demoNode("r3", "paper", "DistServe paper", "arxiv.org", 350, 260),
+  demoNode("r4", "page", "Queueing theory", "wikipedia.org", 350, 340),
+  demoNode("r5", "repo", "SGLang", "github.com", 350, 420),
+  demoNode("d0", "page", "Continuous batching", "anyscale.com", 680, 184),
+  demoNode("d1", "repo", "FlashAttention", "github.com", 680, 320),
+];
+
+const demoMapEdges: Edge[] = [
+  demoEdge("s0-r0", "s0", "r0", "amber"),
+  demoEdge("s0-r1", "s0", "r1", "amber"),
+  demoEdge("s1-r2", "s1", "r2", "amber"),
+  demoEdge("s2-r3", "s2", "r3", "amber"),
+  demoEdge("s3-r4", "s3", "r4", "amber"),
+  demoEdge("s4-r5", "s4", "r5", "amber"),
+  demoEdge("r2-d0", "r2", "d0", "brown"),
+  demoEdge("r3-d0", "r3", "d0", "brown"),
+  demoEdge("r3-d1", "r3", "d1", "green"),
+];
+
+function demoNode(id: string, kind: MapKind, label: string, domain: string | undefined, x: number, y: number): Node {
+  return {
+    id,
+    type: "demo",
+    position: { x, y },
+    sourcePosition: Position.Right,
+    targetPosition: Position.Left,
+    data: { kind, label, domain },
+    draggable: false,
+    selectable: false,
+  };
+}
+
+function demoEdge(id: string, source: string, target: string, toneName: keyof typeof MAP_TONE): Edge {
+  const tone = MAP_TONE[toneName];
+  return {
+    id,
+    source,
+    target,
+    type: "smoothstep",
+    animated: false,
+    markerEnd: { type: MarkerType.ArrowClosed, color: tone.stroke, width: 14, height: 14 },
+    style: { stroke: tone.stroke, strokeWidth: 1.4, opacity: tone.opacity },
+  };
+}
+
+function DemoMapNode({ data }: NodeProps<{ kind: MapKind; label: string; domain?: string }>) {
+  const meta = MAP_KIND[data.kind];
+  return (
+    <div
+      className="w-[158px] rounded-[10px] border px-3 py-2 shadow-[0_12px_26px_rgba(18,11,5,.22)]"
+      style={{ background: meta.bg, borderColor: meta.border }}
+    >
+      <Handle type="target" position={Position.Left} className="!h-1.5 !w-1.5 !border-0 !bg-transparent" />
+      <Handle type="source" position={Position.Right} className="!h-1.5 !w-1.5 !border-0 !bg-transparent" />
+      <div className="mb-1 flex items-center gap-1.5">
+        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: meta.dot }} />
+        <span className="text-[8.5px] font-semibold uppercase tracking-[0.18em] text-[#b69b77]">{meta.label}</span>
+      </div>
+      <div className="rh-display truncate text-[13px] font-semibold leading-tight text-[#f6ecd9]">{data.label}</div>
+      {data.domain && <div className="mt-1 truncate text-[10px] text-[#b7a487]">{data.domain}</div>}
+    </div>
+  );
+}
 
 const Map = () => (
   <div>
@@ -244,66 +290,24 @@ const Map = () => (
       </div>
     </div>
     <div className="relative h-[330px] overflow-hidden rounded-[18px] border border-[#4a3928] bg-[#1b130d] sm:h-[390px]">
-      <div className="absolute inset-0 opacity-[0.28]" style={{ backgroundImage: "radial-gradient(#6d5639 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
-        {MAP_EDGES.map((edge, idx) => {
-          const a = mapNode(edge.from);
-          const b = mapNode(edge.to);
-          const tone = MAP_TONE[edge.tone];
-          const sx = a.x + 7;
-          const tx = b.x - 7;
-          const mx = (sx + tx) / 2;
-          return (
-            <g key={`${edge.from}-${edge.to}`} opacity={tone.opacity}>
-              <motion.path
-                d={`M ${sx} ${a.y} H ${mx} V ${b.y} H ${tx - 1.2}`}
-                fill="none"
-                stroke={tone.stroke}
-                strokeWidth="0.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeDasharray={tone.dash}
-                vectorEffect="non-scaling-stroke"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ delay: 0.1 + idx * 0.07, duration: 0.6, ease: "easeOut" }}
-              />
-              <motion.path
-                d={`M ${tx - 1.6} ${b.y - 1.1} L ${tx} ${b.y} L ${tx - 1.6} ${b.y + 1.1}`}
-                fill="none"
-                stroke={tone.stroke}
-                strokeWidth="0.7"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                vectorEffect="non-scaling-stroke"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 + idx * 0.07, duration: 0.18 }}
-              />
-            </g>
-          );
-        })}
-      </svg>
-      {MAP_NODES.map((n, idx) => {
-        const meta = MAP_KIND[n.kind];
-        return (
-          <motion.div
-            key={n.id}
-            initial={{ opacity: 0, y: 8, scale: 0.92 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ delay: 0.1 + idx * 0.05 }}
-            className="absolute w-[150px] -translate-x-1/2 -translate-y-1/2 rounded-[10px] border px-3 py-2 shadow-[0_12px_26px_rgba(18,11,5,.22)]"
-            style={{ left: `${n.x}%`, top: `${n.y}%`, background: meta.bg, borderColor: meta.border }}
-          >
-            <div className="mb-1 flex items-center gap-1.5">
-              <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: meta.dot }} />
-              <span className="text-[8.5px] font-semibold uppercase tracking-[0.18em] text-[#b69b77]">{meta.label}</span>
-            </div>
-            <div className="rh-display truncate text-[13px] font-semibold leading-tight text-[#f6ecd9]">{n.label}</div>
-            {n.domain && <div className="mt-1 truncate text-[10px] text-[#b7a487]">{n.domain}</div>}
-          </motion.div>
-        );
-      })}
+      <ReactFlow
+        nodes={demoMapNodes}
+        edges={demoMapEdges}
+        nodeTypes={demoNodeTypes}
+        fitView
+        fitViewOptions={{ padding: 0.16 }}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={false}
+        panOnDrag={false}
+        zoomOnScroll={false}
+        zoomOnPinch={false}
+        zoomOnDoubleClick={false}
+        preventScrolling={false}
+        proOptions={{ hideAttribution: true }}
+      >
+        <Background color="#6d5639" gap={20} size={1} style={{ opacity: 0.28 }} />
+      </ReactFlow>
     </div>
   </div>
 );
