@@ -82,7 +82,7 @@ export function DiscoverButton({
       <button
         onClick={discover}
         disabled={busy}
-        className={`${variant === "primary" ? "rh-primary border-transparent" : "rh-surface border-[var(--rh-line)]"} group relative overflow-hidden rounded-[14px] border px-4 py-2.5 text-[13px] font-semibold shadow-[0_4px_18px_rgba(70,45,20,.06)] transition hover:-translate-y-0.5 hover:border-[var(--rh-line-strong)] disabled:cursor-wait disabled:opacity-65 ${className}`}
+        className={`${variant === "primary" ? "rh-primary border-transparent" : "rh-surface border-[var(--rh-line)]"} group relative inline-flex items-center justify-center overflow-hidden rounded-full border px-5 py-2.5 text-[13px] font-semibold transition hover:border-[var(--rh-line-strong)] hover:brightness-105 disabled:cursor-wait disabled:opacity-65 ${className}`}
       >
         <span className="relative inline-flex items-center gap-2">{label}</span>
       </button>
@@ -109,10 +109,10 @@ export function RabbitHoleLoading() {
     <div className="fixed inset-0 z-[70] grid place-items-center overflow-hidden bg-[#140d08]/76 px-4 backdrop-blur-[8px]">
       <style>{`
         @keyframes word-to-hole {
-          0% { transform: translate(var(--x), var(--y)) scale(1); opacity: 0; filter: blur(0); }
-          14% { opacity: .54; }
-          72% { opacity: .34; }
-          100% { transform: translate(-50%, -6%) scale(.22); opacity: 0; filter: blur(2px); }
+          0% { transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1); opacity: 0; filter: blur(0); }
+          16% { opacity: .78; }
+          74% { opacity: .52; }
+          100% { transform: translate(-50%, -50%) scale(.22); opacity: 0; filter: blur(2px); }
         }
         @keyframes load-bar {
           0% { transform: translateX(-100%); }
@@ -127,7 +127,7 @@ export function RabbitHoleLoading() {
             {WORDS.map((word) => (
               <span
                 key={word.text}
-                className="absolute left-1/2 top-1/2 z-10 rh-display select-none whitespace-nowrap text-[26px] italic tracking-wide text-[#d7c3a1]/55"
+                className="absolute left-1/2 top-1/2 z-20 rh-display select-none whitespace-nowrap text-[26px] italic tracking-wide text-[#ead8b8]/75"
                 style={{
                   "--x": word.x,
                   "--y": word.y,
@@ -137,8 +137,8 @@ export function RabbitHoleLoading() {
                 {word.text}
               </span>
             ))}
-            <div className="absolute inset-x-20 bottom-8 top-8 z-10 rounded-full bg-[#17100b]/18 blur-3xl" />
-            <div className="relative z-20 grid h-[132px] w-[132px] place-items-center rounded-full border border-[#f3e8d42b] bg-[#17100b]/92 text-[#f6ecd9] shadow-[0_18px_58px_rgba(18,11,5,.36)]">
+            <div className="absolute inset-x-20 bottom-8 top-8 z-0 rounded-full bg-[#17100b]/18 blur-3xl" />
+            <div className="relative z-30 grid h-[132px] w-[132px] place-items-center rounded-full border border-[#f3e8d42b] bg-[#17100b]/92 text-[#f6ecd9] shadow-[0_18px_58px_rgba(18,11,5,.36)]">
               <RabbitEars className="h-16 w-16" />
             </div>
           </div>
