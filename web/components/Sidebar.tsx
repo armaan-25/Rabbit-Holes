@@ -62,10 +62,7 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="rh-faint mb-3 mt-7 px-3 text-[11px] font-semibold uppercase tracking-[0.16em]">
-        Rabbit Holes
-      </div>
-      <div className="flex-1 space-y-1 overflow-y-auto">
+      <div className="mt-7 flex-1 space-y-1 overflow-y-auto">
         {holes.map((h) => {
           const active = pathname === `/holes/${h.id}`;
           const accent = ACCENTS[h.accent];
