@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "reactflow/dist/style.css";
-import { AppTopBar, MobileNav, Sidebar } from "@/components/Sidebar";
+import { MobileNav, Sidebar } from "@/components/Sidebar";
 import { PluginHost } from "@/components/PluginHost";
 import { YouAreHere } from "@/components/shared/YouAreHere";
 import { AuthGate } from "@/components/AuthGate";
@@ -56,7 +56,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="flex min-h-screen">
             <Sidebar />
             <main className="relative flex-1 overflow-x-hidden">
-              <AppTopBar />
               <PageTransition>{children}</PageTransition>
             </main>
           </div>
