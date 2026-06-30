@@ -63,7 +63,7 @@ export function LandingDemo() {
         </div>
 
         {/* stage */}
-        <div className="relative h-[520px] overflow-hidden bg-[#18100a] sm:h-[600px]">
+        <div className="relative h-[440px] overflow-hidden bg-[#18100a] sm:h-[520px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={i}
@@ -130,15 +130,15 @@ const Capture = () => (
 const Cluster = () => (
   <div className="flex h-full flex-col items-center justify-center text-center">
     <motion.div
-      className="grid h-24 w-24 overflow-visible rounded-full border border-[#785a3224] bg-[#f6efe1] p-5"
+      className="grid h-16 w-16 overflow-visible rounded-full border border-[#f3e8d4]/20 bg-[#f3e8d4]/10 p-3 text-[#f3e8d4]"
       animate={{ scale: [1, 1.06, 1] }}
       transition={{ duration: 1.6, repeat: Infinity }}
     >
-      <RabbitEars className="h-full w-full text-[#21170f]" />
+      <RabbitEars className="h-full w-full" />
     </motion.div>
     <div className="rh-display mt-5 text-[26px] font-semibold text-[#f6ecd9]">Building rabbit holes...</div>
     <div className="mt-2 max-w-[44ch] text-[15px] text-[#cdbd9f]">Clustering the session into the questions you were actually chasing.</div>
-    <div className="mt-6 h-1.5 w-[260px] overflow-hidden rounded-full bg-[#4a3928]">
+    <div className="mt-6 h-1.5 w-[220px] overflow-hidden rounded-full bg-[#4a3928]">
       <motion.div
         className="h-full rounded-full bg-[#c2703f]"
         initial={{ width: "8%" }}
@@ -243,7 +243,7 @@ const Map = () => (
         ))}
       </div>
     </div>
-    <div className="relative h-[420px] overflow-hidden rounded-[18px] border border-[#4a3928] bg-[#1b130d] sm:h-[470px]">
+    <div className="relative h-[330px] overflow-hidden rounded-[18px] border border-[#4a3928] bg-[#1b130d] sm:h-[390px]">
       <div className="absolute inset-0 opacity-[0.28]" style={{ backgroundImage: "radial-gradient(#6d5639 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
         {MAP_EDGES.map((edge, idx) => {
