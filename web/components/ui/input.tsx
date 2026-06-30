@@ -12,7 +12,7 @@ export function Select({ className, ...props }: SelectHTMLAttributes<HTMLSelectE
     <select
       className={cn(
         fieldClass,
-        "appearance-none bg-[var(--rh-surface-2)] bg-[url(\"data:image/svg+xml,%3Csvg_width='14'_height='8'_viewBox='0_0_14_8'_fill='none'_xmlns='http://www.w3.org/2000/svg'%3E%3Cpath_d='M1_1L7_7L13_1'_stroke='%23b8a98f'_stroke-width='1.6'_stroke-linecap='round'_stroke-linejoin='round'/%3E%3C/svg%3E\")] bg-[length:14px_8px] bg-[right_14px_center] bg-no-repeat pr-11 text-[var(--rh-ink-soft)]",
+        "rh-select appearance-none bg-[var(--rh-surface-2)] pr-11 text-[var(--rh-ink-soft)]",
         className
       )}
       {...props}
