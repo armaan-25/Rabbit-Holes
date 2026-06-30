@@ -46,12 +46,19 @@ export default function Landing() {
               </button>
             </div>
           </motion.div>
+        </section>
 
-          <motion.div className="mt-12 w-full" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}>
+        <section id="demo" className="mx-auto w-full max-w-[1120px] scroll-mt-28 px-5 pb-16 pt-16 sm:px-8">
+          <motion.div initial={{ opacity: 0, y: 22 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} className="mb-9 text-center">
+            <div className="mb-3 text-[13px] font-semibold uppercase tracking-[0.2em] text-[#a8967d]">See it work</div>
+            <h2 className="rh-display mx-auto max-w-[15ch] text-[clamp(30px,3.8vw,48px)] font-semibold leading-[1.02] text-[var(--rh-ink)]">
+              Watch a trail become a rabbit hole.
+            </h2>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 22 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="relative">
             <LandingDemo />
           </motion.div>
         </section>
-
       </main>
 
       <footer className="mx-auto flex w-full max-w-[1160px] flex-col justify-between gap-4 px-5 py-10 text-[14px] text-[var(--rh-muted)] sm:flex-row sm:px-8">
