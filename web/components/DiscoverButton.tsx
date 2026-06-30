@@ -9,7 +9,7 @@ import { preGenerateHoleBriefs } from "@/lib/api";
 import { RabbitEars } from "@/components/Logo";
 
 /** Triggers the discovery overlay from a real /cluster response. */
-export function DiscoverButton() {
+export function DiscoverButton({ className = "" }: { readonly className?: string }) {
   const trigger = useApp((s) => s.triggerDiscovery);
   const triggerMany = useApp((s) => s.triggerDiscoveries);
   const setLiveHoles = useApp((s) => s.setLiveHoles);
@@ -76,7 +76,7 @@ export function DiscoverButton() {
       <button
         onClick={discover}
         disabled={busy}
-        className="rh-surface group relative overflow-hidden rounded-[14px] border px-4 py-2.5 text-[13px] font-semibold shadow-[0_4px_18px_rgba(70,45,20,.06)] transition hover:border-[var(--rh-line-strong)] disabled:cursor-wait disabled:opacity-65"
+        className={`rh-surface group relative overflow-hidden rounded-[14px] border px-4 py-2.5 text-[13px] font-semibold shadow-[0_4px_18px_rgba(70,45,20,.06)] transition hover:border-[var(--rh-line-strong)] disabled:cursor-wait disabled:opacity-65 ${className}`}
       >
         <span className="relative inline-flex items-center gap-2">{label}</span>
       </button>
