@@ -28,8 +28,8 @@ export default function Landing() {
             <a href="https://github.com/armaan-25/Rabbit-Holes" className="text-[var(--rh-ink-soft)] no-underline transition hover:text-[var(--rh-ink)]">GitHub</a>
           </nav>
         </div>
-        <Link href="/login" className="shrink-0 rounded-full bg-[var(--rh-primary)] px-5 py-2.5 text-[14px] font-semibold text-[var(--rh-primary-text)] no-underline transition hover:-translate-y-0.5">
-          Sign in
+        <Link href="/dashboard" className="shrink-0 rounded-full bg-[var(--rh-primary)] px-5 py-2.5 text-[14px] font-semibold text-[var(--rh-primary-text)] no-underline transition hover:-translate-y-0.5">
+          Dashboard
         </Link>
       </header>
 
