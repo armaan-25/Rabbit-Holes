@@ -14,6 +14,7 @@ import { Card } from "@/components/ui/card";
 import { AppFrame } from "@/components/ui/frame";
 import { Input } from "@/components/ui/input";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import Link from "next/link";
 
 export default function Dashboard() {
   const setLiveHoles = useApp((s) => s.setLiveHoles);
@@ -171,20 +172,33 @@ export default function Dashboard() {
               Rabbit holes
             </h1>
           </div>
-          <DiscoverButton />
+          <div className="flex flex-col items-start gap-3 sm:items-end">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--rh-line)] bg-[var(--rh-surface)] px-3 py-1.5 text-[12px] font-semibold text-[var(--rh-muted)]">
+              <span className="h-2 w-2 rounded-full bg-[var(--rh-green)] shadow-[0_0_12px_var(--rh-green)]" />
+              Extension connected
+            </div>
+            <DiscoverButton />
+          </div>
         </div>
 
         {holes.length === 0 ? (
-          <div className="mt-20">
+          <div className="mt-12 space-y-8">
             <EmptyHoles
-              eyebrow="No investigations yet"
-              title="Begin with the extension."
-              hint="Browse normally. Rabbit Holes quietly remembers what you are trying to understand. When a real trail forms, your first investigation will appear here."
+              eyebrow="Your library"
+              title="Your first investigation will appear here."
+              hint="Install the extension, browse normally, and Rabbit Holes will preserve the thread when a real trail forms."
             />
+            <ExampleInvestigation />
           </div>
         ) : (
           <>
+            <div className="mt-12 grid gap-5 lg:grid-cols-[1.1fr_.9fr]">
+              <ContinueInvestigation hole={visibleHoles[0] ?? holes[0]} />
+              <LibraryContext holesCount={visibleHoles.length} syncLabel={syncLabel} />
+            </div>
+
             <div className="mt-10 max-w-[380px]">
+              <div className="rh-faint mb-3 text-[11px] font-semibold uppercase tracking-[0.18em]">Recent investigations</div>
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -231,5 +245,90 @@ export default function Dashboard() {
         )}
       </AppFrame>
     </div>
+  );
+}
+
+function ExampleInvestigation() {
+  return (
+    <section className="rh-surface mx-auto overflow-hidden rounded-[28px] border">
+      <div className="grid gap-0 lg:grid-cols-[1fr_.9fr]">
+        <div className="border-b border-[var(--rh-line)] p-7 lg:border-b-0 lg:border-r lg:p-9">
+          <div className="rh-faint mb-5 text-[11px] font-semibold uppercase tracking-[0.2em]">Example investigation</div>
+          <div className="space-y-3">
+            {[
+              ["Search", "vLLM request scheduling"],
+              ["Repo", "vllm-project/vllm"],
+              ["Paper", "DistServe"],
+            ].map(([label, value]) => (
+              <div key={value} className="rounded-[18px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] px-5 py-4">
+                <div className="rh-faint text-[10px] font-semibold uppercase tracking-[0.18em]">{label}</div>
+                <div className="rh-display rh-ink mt-1 text-[22px] font-semibold">{value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="p-7 lg:p-9">
+          <div className="rh-faint mb-3 text-[11px] font-semibold uppercase tracking-[0.2em]">Current investigation</div>
+          <h2 className="rh-display rh-ink text-[clamp(36px,5vw,58px)] font-semibold leading-none tracking-[-0.03em]">AI Systems</h2>
+          <div className="mt-7 overflow-hidden rounded-[20px] border border-[var(--rh-line)]">
+            <ExampleRow label="Question" value="How does vLLM schedule requests?" />
+            <ExampleRow label="Last stop" value="DistServe, section 4" />
+            <ExampleRow label="Next" value="Compare against Sarathi" last />
+          </div>
+          <Link href="/install" className="mt-7 inline-flex rounded-full bg-[var(--rh-ink)] px-6 py-3 text-[15px] font-semibold text-[var(--rh-paper)] no-underline transition hover:opacity-90">
+            Continue investigation →
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ExampleRow({ label, value, last = false }: { label: string; value: string; last?: boolean }) {
+  return (
+    <div className={`px-5 py-4 ${last ? "" : "border-b border-[var(--rh-line)]"}`}>
+      <div className="rh-faint text-[10px] font-semibold uppercase tracking-[0.18em]">{label}</div>
+      <div className="rh-ink mt-1 text-[18px] font-semibold">{value}</div>
+    </div>
+  );
+}
+
+function ContinueInvestigation({ hole }: { hole: ReturnType<typeof useLibraryHoles>[number] }) {
+  const lastPage = hole.pages[hole.pages.length - 1];
+  const question = hole.summary.questions[0] || hole.description;
+  return (
+    <section className="rh-surface rounded-[26px] border p-7">
+      <div className="rh-faint mb-4 text-[11px] font-semibold uppercase tracking-[0.18em]">Continue investigation</div>
+      <h2 className="rh-display rh-ink text-[clamp(32px,4vw,48px)] font-semibold leading-none">{hole.title}</h2>
+      <div className="mt-6 grid gap-3">
+        <ExampleRow label="Current question" value={question} />
+        <ExampleRow label="Last stop" value={lastPage ? lastPage.title : "Recently active"} last />
+      </div>
+      <Link href={`/holes/${hole.id}`} className="mt-6 inline-flex rounded-full bg-[var(--rh-ink)] px-5 py-3 text-[14px] font-semibold text-[var(--rh-paper)] no-underline transition hover:opacity-90">
+        Open thread →
+      </Link>
+    </section>
+  );
+}
+
+function LibraryContext({ holesCount, syncLabel }: { holesCount: number; syncLabel: string }) {
+  return (
+    <section className="rh-surface rounded-[26px] border p-7">
+      <div className="rh-faint mb-4 text-[11px] font-semibold uppercase tracking-[0.18em]">Library status</div>
+      <div className="space-y-4 text-[16px]">
+        <div className="flex items-center justify-between gap-4 border-b border-[var(--rh-line)] pb-4">
+          <span className="rh-muted">Investigations</span>
+          <span className="rh-ink font-semibold">{holesCount}</span>
+        </div>
+        <div className="flex items-center justify-between gap-4 border-b border-[var(--rh-line)] pb-4">
+          <span className="rh-muted">Capture</span>
+          <span className="rh-ink font-semibold">Connected</span>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <span className="rh-muted">Last update</span>
+          <span className="rh-ink font-semibold">{syncLabel}</span>
+        </div>
+      </div>
+    </section>
   );
 }

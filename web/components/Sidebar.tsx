@@ -9,7 +9,7 @@ import { Wordmark } from "./Logo";
 import { clearRabbitSession, readRabbitSession } from "@/lib/local-auth";
 
 const NAV = [
-  { href: "/dashboard", label: "Dashboard" },
+  { href: "/dashboard", label: "Library" },
 ];
 
 const MOBILE_NAV = [
@@ -39,7 +39,10 @@ export function Sidebar() {
         <div className="rh-muted mt-1.5 text-[13px] italic">Follow ideas, not tabs.</div>
       </Link>
 
-      <nav className="space-y-2">
+      <div className="rh-faint mb-3 text-[11px] font-semibold uppercase tracking-[0.16em]">
+        Library
+      </div>
+      <nav className="space-y-1">
         {NAV.map((n) => {
           const active = pathname === n.href;
           return (
@@ -48,7 +51,7 @@ export function Sidebar() {
               href={n.href}
               className={`flex items-center rounded-[10px] py-2.5 text-[15px] transition ${
                 active
-                  ? "text-[var(--rh-ink)]"
+                  ? "bg-[var(--rh-surface)] px-3 text-[var(--rh-ink)]"
                   : "rh-muted hover:text-[var(--rh-ink)]"
               }`}
             >
@@ -58,10 +61,15 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="rh-faint mb-4 mt-14 text-[11px] font-semibold uppercase tracking-[0.16em]">
+      <div className="rh-faint mb-4 mt-12 text-[11px] font-semibold uppercase tracking-[0.16em]">
         Investigations
       </div>
       <div className="flex-1 space-y-1 overflow-y-auto pr-1">
+        {holes.length === 0 && (
+          <div className="rh-muted max-w-[22ch] py-2 text-[13px] leading-5">
+            Your first thread will appear here.
+          </div>
+        )}
         {holes.map((h) => {
           const active = pathname === `/holes/${h.id}`;
           const accent = ACCENTS[h.accent];
@@ -83,9 +91,14 @@ export function Sidebar() {
         })}
       </div>
 
+      <div className="mb-5 mt-8 flex items-center gap-2 text-[12px] font-semibold text-[var(--rh-muted)]">
+        <span className="h-2 w-2 rounded-full bg-[var(--rh-green)] shadow-[0_0_10px_var(--rh-green)]" />
+        Extension connected
+      </div>
+
       <Link
         href="/settings"
-        className={`mt-8 py-2.5 text-[14px] no-underline transition ${
+        className={`py-2.5 text-[14px] no-underline transition ${
           pathname === "/settings" ? "text-[var(--rh-ink)]" : "rh-muted hover:text-[var(--rh-ink)]"
         }`}
       >

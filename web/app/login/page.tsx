@@ -38,10 +38,14 @@ function LoginForm() {
 
   async function google() {
     if (transitioning) return;
+    if (!email.trim()) {
+      setStatus("Enter your email first.");
+      return;
+    }
     setTransitioning(true);
     setStatus("Opening Google...");
     await new Promise((resolve) => window.setTimeout(resolve, 220));
-    finish(email.trim() || "local@rabbitholes.app");
+    finish(email.trim());
   }
 
   return (
