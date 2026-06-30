@@ -130,11 +130,11 @@ const Capture = () => (
 const Cluster = () => (
   <div className="flex h-full flex-col items-center justify-center text-center">
     <motion.div
-      className="grid h-20 w-20 place-items-center rounded-full border border-[#785a3224] bg-[#f6efe1]"
+      className="grid h-24 w-24 overflow-visible rounded-full border border-[#785a3224] bg-[#f6efe1] p-5"
       animate={{ scale: [1, 1.06, 1] }}
       transition={{ duration: 1.6, repeat: Infinity }}
     >
-      <RabbitEars className="h-10 w-10 text-[#21170f]" />
+      <RabbitEars className="h-full w-full text-[#21170f]" />
     </motion.div>
     <div className="rh-display mt-5 text-[26px] font-semibold text-[#f6ecd9]">Building rabbit holes...</div>
     <div className="mt-2 max-w-[44ch] text-[15px] text-[#cdbd9f]">Clustering the session into the questions you were actually chasing.</div>
