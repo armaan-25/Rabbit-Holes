@@ -1,7 +1,7 @@
 "use client";
 
 import { HoleCard } from "@/components/HoleCard";
-import { EmptyHoles } from "@/components/EmptyHoles";
+import { EmptyHolesPage } from "@/components/EmptyHoles";
 import { BuildNotice, RabbitHoleLoading } from "@/components/DiscoverButton";
 import { ClusterError, clusterBuildState, clusterHoleToRabbitHole, forgetClusterContext, markDiscoveriesSeen, markDiscoveryUnseen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
@@ -168,13 +168,11 @@ export default function Dashboard() {
       {routeBuildState === "duplicate" && <BuildNotice type="duplicate" stats={stats} onClose={() => setRouteBuildState("idle")} />}
       {routeBuildState === "unclear" && <BuildNotice type="unclear" stats={stats} onClose={() => setRouteBuildState("idle")} />}
       {routeBuildState === "error" && <BuildNotice type="error" stats={stats} errorStatus={routeErrorStatus} onClose={() => setRouteBuildState("idle")} />}
-      <AppFrame>
-        {holes.length === 0 ? (
-          <div className="mt-8">
-            <EmptyHoles eyebrow="Your rabbit holes" />
-          </div>
-        ) : (
-          <>
+      {holes.length === 0 ? (
+        <EmptyHolesPage eyebrow="Your rabbit holes" />
+      ) : (
+        <AppFrame>
+          <div>
             <ToolbarFrame className="mt-8">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
@@ -246,9 +244,9 @@ export default function Dashboard() {
             <p className="rh-muted mt-8 text-center text-[13px] italic">
               Smart history for your research.
             </p>
-          </>
-        )}
-      </AppFrame>
+          </div>
+        </AppFrame>
+      )}
     </div>
   );
 }
