@@ -1,0 +1,64 @@
+"use client";
+
+import { FormEvent, Suspense, useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Wordmark } from "@/components/Logo";
+import { writeRabbitSession } from "@/lib/local-auth";
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<AuthShell><p className="rh-muted text-center text-[14px]">Loading...</p></AuthShell>}>
+      <SignupForm />
+    </Suspense>
+  );
+}
+
+function SignupForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next") || "/dashboard";
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [status, setStatus] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setStatus("Creating account...");
+    await new Promise((resolve) => window.setTimeout(resolve, 220));
+    writeRabbitSession(email.trim());
+    router.replace(next.startsWith("/") ? next : "/dashboard");
+  }
+
+  return (
+    <AuthShell>
+      <form onSubmit={submit} className="space-y-3">
+        <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="Email" className="w-full rounded-[14px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-4 py-3 text-[15px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)]" />
+        <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required minLength={6} placeholder="Password" className="w-full rounded-[14px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-4 py-3 text-[15px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)]" />
+        <button disabled={busy} type="submit" className="rh-primary w-full rounded-[15px] px-5 py-3.5 text-[15px] font-semibold shadow-[0_10px_28px_rgba(42,32,24,.18)] disabled:opacity-60">
+          Create account
+        </button>
+      </form>
+      <Link href={`/login?next=${encodeURIComponent(next)}`} className="rh-muted mt-4 block text-center text-[14px] underline-offset-4 hover:underline">
+        Already have an account? Sign in
+      </Link>
+      {status && <p className="rh-surface-2 mt-4 rounded-[13px] px-4 py-3 text-[14px]">{status}</p>}
+    </AuthShell>
+  );
+}
+
+function AuthShell({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="rh-paper grid min-h-screen place-items-center px-5 py-10">
+      <div className="rh-surface w-full max-w-[440px] rounded-[28px] border p-8 shadow-[0_18px_60px_rgba(70,45,20,.13)]">
+        <div className="mb-7 text-center">
+          <Wordmark className="text-[40px]" />
+          <p className="rh-muted mt-3 text-[16px] italic">Create your account.</p>
+        </div>
+        {children}
+      </div>
+    </main>
+  );
+}

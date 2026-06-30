@@ -1,63 +1,94 @@
 "use client";
 
+import { FormEvent, Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Wordmark } from "@/components/Logo";
-import { readRabbitSession, writeRabbitSession } from "@/lib/local-auth";
+import { writeRabbitSession } from "@/lib/local-auth";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginShell><p className="rh-muted text-center text-[14px]">Loading sign in...</p></LoginShell>}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next") || "/dashboard";
   const [email, setEmail] = useState("");
-  const [nextPath, setNextPath] = useState("/dashboard");
+  const [password, setPassword] = useState("");
+  const [status, setStatus] = useState("");
+  const [transitioning, setTransitioning] = useState(false);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const next = params.get("next");
-    if (next?.startsWith("/")) setNextPath(next);
-    const existing = readRabbitSession();
-    if (existing?.email) setEmail(existing.email);
-  }, []);
-
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const value = email.trim();
-    if (!value) return;
+  function finish(value: string) {
     writeRabbitSession(value);
-    router.replace(nextPath);
+    router.replace(next.startsWith("/") ? next : "/dashboard");
+  }
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setTransitioning(true);
+    setStatus("Signing in...");
+    await new Promise((resolve) => window.setTimeout(resolve, 220));
+    finish(email.trim());
+  }
+
+  async function google() {
+    if (transitioning) return;
+    setTransitioning(true);
+    setStatus("Opening Google...");
+    await new Promise((resolve) => window.setTimeout(resolve, 220));
+    finish(email.trim() || "local@rabbitholes.app");
   }
 
   return (
-    <main className="rh-paper min-h-screen px-6 py-12 text-[var(--rh-ink)]">
-      <div className="mx-auto flex min-h-[calc(100vh-96px)] w-full max-w-[640px] flex-col justify-center">
-        <Link href="/" className="mb-12 no-underline"><Wordmark className="text-[26px]" /></Link>
-        <section className="rh-surface rounded-[28px] border p-8 shadow-[0_18px_60px_rgba(20,12,6,.08)] sm:p-10">
-          <div className="rh-faint text-[12px] font-bold uppercase tracking-[0.24em]">Unlock Rabbit Holes</div>
-          <h1 className="rh-display mt-4 text-[54px] font-semibold leading-none tracking-[-0.03em]">Sign in</h1>
-          <p className="rh-muted mt-5 text-[18px] leading-8">
-            Keep your local investigations tied to one workspace on this browser. Your data still stays on this device unless you export or enable sync later.
-          </p>
-          <form onSubmit={submit} className="mt-8 space-y-4">
-            <label className="block">
-              <span className="rh-faint text-[11px] font-bold uppercase tracking-[0.2em]">Email</span>
-              <input
-                value={email}
-                type="email"
-                required
-                autoFocus
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="you@example.com"
-                className="mt-2 w-full rounded-[14px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-4 py-4 text-[17px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)]"
-              />
-            </label>
-            <button type="submit" className="rh-primary w-full rounded-full px-6 py-4 text-[16px] font-semibold">
-              Continue
-            </button>
-          </form>
-          <p className="rh-muted mt-5 text-[13px] leading-6">
-            This is a lightweight local sign-in for staging. Provider keys and captured history remain controlled from Settings.
-          </p>
-        </section>
+    <LoginShell>
+      {transitioning && <AuthTransition />}
+      <button onClick={google} disabled={transitioning} className="rh-primary w-full rounded-[15px] px-5 py-3.5 text-[15px] font-semibold shadow-[0_10px_28px_rgba(42,32,24,.18)] disabled:opacity-70">
+        {transitioning ? "Opening..." : "Continue with Google"}
+      </button>
+
+      <div className="rh-faint my-5 flex items-center gap-3 text-[12px] uppercase tracking-[0.16em]"><span className="h-px flex-1 bg-[var(--rh-line)]" />or<span className="h-px flex-1 bg-[var(--rh-line)]" /></div>
+
+      <form onSubmit={submit} className="space-y-3">
+        <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="Email" className="w-full rounded-[14px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-4 py-3 text-[15px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)]" />
+        <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required minLength={6} placeholder="Password" className="w-full rounded-[14px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-4 py-3 text-[15px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)]" />
+        <button type="submit" disabled={transitioning} className="rh-surface-2 w-full rounded-[15px] border px-5 py-3.5 text-[15px] font-semibold disabled:opacity-70">
+          {transitioning ? "Signing in..." : "Sign in"}
+        </button>
+      </form>
+
+      <Link href={`/signup?next=${encodeURIComponent(next)}`} className="rh-muted mt-4 block text-center text-[14px] underline-offset-4 hover:underline">
+        Need an account? Create one
+      </Link>
+      {status && <p className="rh-surface-2 mt-4 rounded-[13px] px-4 py-3 text-[14px]">{status}</p>}
+    </LoginShell>
+  );
+}
+
+function AuthTransition() {
+  return (
+    <div className="fixed inset-0 z-[100] grid place-items-center bg-[#15110d] px-6 text-center text-[#f3e8d4]">
+      <div>
+        <Wordmark className="text-[34px] text-[#f3e8d4]" />
+        <div className="mt-4 text-[15px] text-[#cdbd9f]">Opening secure sign in...</div>
+      </div>
+    </div>
+  );
+}
+
+function LoginShell({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="rh-paper grid min-h-screen place-items-center px-5 py-10">
+      <div className="rh-surface w-full max-w-[440px] rounded-[28px] border p-8 shadow-[0_18px_60px_rgba(70,45,20,.13)]">
+        <div className="mb-7 text-center">
+          <Wordmark className="text-[40px]" />
+          <p className="rh-muted mt-3 text-[16px] italic">Smart history for your research.</p>
+        </div>
+        {children}
       </div>
     </main>
   );

@@ -6,6 +6,7 @@ import type { CSSProperties } from "react";
 import { useState } from "react";
 import { flushExtensionEvents, useSessionStats } from "@/hooks/useSessionStats";
 import { preGenerateHoleBriefs } from "@/lib/api";
+import { RabbitEars } from "@/components/Logo";
 
 /** Triggers the discovery overlay from a real /cluster response. */
 export function DiscoverButton() {
@@ -130,11 +131,9 @@ export function RabbitHoleLoading() {
                 {word.text}
               </span>
             ))}
-            <img
-              src="/assets/images/rabbit-hole-hero.png"
-              alt=""
-              className="relative z-20 h-auto w-[520px] max-h-[44vh] max-w-full object-contain"
-            />
+            <div className="relative z-20 grid h-[220px] w-[220px] place-items-center rounded-full border border-[#f3e8d438] bg-[#17100b] text-[#f6ecd9] shadow-[0_22px_70px_rgba(18,11,5,.36)]">
+              <RabbitEars className="h-24 w-24" />
+            </div>
           </div>
         </div>
 
@@ -190,11 +189,9 @@ export function BuildNotice({ type, stats, errorStatus, onClose }: { readonly ty
                 {word}
               </span>
             ))}
-            <img
-              src="/assets/images/rabbit-hole-hero.png"
-              alt=""
-              className="absolute inset-x-0 bottom-[-8px] mx-auto h-[300px] w-[540px] object-contain drop-shadow-[0_18px_36px_rgba(18,11,5,.28)]"
-            />
+            <div className="absolute inset-x-0 bottom-[68px] mx-auto grid h-[150px] w-[150px] place-items-center rounded-full border border-[#f3e8d438] bg-[#17100b] text-[#f6ecd9] shadow-[0_22px_70px_rgba(18,11,5,.34)]">
+              <RabbitEars className="h-16 w-16" />
+            </div>
           </div>
 
           <div className="bg-[#17100b] px-9 py-8 text-[#f3e8d4]">

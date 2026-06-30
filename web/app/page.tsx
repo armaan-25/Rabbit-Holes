@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Wordmark } from "@/components/Logo";
+import { LandingDemo } from "@/components/LandingDemo";
 
 export default function Landing() {
   const [installOpen, setInstallOpen] = useState(false);
@@ -47,7 +48,7 @@ export default function Landing() {
           </motion.div>
 
           <motion.div className="mt-12 w-full" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}>
-            <MockDemoFlow onInstall={() => setInstallOpen(true)} />
+            <LandingDemo />
           </motion.div>
         </section>
 
@@ -67,15 +68,16 @@ export default function Landing() {
 }
 
 function MockDemoFlow({ onInstall }: { onInstall: () => void }) {
-  const tabs = ["vLLM docs", "PagedAttention", "DistServe paper", "Sarathi"];
+  const tabs = ["Google", "Apple", "Google", "Meta"];
   const events = [
-    ["search", "vLLM request scheduling"],
-    ["repo", "vllm-project/vllm"],
-    ["paper", "DistServe"],
+    ["search", "apple software engineering internship"],
+    ["page", "Apple University Recruiting"],
+    ["search", "google swe intern summer"],
+    ["page", "Meta university careers"],
   ];
 
   return (
-    <section className="rounded-[34px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-5 sm:p-7 lg:p-9">
+    <section className="rounded-[34px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-5 sm:p-7">
       <style>{`
         @keyframes rh-demo-row {
           0%, 14% { transform: translateY(10px); opacity: 0; }
@@ -94,14 +96,17 @@ function MockDemoFlow({ onInstall }: { onInstall: () => void }) {
           50% { opacity: 1; transform: scale(1.08); }
         }
       `}</style>
-      <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+      <div className="mb-6 flex items-center justify-between gap-4">
         <div>
           <div className="rh-faint text-[12px] font-semibold uppercase tracking-[0.22em]">Friday to Monday</div>
-          <h2 className="rh-display mt-2 text-[42px] font-semibold leading-none tracking-[-0.03em] text-[var(--rh-ink)]">Close the laptop. Come back here.</h2>
+          <div className="mt-1 text-[18px] font-semibold text-[var(--rh-ink-soft)]">Tabs, searches, and pages become one thread.</div>
+        </div>
+        <div className="hidden rounded-full border border-[var(--rh-line)] px-4 py-2 text-[13px] font-semibold text-[var(--rh-muted)] sm:block">
+          Capturing in Chrome
         </div>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[1fr_80px_0.82fr] lg:items-center">
+      <div className="grid gap-5 lg:grid-cols-[1fr_56px_0.88fr] lg:items-center">
         <div className="overflow-hidden rounded-[26px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)]">
           <div className="flex items-center gap-2 border-b border-[var(--rh-line)] px-4 py-3">
             <span className="h-2.5 w-2.5 rounded-full bg-[#df8c58]" />
@@ -129,28 +134,28 @@ function MockDemoFlow({ onInstall }: { onInstall: () => void }) {
         </div>
 
         <div className="hidden justify-center lg:flex">
-          <div className="flex h-[2px] w-full origin-left items-center bg-[var(--rh-line-strong)] [animation:rh-demo-arrow_4.8s_cubic-bezier(.22,1,.36,1)_infinite]">
+          <div className="flex h-[2px] w-full origin-left items-center bg-[var(--rh-line-strong)] opacity-70 [animation:rh-demo-arrow_4.8s_cubic-bezier(.22,1,.36,1)_infinite]">
             <span className="ml-auto h-3 w-3 rotate-45 border-r-2 border-t-2 border-[var(--rh-line-strong)]" />
           </div>
         </div>
 
-        <div className="rounded-[26px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] p-6 text-left opacity-0 [animation:rh-demo-card_4.8s_cubic-bezier(.22,1,.36,1)_infinite]">
-          <div className="rh-faint text-[11px] font-semibold uppercase tracking-[0.22em]">Current investigation</div>
-          <h3 className="rh-display mt-3 text-[42px] font-semibold leading-none tracking-[-0.03em] text-[var(--rh-ink)]">AI Systems</h3>
-          <div className="mt-7 divide-y divide-[var(--rh-line)] rounded-[20px] border border-[var(--rh-line)] bg-[var(--rh-surface)]">
+        <div className="rounded-[26px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] p-5 text-left opacity-0 [animation:rh-demo-card_4.8s_cubic-bezier(.22,1,.36,1)_infinite] sm:p-6">
+          <div className="rh-faint text-[11px] font-semibold uppercase tracking-[0.22em]">Clustered from this session</div>
+          <h3 className="rh-display mt-3 text-[38px] font-semibold leading-none tracking-[-0.03em] text-[var(--rh-ink)]">Big Tech SWE</h3>
+          <div className="mt-6 divide-y divide-[var(--rh-line)] rounded-[18px] border border-[var(--rh-line)] bg-[var(--rh-surface)]">
             {[
-              ["Current question", "How does vLLM schedule requests?"],
-              ["Last stop", "DistServe — Section 4"],
-              ["Next suggested reading", "Sarathi"],
+              ["Captured", "Career searches, job pages, and open tabs from your browser."],
+              ["Built", "One rabbit hole with a map, timeline, and discovery chain."],
+              ["Saved", "A brief and replay so you can return without rebuilding context."],
             ].map(([label, value]) => (
-              <div key={label} className="p-4">
+              <div key={label} className="p-3.5">
                 <div className="rh-faint text-[10px] font-bold uppercase tracking-[0.18em]">{label}</div>
-                <div className="mt-1 text-[18px] font-semibold leading-snug text-[var(--rh-ink-soft)]">{value}</div>
+                <div className="mt-1 text-[17px] font-semibold leading-snug text-[var(--rh-ink-soft)]">{value}</div>
               </div>
             ))}
           </div>
-          <button onClick={onInstall} className="mt-6 rounded-full bg-[var(--rh-primary)] px-5 py-3 text-[15px] font-semibold text-[var(--rh-primary-text)] transition hover:-translate-y-0.5">
-            Continue Investigation →
+          <button onClick={onInstall} className="mt-5 rounded-full bg-[var(--rh-primary)] px-5 py-3 text-[15px] font-semibold text-[var(--rh-primary-text)] transition hover:-translate-y-0.5">
+            Open rabbit hole →
           </button>
         </div>
       </div>

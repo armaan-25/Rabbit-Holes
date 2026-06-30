@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { readRabbitSession } from "@/lib/local-auth";
 
-const PUBLIC_PATHS = ["/", "/docs", "/install", "/privacy", "/terms", "/login"];
+const PUBLIC_PATHS = ["/", "/docs", "/install", "/privacy", "/terms", "/login", "/signup"];
 
 function isPublic(pathname: string) {
   if (pathname.startsWith("/share/")) return true;
