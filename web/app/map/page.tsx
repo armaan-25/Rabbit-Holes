@@ -54,7 +54,7 @@ function FlowNode({ data }: NodeProps<FlowNodeData>) {
   return (
     <button
       type="button"
-      className="rh-map-node group block w-[160px] rounded-[10px] border px-3 py-2 text-left transition hover:-translate-y-0.5"
+      className="rh-map-node group block w-[158px] rounded-[10px] border px-3 py-2 text-left shadow-[0_12px_26px_rgba(18,11,5,.18)] transition hover:-translate-y-0.5"
       style={{
         background: selected ? (dark ? "#332417" : "#fff8ea") : dark ? style.darkBg : style.bg,
         borderColor: selected ? (dark ? "#d8c3a1" : "#2a2018") : dark ? style.darkBorder : style.border,
@@ -107,12 +107,12 @@ function layoutGraphNodes(hole: RabbitHole, graph = simplifiedGraph(hole)) {
   const searchNodes = graph.nodes.filter((node) => node.kind === "search");
   const contentNodes = graph.nodes.filter((node) => node.kind !== "search");
   const positions = new Map<string, { x: number; y: number }>();
-  const NODE_W = 160;
-  const NODE_H = 58;
-  const COL_W = 240;
-  const ROW_H = 78;
-  const SEARCH_X = 130;
-  const CONTENT_X = 365;
+  const NODE_W = 158;
+  const NODE_H = 64;
+  const COL_W = 285;
+  const ROW_H = 90;
+  const SEARCH_X = 120;
+  const CONTENT_X = 390;
   const START_Y = 430;
   const edgesBySource = new Map<string, string[]>();
   const depth = new Map<string, number>();
@@ -203,17 +203,17 @@ export default function MapPage() {
         id: edge.id,
         source: edge.source,
         target: edge.target,
-        type: "step",
+        type: "smoothstep",
         animated: false,
         markerEnd: {
           type: MarkerType.ArrowClosed,
           color,
-          width: 7,
-          height: 7,
+          width: 14,
+          height: 14,
         },
         style: {
           stroke: color,
-          strokeWidth: 1,
+          strokeWidth: 1.35,
           opacity: edge.kind === "discovered_through" ? 0.34 : 0.62,
           strokeDasharray: edge.kind === "discovered_through" ? "4 5" : undefined,
         },
@@ -267,7 +267,8 @@ export default function MapPage() {
               nodes={nodes}
               edges={edges}
               nodeTypes={nodeTypes}
-              defaultViewport={{ x: 32, y: 42, zoom: 0.9 }}
+              fitView
+              fitViewOptions={{ padding: 0.18 }}
               minZoom={0.35}
               maxZoom={1.25}
               proOptions={{ hideAttribution: true }}

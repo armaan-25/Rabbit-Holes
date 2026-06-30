@@ -15,7 +15,7 @@ import ReactFlow, {
 } from "reactflow";
 import { getHole } from "@/lib/data";
 import { useApp } from "@/lib/store";
-import { ACCENTS, KIND_META, EDGE_LABELS, faviconFor } from "@/lib/ui";
+import { ACCENTS, KIND_META } from "@/lib/ui";
 import { useDark } from "@/lib/useDark";
 import type { RabbitHole, GraphEdge, GraphNode } from "@/lib/types";
 
@@ -38,21 +38,17 @@ function StepNode({ data }: NodeProps<StepData>) {
   return (
     <Tag
       {...(data.url ? { href: data.url, target: "_blank", rel: "noreferrer" } : {})}
-      className="flex max-w-[240px] items-center gap-2.5 rounded-[14px] border bg-[var(--rh-surface)] px-3.5 py-2.5 no-underline shadow-[0_8px_22px_rgba(70,45,20,.1)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(70,45,20,.16)]"
+      className="block w-[158px] rounded-[10px] border bg-[var(--rh-surface)] px-3 py-2 text-left no-underline shadow-[0_12px_26px_rgba(18,11,5,.18)] transition hover:-translate-y-0.5"
       style={{ borderColor: data.dark ? "rgba(230,211,180,0.16)" : "#785a3233" }}
     >
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
       <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />
-      <span
-        className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-[9px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] text-[13px] font-semibold"
-        style={{ color: meta.color }}
-      >
-        {data.aggregateCount ? `+${data.aggregateCount}` : data.domain ? <img src={faviconFor(data.domain)} alt="" className="h-5 w-5 rounded" /> : meta.glyph}
-      </span>
-      <span className="min-w-0">
-        <span className="block truncate text-[13.5px] font-semibold leading-tight text-[var(--rh-ink)]">{data.label}</span>
-        <span className="block text-[11px] capitalize text-[var(--rh-faint)]">{data.aggregateCount ? "hidden repeated pages" : meta.label}</span>
-      </span>
+      <div className="mb-1 flex items-center gap-1.5">
+        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: meta.color }} />
+        <span className="text-[8.5px] font-semibold uppercase tracking-[0.18em] text-[var(--rh-faint)]">{data.aggregateCount ? "More" : meta.label}</span>
+      </div>
+      <div className="rh-display truncate text-[13px] font-semibold leading-tight text-[var(--rh-ink)]">{data.aggregateCount ? `${data.aggregateCount} more pages` : data.label.replace(/^Search: /, "")}</div>
+      {data.domain ? <div className="mt-1 truncate text-[10px] text-[var(--rh-muted)]">{data.domain}</div> : null}
     </Tag>
   );
 }
@@ -113,10 +109,10 @@ function layoutGraph(graph: { nodes: GraphNode[]; edges: GraphEdge[] }) {
   const positions = new Map<string, { x: number; y: number }>();
   const edgesBySource = new Map<string, string[]>();
   const depth = new Map<string, number>();
-  const nodeW = 240;
-  const nodeH = 58;
-  const rowH = 82;
-  const colW = 286;
+  const nodeW = 158;
+  const nodeH = 64;
+  const rowH = 90;
+  const colW = 288;
   const searchX = 96;
   const contentX = 380;
   const centerY = H / 2;
@@ -191,7 +187,7 @@ export function HoleMapView({ id, embedded = false }: { id: string; embedded?: b
         type: "step",
         position,
         data: { label: n.label, kind: n.kind, domain: page?.domain, url: page?.url, accent, dark, aggregateCount: n.id === "__more-pages" ? hiddenCount : undefined },
-        draggable: true,
+        draggable: false,
       };
     });
   }, [hole, dark]);
@@ -205,20 +201,15 @@ export function HoleMapView({ id, embedded = false }: { id: string; embedded?: b
         id: e.id,
         source: e.source,
         target: e.target,
-        label: EDGE_LABELS[e.kind],
         type: "smoothstep",
-        animated: e.kind === "searched_from",
+        animated: false,
         markerEnd: {
-          type: MarkerType.Arrow,
+          type: MarkerType.ArrowClosed,
           color: dark ? "#b59a6a" : "#9a7c52",
-          width: 10,
-          height: 10,
+          width: 14,
+          height: 14,
         },
-        style: { stroke: dark ? "#b59a6a" : "#9a7c52", strokeWidth: 1.2, strokeDasharray: dashed ? "4 4" : undefined, opacity: dark ? 0.48 : 0.42 },
-        labelStyle: { fill: dark ? "#c8b89d" : "#8a7860", fontSize: 10.5, fontFamily: "var(--font-mono)" },
-        labelBgStyle: { fill: dark ? "#211a14" : "#f6efe1" },
-        labelBgPadding: [5, 2] as [number, number],
-        labelBgBorderRadius: 6,
+        style: { stroke: dark ? "#b59a6a" : "#9a7c52", strokeWidth: 1.35, strokeDasharray: dashed ? "4 4" : undefined, opacity: dark ? 0.5 : 0.46 },
       };
     });
   }, [hole, dark]);
@@ -265,7 +256,7 @@ export function HoleMapView({ id, embedded = false }: { id: string; embedded?: b
           edges={edges}
           nodeTypes={nodeTypes}
           fitView
-          fitViewOptions={{ padding: 0.3 }}
+          fitViewOptions={{ padding: 0.22 }}
           minZoom={0.4}
           maxZoom={1.8}
           proOptions={{ hideAttribution: true }}
