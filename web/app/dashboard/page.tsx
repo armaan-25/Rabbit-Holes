@@ -3,7 +3,7 @@
 import { HoleCard } from "@/components/HoleCard";
 import { EmptyHoles } from "@/components/EmptyHoles";
 import { BuildNotice, DiscoverButton, RabbitHoleLoading } from "@/components/DiscoverButton";
-import { clusterBuildState, clusterHoleToRabbitHole, forgetClusterContext, markDiscoveriesSeen, markDiscoveryUnseen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
+import { ClusterError, clusterBuildState, clusterHoleToRabbitHole, forgetClusterContext, markDiscoveriesSeen, markDiscoveryUnseen, rememberClusterContext, runCluster, unseenDiscoveries, type ClusterBuildState } from "@/lib/discovery";
 import { useApp } from "@/lib/store";
 import { bulkPatchBackendHoles, patchBackendHole, preGenerateHoleBriefs } from "@/lib/api";
 import { useLibraryHoles } from "@/hooks/useHoles";
@@ -11,10 +11,9 @@ import { flushExtensionEvents, useSessionStats } from "@/hooks/useSessionStats";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { AppFrame } from "@/components/ui/frame";
-import { Input } from "@/components/ui/input";
+import { AppFrame, ToolbarFrame } from "@/components/ui/frame";
+import { Input, Select } from "@/components/ui/input";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import Link from "next/link";
 
 export default function Dashboard() {
   const setLiveHoles = useApp((s) => s.setLiveHoles);
@@ -30,6 +29,8 @@ export default function Dashboard() {
   const [routeBuildState, setRouteBuildState] = useState<"idle" | "loading" | Exclude<ClusterBuildState, "ready"> | "error">("idle");
   const [routeErrorStatus, setRouteErrorStatus] = useState<number | undefined>(undefined);
   const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<"active" | "favorites" | "archived" | "all">("active");
+  const [sort, setSort] = useState<"recent" | "pages" | "confidence">("recent");
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   const holes = useLibraryHoles();
   const stats = useSessionStats();
@@ -37,14 +38,19 @@ export default function Dashboard() {
     const needle = query.trim().toLowerCase();
     return holes
       .filter((h) => {
-        if (h.archived) return false;
+        if (filter === "active" && h.archived) return false;
+        if (filter === "favorites" && !h.favorite) return false;
+        if (filter === "archived" && !h.archived) return false;
         if (!needle) return true;
         const haystack = [h.title, h.description, ...h.domains, ...h.summary.topics, ...h.searches.map((s) => s.query)].join(" ").toLowerCase();
         return haystack.includes(needle);
       })
-      .sort((a, b) => +new Date(b.lastActive) - +new Date(a.lastActive));
-  }, [holes, query]);
-
+      .sort((a, b) => {
+        if (sort === "pages") return b.pages.length - a.pages.length;
+        if (sort === "confidence") return b.confidence - a.confidence;
+        return +new Date(b.lastActive) - +new Date(a.lastActive);
+      });
+  }, [filter, holes, query, sort]);
   function updateSelection(id: string, selected: boolean) {
     setSelectedIds((ids) => selected ? Array.from(new Set([...ids, id])) : ids.filter((x) => x !== id));
   }
@@ -127,9 +133,9 @@ export default function Dashboard() {
         console.error("cluster failed", err);
         if (!cancelled) {
           window.history.replaceState(null, "", "/dashboard");
-          const status = undefined;
+          const status = err instanceof ClusterError ? err.status : undefined;
           setRouteErrorStatus(status);
-          setSyncLabel("local build issue");
+          setSyncLabel(status === 401 || status === 403 ? "sign in again" : status === 429 ? "rate limited" : status && status >= 500 ? "service error" : "connection issue");
           setRouteBuildState("error");
         }
       }
@@ -143,7 +149,7 @@ export default function Dashboard() {
   }, [setLiveHoles, triggerDiscovery, triggerDiscoveries]);
 
   return (
-    <div className="rh-paper min-h-screen px-5 py-12 sm:px-8 xl:px-12">
+    <div className="rh-paper min-h-screen px-5 py-8 sm:px-8 xl:px-12">
       <ConfirmDialog
         open={confirmBulkDelete}
         eyebrow="Delete rabbit holes"
@@ -162,72 +168,86 @@ export default function Dashboard() {
       {routeBuildState === "duplicate" && <BuildNotice type="duplicate" stats={stats} onClose={() => setRouteBuildState("idle")} />}
       {routeBuildState === "unclear" && <BuildNotice type="unclear" stats={stats} onClose={() => setRouteBuildState("idle")} />}
       {routeBuildState === "error" && <BuildNotice type="error" stats={stats} errorStatus={routeErrorStatus} onClose={() => setRouteBuildState("idle")} />}
-      <AppFrame className="mx-auto max-w-[1120px]">
-        <div className="flex flex-wrap items-center justify-between gap-5">
+      <AppFrame>
+        <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <div className="rh-faint mb-3 text-[11px] font-semibold uppercase tracking-[0.22em]">
-              Library
+            <div className="rh-faint mb-2 text-[12px] font-semibold uppercase tracking-[0.22em]">
+              Your rabbit holes · {holes.length} total
             </div>
-            <h1 className="rh-display rh-ink text-[clamp(38px,5vw,58px)] font-semibold leading-none tracking-[-0.03em]">
+            <h1 className="rh-display rh-ink text-[42px] font-semibold leading-none tracking-normal">
               Rabbit holes
             </h1>
           </div>
-          <div className="flex flex-col items-start gap-3 sm:items-end">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--rh-line)] bg-[var(--rh-surface)] px-3 py-1.5 text-[12px] font-semibold text-[var(--rh-muted)]">
-              <span className="h-2 w-2 rounded-full bg-[var(--rh-green)] shadow-[0_0_12px_var(--rh-green)]" />
-              Extension connected
-            </div>
+          <div className="flex items-center gap-3">
+            <Card className="hidden items-center gap-5 rounded-xl px-4 py-2.5 sm:flex">
+              <HeaderStat n={stats.pages} label="pages" />
+              <HeaderStat n={stats.searches} label="searches" />
+              <HeaderStat n={stats.tabs} label="tabs" accent />
+            </Card>
             <DiscoverButton />
           </div>
         </div>
 
         {holes.length === 0 ? (
-          <div className="mt-12 space-y-8">
-            <EmptyHoles
-              eyebrow="Your library"
-              title="Your first investigation will appear here."
-              hint="Install the extension, browse normally, and Rabbit Holes will preserve the thread when a real trail forms."
-            />
-            <ExampleInvestigation />
+          <div className="mt-12">
+            <EmptyHoles eyebrow="Your rabbit holes" />
           </div>
         ) : (
           <>
-            <div className="mt-12 grid gap-5 lg:grid-cols-[1.1fr_.9fr]">
-              <ContinueInvestigation hole={visibleHoles[0] ?? holes[0]} />
-              <LibraryContext holesCount={visibleHoles.length} syncLabel={syncLabel} />
-            </div>
-
-            <div className="mt-10 max-w-[380px]">
-              <div className="rh-faint mb-3 text-[11px] font-semibold uppercase tracking-[0.18em]">Recent investigations</div>
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search rabbit holes"
-              />
-            </div>
+            <ToolbarFrame className="mt-8">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <h2 className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#a8967d]">
+                    Library
+                  </h2>
+                  <p className="mt-1 text-[14px] text-[#6a5a48]">
+                    Search, favorite, archive, and clean up old investigations.
+                  </p>
+                </div>
+                <div className="flex flex-1 flex-wrap gap-2 lg:max-w-[760px] lg:justify-end">
+                  <Input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search holes, domains, topics..."
+                    className="min-w-[220px] flex-1"
+                  />
+                  <Select value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} className="w-[132px]">
+                    <option value="active">Active</option>
+                    <option value="favorites">Favorites</option>
+                    <option value="archived">Archived</option>
+                    <option value="all">All</option>
+                  </Select>
+                  <Select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} className="w-[150px]">
+                    <option value="recent">Recent</option>
+                    <option value="pages">Most pages</option>
+                    <option value="confidence">Confidence</option>
+                  </Select>
+                </div>
+              </div>
+            </ToolbarFrame>
 
             {selectedIds.length > 0 && (
-              <div className="mt-4 flex flex-wrap items-center gap-2 rounded-[16px] border border-[var(--rh-line)] bg-[var(--rh-surface)] px-3 py-3">
-                <div className="mr-auto px-1 text-[13px] font-semibold text-[var(--rh-ink)]">{selectedIds.length} selected</div>
-                <Button size="sm" variant="ghost" onClick={() => bulk("favorite")}>Favorite</Button>
-                <Button size="sm" variant="ghost" onClick={() => bulk("archive")}>Archive</Button>
+              <div className="sticky top-4 z-10 mt-4 flex flex-wrap items-center gap-3 rounded-[18px] border border-[#5f8a5c42] bg-[var(--rh-surface)]/95 px-4 py-3 shadow-[0_12px_34px_rgba(70,45,20,.12)] backdrop-blur">
+                <div className="mr-auto text-[14px] font-semibold text-[#37502f]">{selectedIds.length} selected</div>
+                <Button size="sm" onClick={() => bulk("favorite")}>Favorite</Button>
+                <Button size="sm" onClick={() => bulk("archive")}>Archive</Button>
                 <Button size="sm" variant="danger" onClick={() => setConfirmBulkDelete(true)}>Delete</Button>
                 <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>Clear</Button>
               </div>
             )}
 
             {visibleHoles.length === 0 ? (
-              <Card className="mt-8 border-dashed px-8 py-12 text-center shadow-none">
+              <Card className="mt-6 border-dashed px-8 py-12 text-center">
                 <div className="rh-display rh-ink text-[28px] font-semibold">Nothing matches this view</div>
                 <p className="rh-muted mx-auto mt-2 max-w-[46ch] text-[15px] leading-6">
                   Clear the search, switch filters, or build a fresh rabbit hole after browsing something new.
                 </p>
-                <Button variant="primary" className="mt-5" onClick={() => setQuery("")}>
+                <Button variant="primary" className="mt-5" onClick={() => { setQuery(""); setFilter("active"); }}>
                   Reset library view
                 </Button>
               </Card>
             ) : (
-              <div className="mt-8 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(320px,1fr))] xl:[grid-template-columns:repeat(auto-fit,minmax(360px,1fr))]">
+              <div className="mt-4 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(340px,1fr))] xl:[grid-template-columns:repeat(auto-fit,minmax(372px,1fr))]">
                 {visibleHoles.map((h) => (
                   <HoleCard
                     key={h.id}
@@ -241,6 +261,10 @@ export default function Dashboard() {
                 ))}
               </div>
             )}
+
+            <p className="rh-muted mt-8 text-center text-[13px] italic">
+              Smart history for your research.
+            </p>
           </>
         )}
       </AppFrame>
@@ -248,87 +272,13 @@ export default function Dashboard() {
   );
 }
 
-function ExampleInvestigation() {
+function HeaderStat({ n, label, accent }: { readonly n: number; readonly label: string; readonly accent?: boolean }) {
   return (
-    <section className="rh-surface mx-auto overflow-hidden rounded-[28px] border">
-      <div className="grid gap-0 lg:grid-cols-[1fr_.9fr]">
-        <div className="border-b border-[var(--rh-line)] p-7 lg:border-b-0 lg:border-r lg:p-9">
-          <div className="rh-faint mb-5 text-[11px] font-semibold uppercase tracking-[0.2em]">Example investigation</div>
-          <div className="space-y-3">
-            {[
-              ["Search", "vLLM request scheduling"],
-              ["Repo", "vllm-project/vllm"],
-              ["Paper", "DistServe"],
-            ].map(([label, value]) => (
-              <div key={value} className="rounded-[18px] border border-[var(--rh-line)] bg-[var(--rh-surface-2)] px-5 py-4">
-                <div className="rh-faint text-[10px] font-semibold uppercase tracking-[0.18em]">{label}</div>
-                <div className="rh-display rh-ink mt-1 text-[22px] font-semibold">{value}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="p-7 lg:p-9">
-          <div className="rh-faint mb-3 text-[11px] font-semibold uppercase tracking-[0.2em]">Current investigation</div>
-          <h2 className="rh-display rh-ink text-[clamp(36px,5vw,58px)] font-semibold leading-none tracking-[-0.03em]">AI Systems</h2>
-          <div className="mt-7 overflow-hidden rounded-[20px] border border-[var(--rh-line)]">
-            <ExampleRow label="Question" value="How does vLLM schedule requests?" />
-            <ExampleRow label="Last stop" value="DistServe, section 4" />
-            <ExampleRow label="Next" value="Compare against Sarathi" last />
-          </div>
-          <Link href="/install" className="mt-7 inline-flex rounded-full bg-[var(--rh-ink)] px-6 py-3 text-[15px] font-semibold text-[var(--rh-paper)] no-underline transition hover:opacity-90">
-            Continue investigation →
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ExampleRow({ label, value, last = false }: { label: string; value: string; last?: boolean }) {
-  return (
-    <div className={`px-5 py-4 ${last ? "" : "border-b border-[var(--rh-line)]"}`}>
-      <div className="rh-faint text-[10px] font-semibold uppercase tracking-[0.18em]">{label}</div>
-      <div className="rh-ink mt-1 text-[18px] font-semibold">{value}</div>
+    <div className="flex flex-col">
+      <span className={`text-[19px] font-semibold tabular-nums ${accent ? "text-[#5f8a5c]" : "text-[var(--rh-ink)]"}`}>
+        {n}
+      </span>
+      <span className="rh-faint text-[10px] uppercase tracking-[0.14em]">{label}</span>
     </div>
-  );
-}
-
-function ContinueInvestigation({ hole }: { hole: ReturnType<typeof useLibraryHoles>[number] }) {
-  const lastPage = hole.pages[hole.pages.length - 1];
-  const question = hole.summary.questions[0] || hole.description;
-  return (
-    <section className="rh-surface rounded-[26px] border p-7">
-      <div className="rh-faint mb-4 text-[11px] font-semibold uppercase tracking-[0.18em]">Continue investigation</div>
-      <h2 className="rh-display rh-ink text-[clamp(32px,4vw,48px)] font-semibold leading-none">{hole.title}</h2>
-      <div className="mt-6 grid gap-3">
-        <ExampleRow label="Current question" value={question} />
-        <ExampleRow label="Last stop" value={lastPage ? lastPage.title : "Recently active"} last />
-      </div>
-      <Link href={`/holes/${hole.id}`} className="mt-6 inline-flex rounded-full bg-[var(--rh-ink)] px-5 py-3 text-[14px] font-semibold text-[var(--rh-paper)] no-underline transition hover:opacity-90">
-        Open thread →
-      </Link>
-    </section>
-  );
-}
-
-function LibraryContext({ holesCount, syncLabel }: { holesCount: number; syncLabel: string }) {
-  return (
-    <section className="rh-surface rounded-[26px] border p-7">
-      <div className="rh-faint mb-4 text-[11px] font-semibold uppercase tracking-[0.18em]">Library status</div>
-      <div className="space-y-4 text-[16px]">
-        <div className="flex items-center justify-between gap-4 border-b border-[var(--rh-line)] pb-4">
-          <span className="rh-muted">Investigations</span>
-          <span className="rh-ink font-semibold">{holesCount}</span>
-        </div>
-        <div className="flex items-center justify-between gap-4 border-b border-[var(--rh-line)] pb-4">
-          <span className="rh-muted">Capture</span>
-          <span className="rh-ink font-semibold">Connected</span>
-        </div>
-        <div className="flex items-center justify-between gap-4">
-          <span className="rh-muted">Last update</span>
-          <span className="rh-ink font-semibold">{syncLabel}</span>
-        </div>
-      </div>
-    </section>
   );
 }
