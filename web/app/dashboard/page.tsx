@@ -142,7 +142,7 @@ export default function Dashboard() {
   }, [setLiveHoles, triggerDiscovery, triggerDiscoveries]);
 
   return (
-    <div className="rh-paper min-h-screen px-5 py-8 sm:px-8 xl:px-12">
+    <div className="rh-paper min-h-screen px-5 py-12 sm:px-8 xl:px-12">
       <ConfirmDialog
         open={confirmBulkDelete}
         eyebrow="Delete rabbit holes"
@@ -161,13 +161,13 @@ export default function Dashboard() {
       {routeBuildState === "duplicate" && <BuildNotice type="duplicate" stats={stats} onClose={() => setRouteBuildState("idle")} />}
       {routeBuildState === "unclear" && <BuildNotice type="unclear" stats={stats} onClose={() => setRouteBuildState("idle")} />}
       {routeBuildState === "error" && <BuildNotice type="error" stats={stats} errorStatus={routeErrorStatus} onClose={() => setRouteBuildState("idle")} />}
-      <AppFrame className="mx-auto max-w-[1240px]">
+      <AppFrame className="mx-auto max-w-[1120px]">
         <div className="flex flex-wrap items-center justify-between gap-5">
           <div>
-            <div className="rh-faint mb-2 text-[11px] font-semibold uppercase tracking-[0.22em]">
-              {holes.length} investigations · {stats.pages} captured pages
+            <div className="rh-faint mb-3 text-[11px] font-semibold uppercase tracking-[0.22em]">
+              Library
             </div>
-            <h1 className="rh-display rh-ink text-[clamp(42px,7vw,72px)] font-semibold leading-none tracking-[-0.035em]">
+            <h1 className="rh-display rh-ink text-[clamp(38px,5vw,58px)] font-semibold leading-none tracking-[-0.03em]">
               Rabbit holes
             </h1>
           </div>
@@ -175,12 +175,16 @@ export default function Dashboard() {
         </div>
 
         {holes.length === 0 ? (
-          <div className="mt-14">
-            <EmptyHoles eyebrow="Your rabbit holes" />
+          <div className="mt-20">
+            <EmptyHoles
+              eyebrow="No investigations yet"
+              title="Begin with the extension."
+              hint="Browse normally. Rabbit Holes quietly remembers what you are trying to understand. When a real trail forms, your first investigation will appear here."
+            />
           </div>
         ) : (
           <>
-            <div className="mt-8 max-w-[420px]">
+            <div className="mt-10 max-w-[380px]">
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -199,7 +203,7 @@ export default function Dashboard() {
             )}
 
             {visibleHoles.length === 0 ? (
-              <Card className="mt-6 border-dashed px-8 py-12 text-center">
+              <Card className="mt-8 border-dashed px-8 py-12 text-center shadow-none">
                 <div className="rh-display rh-ink text-[28px] font-semibold">Nothing matches this view</div>
                 <p className="rh-muted mx-auto mt-2 max-w-[46ch] text-[15px] leading-6">
                   Clear the search, switch filters, or build a fresh rabbit hole after browsing something new.
@@ -209,7 +213,7 @@ export default function Dashboard() {
                 </Button>
               </Card>
             ) : (
-              <div className="mt-4 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(320px,1fr))] xl:[grid-template-columns:repeat(auto-fit,minmax(360px,1fr))]">
+              <div className="mt-8 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(320px,1fr))] xl:[grid-template-columns:repeat(auto-fit,minmax(360px,1fr))]">
                 {visibleHoles.map((h) => (
                   <HoleCard
                     key={h.id}
