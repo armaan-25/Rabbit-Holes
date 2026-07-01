@@ -191,13 +191,13 @@ function setAuthView(state) {
     state === "expired"
       ? "Configure an AI provider to build rabbit holes."
       : state === "loading"
-        ? "Loading local capture..."
+        ? "Loading capture..."
         : "Open settings to choose your AI provider.";
 }
 
 async function render() {
   setAuthView("in");
-  document.getElementById("account-email").textContent = "Local profile";
+  document.getElementById("account-email").textContent = "AI provider";
 
   const {
     events = [],

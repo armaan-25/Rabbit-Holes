@@ -142,6 +142,16 @@ export default function SettingsPage() {
     updateProvider({ type, model: option.defaultModel, baseUrl: option.baseUrl, apiKey: "", hasApiKey: false });
   }
 
+  function changeModel(value: string) {
+    const model = value === "__custom" ? "" : value;
+    updateProvider({ ...provider, model });
+  }
+
+  function changeBaseUrl(value: string) {
+    const baseUrl = value === "__custom" ? "" : value;
+    updateProvider({ ...provider, baseUrl });
+  }
+
   function exportData() {
     const holes = readHoles();
     const payload = { exportedAt: new Date().toISOString(), settings, aiProvider: { ...provider, apiKey: provider.apiKey ? "[redacted]" : "" }, holes };
@@ -218,12 +228,12 @@ export default function SettingsPage() {
               <span className="absolute right-[-3px] top-[-3px] h-4 w-4 rounded-full border-2 border-[var(--rh-surface)] bg-[#6a9a66]" />
             </div>
             <div>
-              <h2 className="rh-display text-[22px] font-semibold leading-none text-[#37502f]">Extension-first mode</h2>
-              <p className="mt-1 text-[14px] text-[#4d7049]">Local storage · bring your own AI · optional sync later</p>
+              <h2 className="rh-display text-[22px] font-semibold leading-none text-[#37502f]">Rabbit Holes is ready</h2>
+              <p className="mt-1 text-[14px] text-[#4d7049]">Choose your AI provider and start building rabbit holes.</p>
             </div>
           </div>
           <div className="hidden items-center gap-2 rounded-full bg-[var(--rh-surface)] px-4 py-2 text-[13px] font-semibold text-[#4d7049] sm:flex">
-            <span className="h-2 w-2 rounded-full bg-[#7dae79]" /> Local
+            <span className="h-2 w-2 rounded-full bg-[#7dae79]" /> Ready
           </div>
         </section>
 
@@ -247,7 +257,14 @@ export default function SettingsPage() {
               <div className="rh-muted self-end text-[15px] leading-7">{selectedProvider.description}</div>
             </div>
             <div className="mt-5 grid gap-5 md:grid-cols-2">
-              <Field label="Model" value={provider.model} onChange={(model) => updateProvider({ ...provider, model })} onBlur={() => void saveAndValidateProvider(provider)} placeholder={selectedProvider.defaultModel} />
+              <PresetSelect
+                label="Model"
+                value={provider.model}
+                options={selectedProvider.models}
+                customLabel="Custom model"
+                onChange={changeModel}
+                onBlur={() => void saveAndValidateProvider(provider)}
+              />
               <SecretField
                 label="API key"
                 value={provider.apiKey ?? ""}
@@ -259,7 +276,13 @@ export default function SettingsPage() {
                 onBlur={() => void saveAndValidateProvider(provider)}
                 placeholder={provider.hasApiKey ? "Saved in extension storage" : selectedProvider.needsKey ? "Paste your key" : "Optional"}
               />
-              <Field label="Base URL" value={provider.baseUrl ?? ""} onChange={(baseUrl) => updateProvider({ ...provider, baseUrl })} onBlur={() => void saveAndValidateProvider(provider)} placeholder={selectedProvider.baseUrl ?? "https://api.example.com/v1"} />
+              <EndpointSelect
+                label="Base URL"
+                value={provider.baseUrl ?? ""}
+                endpoints={selectedProvider.baseUrls}
+                onChange={changeBaseUrl}
+                onBlur={() => void saveAndValidateProvider(provider)}
+              />
             </div>
             <div className={`mt-5 rounded-[14px] border px-4 py-3 text-[14px] ${ready ? "border-[#5f8a5c42] text-[#5f8a5c]" : "border-[#c45f3d55] text-[#b8795f]"}`}>
               {providerStatus === "validating"
@@ -267,7 +290,7 @@ export default function SettingsPage() {
                 : providerStatus === "valid"
                   ? "Provider validated. Your key is saved in extension storage, not page storage."
                 : providerStatus === "invalid"
-                  ? "Saved locally, but the provider test failed. Check the key, model, and base URL."
+                  ? "Saved locally, but the provider test failed. Check the key and selected model."
                   : ready
                     ? "Provider configured in the extension. Rabbit Holes can use your model without storing the key in page storage."
                     : selectedProvider.needsKey && !provider.hasApiKey && !provider.apiKey?.trim()
@@ -305,6 +328,66 @@ function Field({ label, value, placeholder, type = "text", onChange, onBlur }: {
     <label>
       <span className="rh-faint text-[11px] font-bold uppercase tracking-[0.2em]">{label}</span>
       <input value={value} type={type} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} placeholder={placeholder} className="mt-2 w-full rounded-[12px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-3 py-3 text-[15px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)]" />
+    </label>
+  );
+}
+
+function PresetSelect({ label, value, options, customLabel, onChange, onBlur }: { label: string; value: string; options: string[]; customLabel: string; onChange: (value: string) => void; onBlur?: () => void }) {
+  const usesCustom = !value || !options.includes(value);
+  return (
+    <label>
+      <span className="rh-faint text-[11px] font-bold uppercase tracking-[0.2em]">{label}</span>
+      <select
+        value={usesCustom ? "__custom" : value}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
+        className="mt-2 h-[50px] w-full rounded-[12px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-3 text-[15px] font-semibold text-[var(--rh-ink)] outline-none"
+      >
+        {options.map((option) => <option key={option} value={option}>{option}</option>)}
+        <option value="__custom">{customLabel}</option>
+      </select>
+      {(usesCustom || value === "") && (
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
+          placeholder="Enter model id"
+          className="mt-3 w-full rounded-[12px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-3 py-3 text-[15px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)]"
+        />
+      )}
+    </label>
+  );
+}
+
+function EndpointSelect({ label, value, endpoints, onChange, onBlur }: { label: string; value: string; endpoints: Array<{ label: string; value: string; locked?: boolean }>; onChange: (value: string) => void; onBlur?: () => void }) {
+  const knownValues = endpoints.map((endpoint) => endpoint.value);
+  const usesCustom = Boolean(value && !knownValues.includes(value));
+  const selected = endpoints.find((endpoint) => endpoint.value === value) ?? endpoints[0];
+  const locked = Boolean(selected?.locked);
+  return (
+    <label>
+      <span className="rh-faint text-[11px] font-bold uppercase tracking-[0.2em]">{label}</span>
+      <select
+        value={usesCustom ? "__custom" : value}
+        disabled={locked}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
+        className="mt-2 h-[50px] w-full rounded-[12px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-3 text-[15px] font-semibold text-[var(--rh-ink)] outline-none disabled:cursor-not-allowed disabled:opacity-75"
+      >
+        {endpoints.map((endpoint) => <option key={`${endpoint.label}-${endpoint.value}`} value={endpoint.value}>{endpoint.label}</option>)}
+        {!locked && <option value="__custom">Custom endpoint</option>}
+      </select>
+      {locked ? (
+        <p className="rh-muted mt-2 text-[13px]">Rabbit Holes uses this provider's native API. No base URL is needed.</p>
+      ) : (usesCustom || value === "") && (
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
+          placeholder="https://your-endpoint.example/v1"
+          className="mt-3 w-full rounded-[12px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-3 py-3 text-[15px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)]"
+        />
+      )}
     </label>
   );
 }
