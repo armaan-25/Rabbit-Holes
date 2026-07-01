@@ -7,7 +7,7 @@ import { ACCENTS, STATUS_META } from "@/lib/ui";
 import { useHoles } from "@/hooks/useHoles";
 import { formatElapsed, removeCapturedTab, setExtensionCapture, useSessionStats, type CaptureState, type SessionStats } from "@/hooks/useSessionStats";
 import { Wordmark } from "./Logo";
-import { clearRabbitSession, readRabbitSession } from "@/lib/local-auth";
+import { clearRabbitSession, displayRabbitSession, readRabbitSession } from "@/lib/local-auth";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const NAV = [
@@ -290,7 +290,7 @@ function SidebarAccount() {
 
   useEffect(() => {
     function sync() {
-      setEmail(readRabbitSession()?.email || "Signed in");
+      setEmail(displayRabbitSession(readRabbitSession()));
     }
     sync();
     window.addEventListener("rabbit-hole-session-changed", sync);

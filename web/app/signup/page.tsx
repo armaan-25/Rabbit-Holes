@@ -26,9 +26,9 @@ function SignupForm() {
   async function google() {
     if (busy) return;
     setBusy(true);
-    setStatus("Opening Google...");
+    setStatus("Signing in with Google...");
     await new Promise((resolve) => window.setTimeout(resolve, 220));
-    writeRabbitSession(email.trim() || "google-user@rabbitholes.local");
+    writeRabbitSession("", { provider: "google", displayName: "Google profile" });
     router.replace(next.startsWith("/") ? next : "/dashboard");
   }
 
@@ -37,7 +37,7 @@ function SignupForm() {
     setBusy(true);
     setStatus("Creating account...");
     await new Promise((resolve) => window.setTimeout(resolve, 220));
-    writeRabbitSession(email.trim());
+    writeRabbitSession(email.trim(), { provider: "email" });
     router.replace(next.startsWith("/") ? next : "/dashboard");
   }
 

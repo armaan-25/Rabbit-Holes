@@ -103,10 +103,29 @@ export function RabbitHoleLoading() {
           52% { transform: translateX(-18%); }
           100% { transform: translateX(100%); }
         }
+        @keyframes rh-word-flow {
+          0% { transform: translate3d(-130%, 16px, 0); opacity: 0; }
+          16% { opacity: .42; }
+          58% { opacity: .34; }
+          100% { transform: translate3d(130%, -16px, 0); opacity: 0; }
+        }
       `}</style>
 
       <div className="relative flex max-h-[88vh] w-full max-w-[760px] flex-col overflow-hidden rounded-[34px] border border-[#f3e8d442] bg-[#17100b] shadow-[0_40px_130px_rgba(18,11,5,.58)]">
         <div className="relative flex min-h-[330px] flex-1 items-center justify-center overflow-hidden bg-[#21170f] px-6 py-8">
+          {["searches", "tabs", "papers", "repos", "questions", "notes", "links", "patterns"].map((word, i) => (
+            <span
+              key={word}
+              className="pointer-events-none absolute left-0 rh-display select-none text-[20px] italic tracking-wide text-[#d7c3a1]/45"
+              style={{
+                top: `${12 + (i % 4) * 22}%`,
+                width: "100%",
+                animation: `rh-word-flow ${5.6 + (i % 3) * 0.7}s ease-in-out ${i * 0.42}s infinite`,
+              }}
+            >
+              <span style={{ marginLeft: `${(i * 13) % 46}%` }}>{word}</span>
+            </span>
+          ))}
           <div className="relative grid h-[280px] w-full max-w-[560px] place-items-center overflow-hidden rounded-[28px]">
             <div className="absolute inset-x-20 bottom-8 top-8 z-0 rounded-full bg-[#17100b]/18 blur-3xl" />
             <div className="relative z-30 grid h-[132px] w-[132px] place-items-center rounded-full border border-[#f3e8d42b] bg-[#17100b]/92 text-[#f6ecd9] shadow-[0_18px_58px_rgba(18,11,5,.36)]">
@@ -147,24 +166,25 @@ export function BuildNotice({ type, stats, errorStatus, onClose }: { readonly ty
       <div className="fixed inset-0 z-[75] grid place-items-center bg-[#140d08]/76 px-4 backdrop-blur-[10px]">
         <style>{`
           @keyframes soft-word-drift {
-            0% { transform: translateY(10px); opacity: 0; }
-            35% { opacity: .56; }
-            100% { transform: translateY(-18px); opacity: 0; }
+            0% { transform: translate3d(-125%, 18px, 0); opacity: 0; }
+            18% { opacity: .5; }
+            62% { opacity: .36; }
+            100% { transform: translate3d(125%, -18px, 0); opacity: 0; }
           }
         `}</style>
         <div className="relative w-full max-w-[720px] overflow-hidden rounded-[34px] border border-[#f3e8d426] bg-[#17100b] shadow-[0_34px_110px_rgba(18,11,5,.48)]">
           <div className="relative h-[360px] overflow-hidden border-b border-[#f3e8d41f] bg-[#2b2117]">
-            {["searches", "pages", "links", "tabs"].map((word, i) => (
+            {["searches", "pages", "links", "tabs", "notes", "questions", "patterns", "sources"].map((word, i) => (
               <span
                 key={word}
-                className="absolute rh-display select-none text-[24px] italic tracking-wide text-[#d7c3a1]/60"
+                className="absolute left-0 rh-display select-none text-[23px] italic tracking-wide text-[#d7c3a1]/58"
                 style={{
-                  left: `${18 + i * 19}%`,
-                  top: `${22 + (i % 2) * 42}%`,
-                  animation: `soft-word-drift 2.8s ease-in-out ${i * 0.2}s infinite`,
+                  top: `${12 + (i % 4) * 20}%`,
+                  width: "100%",
+                  animation: `soft-word-drift ${5.2 + (i % 3) * 0.7}s ease-in-out ${i * 0.38}s infinite`,
                 }}
               >
-                {word}
+                <span style={{ marginLeft: `${(i * 17) % 56}%` }}>{word}</span>
               </span>
             ))}
             <div className="absolute inset-x-0 bottom-[68px] mx-auto grid h-[150px] w-[150px] place-items-center rounded-full border border-[#f3e8d438] bg-[#17100b] text-[#f6ecd9] shadow-[0_22px_70px_rgba(18,11,5,.34)]">

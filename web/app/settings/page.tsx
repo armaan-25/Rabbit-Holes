@@ -266,11 +266,13 @@ export default function SettingsPage() {
                 ? "Checking the provider with a tiny request..."
                 : providerStatus === "valid"
                   ? "Provider validated. Your key is saved in extension storage, not page storage."
-                  : providerStatus === "invalid"
-                    ? "Saved locally, but the provider test failed. Check the key, model, and base URL."
-                    : ready
-                      ? "Provider configured in the extension. Rabbit Holes can use your model without storing the key in page storage."
-                      : "Add the required model, key, or base URL to finish setup."}
+                : providerStatus === "invalid"
+                  ? "Saved locally, but the provider test failed. Check the key, model, and base URL."
+                  : ready
+                    ? "Provider configured in the extension. Rabbit Holes can use your model without storing the key in page storage."
+                    : selectedProvider.needsKey && !provider.hasApiKey && !provider.apiKey?.trim()
+                      ? "Add an API key before building rabbit holes. Your key is saved only in extension storage."
+                      : "Add the required model or base URL to finish setup."}
             </div>
           </div>
         </section>
@@ -312,7 +314,20 @@ function SecretField({ label, value, saved, placeholder, onChange, onBlur }: { l
     <label>
       <span className="rh-faint text-[11px] font-bold uppercase tracking-[0.2em]">{label}</span>
       <div className="relative mt-2">
-        <input value={value} type="password" autoComplete="off" spellCheck={false} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} placeholder={placeholder} className="w-full rounded-[12px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-3 py-3 pr-24 text-[15px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)]" />
+        <input
+          value={value}
+          name="rabbit-holes-provider-key"
+          type="password"
+          autoComplete="new-password"
+          data-1p-ignore="true"
+          data-lpignore="true"
+          data-form-type="other"
+          spellCheck={false}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
+          placeholder={placeholder}
+          className="w-full rounded-[12px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-3 py-3 pr-24 text-[15px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)]"
+        />
         <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full border border-[var(--rh-line)] px-2 py-1 text-[11px] font-semibold text-[var(--rh-muted)]">
           {saved ? "saved" : value ? "hidden" : "empty"}
         </span>

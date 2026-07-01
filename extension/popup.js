@@ -4,6 +4,7 @@ let captureState = "recording";
 let captureStartedAt = null;
 let captureElapsedMs = 0;
 let capturePending = false;
+let providerReady = false;
 
 function setClusterLabel(text) {
   document.getElementById("cluster").innerHTML = `<span>${text}</span>`;
@@ -61,6 +62,25 @@ function canonicalUrl(url) {
   } catch {
     return String(url || "").split("#")[0];
   }
+}
+
+function isProviderConfigured(config) {
+  if (!config || typeof config !== "object") return false;
+  const type = config.type || "openrouter";
+  const hasModel = Boolean(String(config.model || "").trim());
+  const hasBaseUrl = Boolean(String(config.baseUrl || "").trim());
+  const hasKey = Boolean(String(config.apiKey || "").trim() || config.hasApiKey);
+  if (type === "ollama" || type === "lmstudio" || type === "compatible") return hasModel && hasBaseUrl;
+  return hasModel && hasKey;
+}
+
+function setProviderUI(ready) {
+  providerReady = ready;
+  const warning = document.getElementById("provider-warning");
+  const cluster = document.getElementById("cluster");
+  warning.classList.toggle("visible", !ready);
+  cluster.classList.toggle("needs-key", !ready);
+  if (!ready) setClusterLabel("Set API key in settings");
 }
 
 function escapeHtml(value) {
@@ -177,14 +197,16 @@ function setAuthView(state) {
 
 async function render() {
   setAuthView("in");
-  document.getElementById("account-email").textContent = "Local-first mode";
+  document.getElementById("account-email").textContent = "Local profile";
 
   const {
     events = [],
     captureState: storedState = "recording",
     captureStartedAt: startedAt = null,
     captureElapsedMs: elapsedMs = 0,
-  } = await chrome.storage.local.get(["events", "captureState", "captureStartedAt", "captureElapsedMs"]);
+    aiProvider = null,
+  } = await chrome.storage.local.get(["events", "captureState", "captureStartedAt", "captureElapsedMs", "aiProvider"]);
+  setProviderUI(isProviderConfigured(aiProvider));
   const visits = new Set(events.filter((e) => e.type === "visit").map((e) => e.url));
   const searches = events.filter((e) => e.type === "search").length;
   const opens = events.filter((e) => e.type === "tab_open").length;
@@ -237,6 +259,10 @@ document.getElementById("record-stop").addEventListener("click", () => {
 });
 
 document.getElementById("cluster").addEventListener("click", async (e) => {
+  if (!providerReady) {
+    chrome.tabs.create({ url: `${WEB_URL}/settings` });
+    return;
+  }
   if (captureState === "stopped") {
     setClusterLabel("Press play to start");
     window.setTimeout(() => setClusterLabel("Build rabbit holes"), 1300);

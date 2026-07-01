@@ -24,7 +24,7 @@ function LoginForm() {
   const [transitioning, setTransitioning] = useState(false);
 
   function finish(value: string) {
-    writeRabbitSession(value);
+    writeRabbitSession(value, { provider: "email" });
     router.replace(next.startsWith("/") ? next : "/dashboard");
   }
 
@@ -39,9 +39,10 @@ function LoginForm() {
   async function google() {
     if (transitioning) return;
     setTransitioning(true);
-    setStatus("Opening sign up...");
+    setStatus("Signing in with Google...");
     await new Promise((resolve) => window.setTimeout(resolve, 220));
-    router.push(`/signup?next=${encodeURIComponent(next)}`);
+    writeRabbitSession("", { provider: "google", displayName: "Google profile" });
+    router.replace(next.startsWith("/") ? next : "/dashboard");
   }
 
   return (

@@ -24,7 +24,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     }
 
     const session = readRabbitSession();
-    if (session?.email) {
+    if (session) {
       setReady(true);
       return;
     }
