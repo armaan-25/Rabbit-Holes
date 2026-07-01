@@ -18,16 +18,17 @@ export default function Landing() {
     <div className="rh-paper min-h-screen text-[var(--rh-ink)]">
       <AnimatePresence>{installOpen && <InstallInstructionsPopup onClose={() => setInstallOpen(false)} />}</AnimatePresence>
 
-      <header className="mx-auto flex h-[76px] w-full max-w-[1160px] items-center justify-between gap-4 px-5 sm:px-8">
-        <div className="flex min-w-0 items-center gap-6">
+      <header className="mx-auto grid h-[76px] w-full max-w-[1480px] grid-cols-[1fr_auto_1fr] items-center gap-6 px-6 sm:px-10 lg:px-14">
+        <div className="flex min-w-0 items-center">
           <Link href="/" className="shrink-0 no-underline"><Wordmark className="text-[23px]" /></Link>
         </div>
-        <nav className="hidden items-center gap-3 text-[15px] font-semibold md:flex">
-          <Link href="/dashboard" className="rounded-full border border-[var(--rh-line)] px-5 py-3 text-[var(--rh-ink-soft)] no-underline transition hover:-translate-y-0.5 hover:border-[var(--rh-line-strong)] hover:text-[var(--rh-ink)]">Dashboard</Link>
-          <Link href="/docs" className="rounded-full border border-[var(--rh-line)] px-5 py-3 text-[var(--rh-ink-soft)] no-underline transition hover:-translate-y-0.5 hover:border-[var(--rh-line-strong)] hover:text-[var(--rh-ink)]">Docs</Link>
-          <button onClick={() => setInstallOpen(true)} className="rounded-full border border-[var(--rh-line)] px-5 py-3 text-[var(--rh-ink-soft)] transition hover:-translate-y-0.5 hover:border-[var(--rh-line-strong)] hover:text-[var(--rh-ink)]">Download</button>
-          <a href="https://github.com/armaan-25/Rabbit-Holes" className="rounded-full border border-[var(--rh-line)] px-5 py-3 text-[var(--rh-ink-soft)] no-underline transition hover:-translate-y-0.5 hover:border-[var(--rh-line-strong)] hover:text-[var(--rh-ink)]">GitHub</a>
+        <nav className="hidden items-center justify-center gap-5 text-[15px] font-semibold md:flex">
+          <Link href="/dashboard" className="min-w-[126px] rounded-full border border-[var(--rh-line)] px-6 py-3 text-center text-[var(--rh-ink-soft)] no-underline transition hover:-translate-y-0.5 hover:border-[var(--rh-line-strong)] hover:text-[var(--rh-ink)]">Dashboard</Link>
+          <Link href="/docs" className="min-w-[104px] rounded-full border border-[var(--rh-line)] px-6 py-3 text-center text-[var(--rh-ink-soft)] no-underline transition hover:-translate-y-0.5 hover:border-[var(--rh-line-strong)] hover:text-[var(--rh-ink)]">Docs</Link>
+          <button onClick={() => setInstallOpen(true)} className="min-w-[130px] rounded-full border border-[var(--rh-line)] px-6 py-3 text-center text-[var(--rh-ink-soft)] transition hover:-translate-y-0.5 hover:border-[var(--rh-line-strong)] hover:text-[var(--rh-ink)]">Download</button>
+          <a href="https://github.com/armaan-25/Rabbit-Holes" className="min-w-[118px] rounded-full border border-[var(--rh-line)] px-6 py-3 text-center text-[var(--rh-ink-soft)] no-underline transition hover:-translate-y-0.5 hover:border-[var(--rh-line-strong)] hover:text-[var(--rh-ink)]">GitHub</a>
         </nav>
+        <div aria-hidden="true" />
       </header>
 
       <main>
@@ -195,9 +196,9 @@ function MockDemoFlow({ onInstall }: { onInstall: () => void }) {
 
 function InstallInstructionsPopup({ onClose }: { onClose: () => void }) {
   return (
-    <motion.div className="fixed inset-0 z-[90] bg-[#120e0a]/58 px-4 backdrop-blur-md" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
-      <div className="fixed left-1/2 top-1/2 w-[calc(100vw-32px)] max-w-[520px] -translate-x-1/2 -translate-y-1/2">
-        <motion.div className="rounded-[30px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-7 shadow-[0_28px_90px_rgba(18,11,5,.25)]" initial={{ y: 14, scale: 0.98, opacity: 0 }} animate={{ y: 0, scale: 1, opacity: 1 }} exit={{ y: 8, scale: 0.98, opacity: 0 }} transition={{ duration: 0.22 }} onClick={(e) => e.stopPropagation()}>
+    <motion.div className="fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto bg-[#120e0a]/58 px-4 py-8 backdrop-blur-md" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+      <div className="w-[calc(100vw-32px)] max-w-[520px]">
+        <motion.div className="max-h-[calc(100vh-64px)] overflow-y-auto rounded-[30px] border border-[var(--rh-line)] bg-[var(--rh-surface)] p-7 shadow-[0_28px_90px_rgba(18,11,5,.25)]" initial={{ y: 14, scale: 0.98, opacity: 0 }} animate={{ y: 0, scale: 1, opacity: 1 }} exit={{ y: 8, scale: 0.98, opacity: 0 }} transition={{ duration: 0.22 }} onClick={(e) => e.stopPropagation()}>
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="rh-faint text-[12px] font-semibold uppercase tracking-[0.22em]">Manual install</div>
