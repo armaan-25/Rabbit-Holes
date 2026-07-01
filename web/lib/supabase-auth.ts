@@ -13,6 +13,8 @@ const SUPABASE_ANON_KEY =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
   "sb_publishable_jdSlL8lF0b38mvIMiRHDWw_IvtYCw4x";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "";
+
 let client: ReturnType<typeof createClient> | null = null;
 
 export function isSupabaseConfigured() {
@@ -70,4 +72,12 @@ export async function signOutSupabase() {
 
 export function safeNextPath(value: string | null | undefined) {
   return value && value.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
+}
+
+export function getAuthCallbackUrl(next: string) {
+  const safeNext = safeNextPath(next);
+  const base =
+    SITE_URL ||
+    (typeof window !== "undefined" ? window.location.origin : "https://userabbitholes.com");
+  return `${base.replace(/\/$/, "")}/auth/callback?next=${encodeURIComponent(safeNext)}`;
 }

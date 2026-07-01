@@ -4,7 +4,7 @@ import { FormEvent, Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Wordmark } from "@/components/Logo";
-import { getSupabaseClient, isSupabaseConfigured, safeNextPath, writeSupabaseUserSession } from "@/lib/supabase-auth";
+import { getAuthCallbackUrl, getSupabaseClient, isSupabaseConfigured, safeNextPath, writeSupabaseUserSession } from "@/lib/supabase-auth";
 
 export default function SignupPage() {
   return (
@@ -32,16 +32,31 @@ function SignupForm() {
 
     setBusy(true);
     setStatus("Signing in with Google...");
-    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
-    const { error } = await getSupabaseClient().auth.signInWithOAuth({
+    const redirectTo = getAuthCallbackUrl(next);
+    const { data, error } = await getSupabaseClient().auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo },
+      options: {
+        redirectTo,
+        skipBrowserRedirect: true,
+        queryParams: {
+          prompt: "select_account",
+        },
+      },
     });
 
     if (error) {
       setBusy(false);
       setStatus(error.message);
+      return;
     }
+
+    if (data.url) {
+      window.location.assign(data.url);
+      return;
+    }
+
+    setBusy(false);
+    setStatus("Google did not return a sign-in URL.");
   }
 
   async function submit(e: FormEvent) {
@@ -57,7 +72,7 @@ function SignupForm() {
       email: email.trim(),
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        emailRedirectTo: getAuthCallbackUrl(next),
       },
     });
 
