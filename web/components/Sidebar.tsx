@@ -7,7 +7,8 @@ import { ACCENTS, STATUS_META } from "@/lib/ui";
 import { useHoles } from "@/hooks/useHoles";
 import { formatElapsed, removeCapturedTab, setExtensionCapture, useSessionStats, type CaptureState, type SessionStats } from "@/hooks/useSessionStats";
 import { Wordmark } from "./Logo";
-import { clearRabbitSession, displayRabbitSession, readRabbitSession } from "@/lib/local-auth";
+import { displayRabbitSession, readRabbitSession } from "@/lib/local-auth";
+import { signOutSupabase, syncSupabaseSessionToLocal } from "@/lib/supabase-auth";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const NAV = [
@@ -291,14 +292,15 @@ function SidebarAccount() {
   useEffect(() => {
     function sync() {
       setEmail(displayRabbitSession(readRabbitSession()));
+      void syncSupabaseSessionToLocal().then(() => setEmail(displayRabbitSession(readRabbitSession())));
     }
     sync();
     window.addEventListener("rabbit-hole-session-changed", sync);
     return () => window.removeEventListener("rabbit-hole-session-changed", sync);
   }, []);
 
-  function signOut() {
-    clearRabbitSession();
+  async function signOut() {
+    await signOutSupabase();
     window.location.href = "/login";
   }
 

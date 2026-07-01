@@ -10,6 +10,7 @@
     "dev:clean": "bash ./scripts/dev-server.sh"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
     "framer-motion": "^11.3.19",
     "next": "^14.2.35",
     "react": "^18.3.1",

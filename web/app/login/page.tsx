@@ -4,7 +4,7 @@ import { FormEvent, Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Wordmark } from "@/components/Logo";
-import { writeRabbitSession } from "@/lib/local-auth";
+import { getSupabaseClient, isSupabaseConfigured, safeNextPath, writeSupabaseUserSession } from "@/lib/supabase-auth";
 
 export default function LoginPage() {
   return (
@@ -17,32 +17,55 @@ export default function LoginPage() {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/dashboard";
+  const next = safeNextPath(searchParams.get("next"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("");
   const [transitioning, setTransitioning] = useState(false);
 
-  function finish(value: string) {
-    writeRabbitSession(value, { provider: "email" });
-    router.replace(next.startsWith("/") ? next : "/dashboard");
-  }
-
   async function submit(e: FormEvent) {
     e.preventDefault();
+    if (!isSupabaseConfigured()) {
+      setStatus("Sign in is not configured yet.");
+      return;
+    }
+
     setTransitioning(true);
     setStatus("Signing in...");
-    await new Promise((resolve) => window.setTimeout(resolve, 220));
-    finish(email.trim());
+    const { data, error } = await getSupabaseClient().auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    if (error || !data.user) {
+      setTransitioning(false);
+      setStatus(error?.message || "Could not sign in.");
+      return;
+    }
+
+    writeSupabaseUserSession(data.user);
+    router.replace(next);
   }
 
   async function google() {
     if (transitioning) return;
+    if (!isSupabaseConfigured()) {
+      setStatus("Google sign in is not configured yet.");
+      return;
+    }
+
     setTransitioning(true);
     setStatus("Signing in with Google...");
-    await new Promise((resolve) => window.setTimeout(resolve, 220));
-    writeRabbitSession("", { provider: "google", displayName: "Google profile" });
-    router.replace(next.startsWith("/") ? next : "/dashboard");
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
+    const { error } = await getSupabaseClient().auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo },
+    });
+
+    if (error) {
+      setTransitioning(false);
+      setStatus(error.message);
+    }
   }
 
   return (

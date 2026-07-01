@@ -4,7 +4,7 @@ import { FormEvent, Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Wordmark } from "@/components/Logo";
-import { writeRabbitSession } from "@/lib/local-auth";
+import { getSupabaseClient, isSupabaseConfigured, safeNextPath, writeSupabaseUserSession } from "@/lib/supabase-auth";
 
 export default function SignupPage() {
   return (
@@ -17,7 +17,7 @@ export default function SignupPage() {
 function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/dashboard";
+  const next = safeNextPath(searchParams.get("next"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("");
@@ -25,20 +25,56 @@ function SignupForm() {
 
   async function google() {
     if (busy) return;
+    if (!isSupabaseConfigured()) {
+      setStatus("Google sign in is not configured yet.");
+      return;
+    }
+
     setBusy(true);
     setStatus("Signing in with Google...");
-    await new Promise((resolve) => window.setTimeout(resolve, 220));
-    writeRabbitSession("", { provider: "google", displayName: "Google profile" });
-    router.replace(next.startsWith("/") ? next : "/dashboard");
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
+    const { error } = await getSupabaseClient().auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo },
+    });
+
+    if (error) {
+      setBusy(false);
+      setStatus(error.message);
+    }
   }
 
   async function submit(e: FormEvent) {
     e.preventDefault();
+    if (!isSupabaseConfigured()) {
+      setStatus("Sign up is not configured yet.");
+      return;
+    }
+
     setBusy(true);
     setStatus("Creating account...");
-    await new Promise((resolve) => window.setTimeout(resolve, 220));
-    writeRabbitSession(email.trim(), { provider: "email" });
-    router.replace(next.startsWith("/") ? next : "/dashboard");
+    const { data, error } = await getSupabaseClient().auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+      },
+    });
+
+    if (error) {
+      setBusy(false);
+      setStatus(error.message);
+      return;
+    }
+
+    if (data.user && data.session) {
+      writeSupabaseUserSession(data.user);
+      router.replace(next);
+      return;
+    }
+
+    setBusy(false);
+    setStatus("Check your email to finish creating your account.");
   }
 
   return (
