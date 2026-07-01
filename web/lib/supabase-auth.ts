@@ -77,7 +77,6 @@ export function safeNextPath(value: string | null | undefined) {
 export function getAuthCallbackUrl(next: string) {
   const safeNext = safeNextPath(next);
   const base =
-    SITE_URL ||
-    (typeof window !== "undefined" ? window.location.origin : "https://userabbitholes.com");
+    typeof window !== "undefined" ? window.location.origin : SITE_URL || "https://userabbitholes.com";
   return `${base.replace(/\/$/, "")}/auth/callback?next=${encodeURIComponent(safeNext)}`;
 }
