@@ -36,6 +36,127 @@ const SETTINGS_DEFAULTS = {
 };
 let settings = { ...SETTINGS_DEFAULTS };
 
+const AI_PROVIDER_OPTIONS = {
+  anthropic: { baseUrl: "", defaultModel: "claude-sonnet-4-20250514", needsKey: true },
+  openai: { baseUrl: "https://api.openai.com/v1", defaultModel: "gpt-4.1-mini", needsKey: true },
+  openrouter: { baseUrl: "https://openrouter.ai/api/v1", defaultModel: "anthropic/claude-sonnet-4", needsKey: true },
+  gemini: { baseUrl: "", defaultModel: "gemini-2.5-flash", needsKey: true },
+  ollama: { baseUrl: "http://localhost:11434", defaultModel: "llama3.1", needsKey: false },
+  lmstudio: { baseUrl: "http://localhost:1234/v1", defaultModel: "local-model", needsKey: false },
+  compatible: { baseUrl: "", defaultModel: "model-name", needsKey: false },
+};
+
+function providerOption(type) {
+  return AI_PROVIDER_OPTIONS[type] || AI_PROVIDER_OPTIONS.openrouter;
+}
+
+function providerReady(config) {
+  if (!config?.type || !config?.model?.trim()) return false;
+  const option = providerOption(config.type);
+  if (option.needsKey && !config.apiKey?.trim()) return false;
+  if (["compatible", "lmstudio", "ollama"].includes(config.type) && !config.baseUrl?.trim()) return false;
+  return true;
+}
+
+function openAiBase(config) {
+  if (config.type === "openai") return "https://api.openai.com/v1";
+  return (config.baseUrl || providerOption(config.type).baseUrl || "").replace(/\/$/, "");
+}
+
+async function generateOpenAiCompatible(config, prompt, options = {}) {
+  const baseUrl = openAiBase(config);
+  if (!baseUrl) throw new Error("Missing provider base URL");
+  const headers = { "Content-Type": "application/json" };
+  if (config.apiKey) headers.Authorization = `Bearer ${config.apiKey}`;
+  if (config.type === "openrouter") {
+    headers["HTTP-Referer"] = WEB_URL;
+    headers["X-Title"] = "Rabbit Holes";
+  }
+  const response = await fetch(`${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      model: config.model,
+      temperature: options.temperature ?? 0.2,
+      max_tokens: options.maxTokens ?? 900,
+      messages: [
+        ...(options.system ? [{ role: "system", content: options.system }] : []),
+        { role: "user", content: prompt },
+      ],
+    }),
+  });
+  if (!response.ok) throw new Error(`Provider returned ${response.status}`);
+  const json = await response.json();
+  return String(json?.choices?.[0]?.message?.content || "").trim();
+}
+
+async function generateAnthropic(config, prompt, options = {}) {
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": config.apiKey || "",
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    body: JSON.stringify({
+      model: config.model,
+      max_tokens: options.maxTokens ?? 900,
+      temperature: options.temperature ?? 0.2,
+      ...(options.system ? { system: options.system } : {}),
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
+  if (!response.ok) throw new Error(`Provider returned ${response.status}`);
+  const json = await response.json();
+  return String(json?.content?.map((part) => part.text || "").join("\n") || "").trim();
+}
+
+async function generateGemini(config, prompt, options = {}) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.model)}:generateContent?key=${encodeURIComponent(config.apiKey || "")}`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: options.system ? `${options.system}\n\n${prompt}` : prompt }] }],
+      generationConfig: { temperature: options.temperature ?? 0.2, maxOutputTokens: options.maxTokens ?? 900 },
+    }),
+  });
+  if (!response.ok) throw new Error(`Provider returned ${response.status}`);
+  const json = await response.json();
+  return String(json?.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("\n") || "").trim();
+}
+
+async function generateOllama(config, prompt, options = {}) {
+  const baseUrl = (config.baseUrl || providerOption(config.type).baseUrl || "http://localhost:11434").replace(/\/$/, "");
+  const response = await fetch(`${baseUrl}/api/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: config.model,
+      stream: false,
+      messages: [
+        ...(options.system ? [{ role: "system", content: options.system }] : []),
+        { role: "user", content: prompt },
+      ],
+      options: { temperature: options.temperature ?? 0.2, num_predict: options.maxTokens ?? 900 },
+    }),
+  });
+  if (!response.ok) throw new Error(`Provider returned ${response.status}`);
+  const json = await response.json();
+  return String(json?.message?.content || json?.response || "").trim();
+}
+
+async function generateWithProvider(prompt, options = {}) {
+  const { aiProvider = null } = await chrome.storage.local.get("aiProvider");
+  if (!providerReady(aiProvider)) return { ok: false, error: "provider-not-configured" };
+  if (["openai", "openrouter", "lmstudio", "compatible"].includes(aiProvider.type)) return { ok: true, text: await generateOpenAiCompatible(aiProvider, prompt, options) };
+  if (aiProvider.type === "anthropic") return { ok: true, text: await generateAnthropic(aiProvider, prompt, options) };
+  if (aiProvider.type === "gemini") return { ok: true, text: await generateGemini(aiProvider, prompt, options) };
+  if (aiProvider.type === "ollama") return { ok: true, text: await generateOllama(aiProvider, prompt, options) };
+  return { ok: false, error: "provider-not-supported" };
+}
+
 async function loadSettings() {
   const { settings: stored } = await chrome.storage.local.get("settings");
   if (stored) settings = { ...SETTINGS_DEFAULTS, ...stored };
@@ -225,6 +346,13 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     removeCapturedTab(message.url)
       .then((result) => sendResponse(result))
       .catch((error) => sendResponse({ ok: false, error: String(error), buffered: buffer.length }));
+    return true;
+  }
+
+  if (message?.type === "generateText") {
+    generateWithProvider(String(message.prompt || ""), message.options || {})
+      .then((result) => sendResponse(result))
+      .catch((error) => sendResponse({ ok: false, error: String(error?.message || error) }));
     return true;
   }
 

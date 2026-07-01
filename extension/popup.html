@@ -27,7 +27,7 @@
         padding: 14px;
         color: var(--cream);
         font-family: "Newsreader", Georgia, serif;
-        background: radial-gradient(120% 90% at 50% 0%, rgba(246,232,205,.13), transparent 58%), var(--paper);
+        background: var(--paper);
       }
       button {
         appearance: none;
@@ -52,8 +52,10 @@
       }
       .title {
         min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        font-family: "Playfair Display", Georgia, serif; font-size: 21px; font-weight: 700; line-height: .95;
+        display: inline-flex; align-items: baseline;
+        font-family: "Playfair Display", Georgia, serif; font-size: 23px; font-weight: 700; line-height: .95;
       }
+      .bunny-o { width: .72em; height: 1.02em; margin: 0 .015em; vertical-align: -.14em; color: currentColor; }
       .icon-button {
         width: 36px; height: 36px; min-height: 36px; padding: 0; display: grid; place-items: center;
         border-radius: 12px; background: var(--ink); color: var(--cream-2); font-size: 15px;
@@ -92,7 +94,7 @@
       .controls button.danger:hover { background: rgba(184,121,95,.18); }
       .rabbit-action {
         position: relative; width: 100%; min-height: 48px; overflow: hidden;
-        background: linear-gradient(180deg, #302417, #1d150e); color: var(--cream); font-size: 15px;
+        background: #21170f; color: var(--cream); font-size: 15px;
       }
       .auth-panel,
       .app-panel {
@@ -110,10 +112,7 @@
       .auth-panel p { margin-bottom: 12px; color: var(--cream-2); font-size: 14px; line-height: 1.35; }
       .app-panel.signed-out { display: none; }
       .auth-panel.signed-out { display: block; }
-      .rabbit-action::before {
-        content: ""; position: absolute; inset: 0; opacity: .68;
-        background: radial-gradient(80% 120% at 20% 20%, rgba(180,143,88,.23), transparent 55%), radial-gradient(90% 120% at 90% 80%, rgba(95,138,92,.14), transparent 58%);
-      }
+      .rabbit-action::before { content: none; }
       .account {
         display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 9px 11px;
         border: 1px solid var(--line); border-radius: 13px; background: var(--ink); min-width: 0;
@@ -212,7 +211,7 @@
   <body>
     <div class="header">
       <button class="brand" id="brand-open" title="Open dashboard">
-        <span class="title">Rabbit Holes</span>
+        <span class="title">Rabbit&nbsp;H<svg viewBox="0 0 30 42" aria-hidden="true" class="bunny-o"><g fill="currentColor"><ellipse cx="11" cy="12.5" rx="3" ry="9.5" transform="rotate(-15 11 12.5)"></ellipse><ellipse cx="19" cy="12.5" rx="3" ry="9.5" transform="rotate(15 19 12.5)"></ellipse></g><circle cx="15" cy="29.5" r="9.5" fill="none" stroke="currentColor" stroke-width="3.8"></circle></svg>les</span>
       </button>
       <button class="icon-button dashboard-link" id="open" title="Open dashboard">↗</button>
     </div>

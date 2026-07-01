@@ -25,6 +25,11 @@ SUPABASE_PUBLISHABLE_KEY = os.environ.get("SUPABASE_PUBLISHABLE_KEY") or os.envi
 # account (fail-open). Default is fail-closed.
 ALLOW_DEV_USER = os.environ.get("RABBIT_HOLE_DEV_USER", "").strip().lower() in {"1", "true", "yes"}
 
+# Local-first mode is for the extension-first/BYO-AI product path where the
+# browser owns state and the backend is only an optional helper. It is deliberately
+# opt-in so hosted deployments do not accidentally expose shared backend state.
+ALLOW_LOCAL_FIRST_USER = os.environ.get("RABBIT_HOLE_LOCAL_FIRST", "").strip().lower() in {"1", "true", "yes"}
+
 
 def _bearer_token(authorization: Optional[str]) -> Optional[str]:
     if not authorization or not authorization.startswith("Bearer "):
@@ -81,21 +86,28 @@ def get_current_user(authorization: Optional[str] = Header(default=None)) -> Cur
     Production accepts a valid Supabase access token via local JWT verification
     or Supabase's /auth/v1/user endpoint. When no Supabase auth config is
     present, requests are rejected unless RABBIT_HOLE_DEV_USER is explicitly set
-    (local development), so a misconfigured deploy fails closed rather than
+    (local development) or RABBIT_HOLE_LOCAL_FIRST is explicitly set
+    (extension-first mode), so a misconfigured deploy fails closed rather than
     serving every request as one shared account.
     """
     auth_configured = bool(SUPABASE_JWT_SECRET or (SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY))
     if not auth_configured:
+        if ALLOW_LOCAL_FIRST_USER:
+            return CurrentUser(id="local-first-user", email="local@rabbit-holes.local")
         if ALLOW_DEV_USER:
             return CurrentUser(id="dev-user", email="dev@rabbit-hole.local")
         raise HTTPException(status_code=503, detail="Authentication is not configured")
 
     token = _bearer_token(authorization)
     if not token:
+        if ALLOW_LOCAL_FIRST_USER:
+            return CurrentUser(id="local-first-user", email="local@rabbit-holes.local")
         raise HTTPException(status_code=401, detail="Missing bearer token")
 
     user = _from_local_jwt(token) or _from_supabase_user(token)
     if not user:
+        if ALLOW_LOCAL_FIRST_USER:
+            return CurrentUser(id="local-first-user", email="local@rabbit-holes.local")
         raise HTTPException(status_code=401, detail="Invalid or expired bearer token")
 
     return user

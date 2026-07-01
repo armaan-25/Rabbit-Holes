@@ -57,6 +57,12 @@
     return tabs;
   }
 
+  function publicProvider(provider) {
+    if (!provider || typeof provider !== "object") return null;
+    const { apiKey, ...rest } = provider;
+    return { ...rest, hasApiKey: Boolean(provider.hasApiKey || apiKey) };
+  }
+
   async function readStats() {
     const {
       events = [],
@@ -103,7 +109,7 @@
     if (event.data?.type === "rabbit-holes:get-config") {
       try {
         const { settings = null, aiProvider = null } = await chrome.storage.local.get(["settings", "aiProvider"]);
-        window.postMessage({ type: "rabbit-holes:config", requestId, settings, aiProvider }, window.location.origin);
+        window.postMessage({ type: "rabbit-holes:config", requestId, settings, aiProvider: publicProvider(aiProvider) }, window.location.origin);
       } catch {
         window.postMessage({ type: "rabbit-holes:config", requestId, settings: null, aiProvider: null }, window.location.origin);
       }
@@ -114,11 +120,26 @@
       try {
         const patch = {};
         if (event.data.settings && typeof event.data.settings === "object") patch.settings = event.data.settings;
-        if (event.data.aiProvider && typeof event.data.aiProvider === "object") patch.aiProvider = event.data.aiProvider;
+        if (event.data.aiProvider && typeof event.data.aiProvider === "object") {
+          const { aiProvider: currentProvider = null } = await chrome.storage.local.get(["aiProvider"]);
+          patch.aiProvider = { ...(currentProvider || {}), ...event.data.aiProvider };
+          if (!("apiKey" in event.data.aiProvider) && currentProvider?.apiKey) patch.aiProvider.apiKey = currentProvider.apiKey;
+          if (event.data.aiProvider.apiKey === "") delete patch.aiProvider.apiKey;
+        }
         await chrome.storage.local.set(patch);
         window.postMessage({ type: "rabbit-holes:config-updated", requestId, ok: true }, window.location.origin);
       } catch {
         window.postMessage({ type: "rabbit-holes:config-updated", requestId, ok: false }, window.location.origin);
+      }
+      return;
+    }
+
+    if (event.data?.type === "rabbit-holes:generate-text") {
+      try {
+        const res = await chrome.runtime.sendMessage({ type: "generateText", prompt: event.data.prompt, options: event.data.options || {} });
+        window.postMessage({ type: "rabbit-holes:provider-result", requestId, ok: Boolean(res?.ok), text: res?.text || null }, window.location.origin);
+      } catch {
+        window.postMessage({ type: "rabbit-holes:provider-result", requestId, ok: false, text: null }, window.location.origin);
       }
       return;
     }

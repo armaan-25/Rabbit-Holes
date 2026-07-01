@@ -15,6 +15,28 @@ function openAiBase(config: AiProviderConfig): string {
   return (config.baseUrl || providerOption(config.type).baseUrl || "").replace(/\/$/, "");
 }
 
+function extensionGenerateText(prompt: string, options: AiGenerateOptions, timeoutMs = 45_000): Promise<string | null> {
+  if (typeof window === "undefined") return Promise.resolve(null);
+  const requestId = crypto.randomUUID();
+  return new Promise((resolve) => {
+    const timeout = window.setTimeout(() => {
+      window.removeEventListener("message", onMessage);
+      resolve(null);
+    }, timeoutMs);
+
+    function onMessage(event: MessageEvent) {
+      if (event.source !== window) return;
+      if (event.data?.type !== "rabbit-holes:provider-result" || event.data.requestId !== requestId) return;
+      window.clearTimeout(timeout);
+      window.removeEventListener("message", onMessage);
+      resolve(event.data.ok ? String(event.data.text || "") : null);
+    }
+
+    window.addEventListener("message", onMessage);
+    window.postMessage({ type: "rabbit-holes:generate-text", requestId, prompt, options }, window.location.origin);
+  });
+}
+
 async function generateOpenAiCompatible(config: AiProviderConfig, prompt: string, options: AiGenerateOptions): Promise<string> {
   const baseUrl = openAiBase(config);
   if (!baseUrl) throw new Error("Missing OpenAI-compatible base URL");
@@ -102,10 +124,14 @@ async function generateOllama(config: AiProviderConfig, prompt: string, options:
 
 export function activeProvider(): AiProviderConfig | null {
   const config = readAiProviderConfig();
+  if (config.apiKey) return null;
   return providerReady(config) ? config : null;
 }
 
 export async function generateText(prompt: string, options: AiGenerateOptions = {}): Promise<string | null> {
+  const extensionText = await extensionGenerateText(prompt, options);
+  if (extensionText) return extensionText;
+
   const config = activeProvider();
   if (!config) return null;
   try {
@@ -118,6 +144,15 @@ export async function generateText(prompt: string, options: AiGenerateOptions = 
     console.warn("Rabbit Holes provider call failed; using local fallback", error);
     return null;
   }
+}
+
+export async function validateCurrentProvider(): Promise<boolean> {
+  const text = await extensionGenerateText(
+    "Reply with exactly: OK",
+    { temperature: 0, maxTokens: 4, system: "You are validating that this API key and model can make a tiny request." },
+    10_000,
+  );
+  return Boolean(text?.trim());
 }
 
 export async function generateJson<T>(prompt: string, options: AiGenerateOptions = {}): Promise<T | null> {

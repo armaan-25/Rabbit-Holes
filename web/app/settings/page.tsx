@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { RabbitHole } from "@/lib/types";
 import { BunnyO } from "@/components/Logo";
-import { AI_PROVIDER_OPTIONS, DEFAULT_AI_PROVIDER, clearExtensionLocalData, providerOption, providerReady, readAiProviderConfig, readExtensionConfig, writeAiProviderConfig, writeExtensionConfig, type AiProviderConfig, type AiProviderType } from "@/lib/ai-provider-config";
+import { validateCurrentProvider } from "@/lib/ai-provider";
+import { AI_PROVIDER_OPTIONS, DEFAULT_AI_PROVIDER, clearExtensionLocalData, providerOption, providerReady, publicAiProviderConfig, readAiProviderConfig, readExtensionConfig, writeAiProviderConfig, writeExtensionConfig, type AiProviderConfig, type AiProviderType } from "@/lib/ai-provider-config";
 
 type Row = { id: string; name: string; body: string; default: boolean; tone?: string };
 
@@ -60,6 +61,7 @@ export default function SettingsPage() {
   const [provider, setProvider] = useState<AiProviderConfig>(DEFAULT_AI_PROVIDER);
   const [savedAt, setSavedAt] = useState<string>("");
   const [dataMsg, setDataMsg] = useState<string>("");
+  const [providerStatus, setProviderStatus] = useState<"idle" | "saving" | "validating" | "valid" | "invalid">("idle");
   const selectedProvider = useMemo(() => providerOption(provider.type), [provider.type]);
   const ready = providerReady(provider);
 
@@ -68,7 +70,7 @@ export default function SettingsPage() {
     const localProvider = readAiProviderConfig();
     setSettings(localSettings);
     setProvider(localProvider);
-    readExtensionConfig().then((extensionConfig) => {
+    readExtensionConfig().then(async (extensionConfig) => {
       if (extensionConfig?.settings) {
         const merged = { ...defaults(), ...extensionConfig.settings };
         setSettings(merged);
@@ -81,7 +83,8 @@ export default function SettingsPage() {
         setProvider(extensionConfig.aiProvider);
         writeAiProviderConfig(extensionConfig.aiProvider);
       } else {
-        void writeExtensionConfig({ aiProvider: localProvider });
+        const saved = await writeExtensionConfig({ aiProvider: localProvider });
+        if (saved) writeAiProviderConfig(localProvider);
       }
     });
   }, []);
@@ -98,15 +101,45 @@ export default function SettingsPage() {
   }
 
   function updateProvider(next: AiProviderConfig) {
-    setProvider(next);
-    writeAiProviderConfig(next);
-    void writeExtensionConfig({ aiProvider: next });
+    const merged = { ...provider, ...next };
+    setProvider(merged);
+    writeAiProviderConfig(merged);
+    void writeExtensionConfig({ aiProvider: merged });
+    setProviderStatus("idle");
     setSavedAt("Provider saved locally");
+  }
+
+  async function saveAndValidateProvider(next: AiProviderConfig) {
+    const merged = { ...provider, ...next };
+    if (!providerReady(merged)) {
+      setProvider(merged);
+      writeAiProviderConfig(merged);
+      void writeExtensionConfig({ aiProvider: merged });
+      setProviderStatus("idle");
+      setSavedAt("Provider saved locally");
+      return;
+    }
+
+    setProviderStatus("saving");
+    const saved = await writeExtensionConfig({ aiProvider: merged });
+    const publicConfig = publicAiProviderConfig(merged);
+    setProvider(publicConfig);
+    writeAiProviderConfig(publicConfig);
+    if (!saved) {
+      setProviderStatus("invalid");
+      setSavedAt("Extension storage unavailable");
+      return;
+    }
+
+    setProviderStatus("validating");
+    const valid = await validateCurrentProvider();
+    setProviderStatus(valid ? "valid" : "invalid");
+    setSavedAt(valid ? "Provider validated" : "Provider saved, validation failed");
   }
 
   function changeProvider(type: AiProviderType) {
     const option = providerOption(type);
-    updateProvider({ type, model: option.defaultModel, baseUrl: option.baseUrl, apiKey: "" });
+    updateProvider({ type, model: option.defaultModel, baseUrl: option.baseUrl, apiKey: "", hasApiKey: false });
   }
 
   function exportData() {
@@ -214,12 +247,30 @@ export default function SettingsPage() {
               <div className="rh-muted self-end text-[15px] leading-7">{selectedProvider.description}</div>
             </div>
             <div className="mt-5 grid gap-5 md:grid-cols-2">
-              <Field label="Model" value={provider.model} onChange={(model) => updateProvider({ ...provider, model })} placeholder={selectedProvider.defaultModel} />
-              <Field label="API key" value={provider.apiKey ?? ""} onChange={(apiKey) => updateProvider({ ...provider, apiKey })} placeholder={selectedProvider.needsKey ? "Paste your key" : "Optional"} type="password" />
-              <Field label="Base URL" value={provider.baseUrl ?? ""} onChange={(baseUrl) => updateProvider({ ...provider, baseUrl })} placeholder={selectedProvider.baseUrl ?? "https://api.example.com/v1"} />
+              <Field label="Model" value={provider.model} onChange={(model) => updateProvider({ ...provider, model })} onBlur={() => void saveAndValidateProvider(provider)} placeholder={selectedProvider.defaultModel} />
+              <SecretField
+                label="API key"
+                value={provider.apiKey ?? ""}
+                saved={Boolean(provider.hasApiKey && !provider.apiKey)}
+                onChange={(apiKey) => {
+                  setProvider({ ...provider, apiKey, hasApiKey: Boolean(apiKey.trim()) || provider.hasApiKey });
+                  setProviderStatus("idle");
+                }}
+                onBlur={() => void saveAndValidateProvider(provider)}
+                placeholder={provider.hasApiKey ? "Saved in extension storage" : selectedProvider.needsKey ? "Paste your key" : "Optional"}
+              />
+              <Field label="Base URL" value={provider.baseUrl ?? ""} onChange={(baseUrl) => updateProvider({ ...provider, baseUrl })} onBlur={() => void saveAndValidateProvider(provider)} placeholder={selectedProvider.baseUrl ?? "https://api.example.com/v1"} />
             </div>
             <div className={`mt-5 rounded-[14px] border px-4 py-3 text-[14px] ${ready ? "border-[#5f8a5c42] text-[#5f8a5c]" : "border-[#c45f3d55] text-[#b8795f]"}`}>
-              {ready ? "Provider configured locally. Rabbit Holes will use your model for clustering and synthesis." : "Add the required model, key, or base URL to finish setup."}
+              {providerStatus === "validating"
+                ? "Checking the provider with a tiny request..."
+                : providerStatus === "valid"
+                  ? "Provider validated. Your key is saved in extension storage, not page storage."
+                  : providerStatus === "invalid"
+                    ? "Saved locally, but the provider test failed. Check the key, model, and base URL."
+                    : ready
+                      ? "Provider configured in the extension. Rabbit Holes can use your model without storing the key in page storage."
+                      : "Add the required model, key, or base URL to finish setup."}
             </div>
           </div>
         </section>
@@ -247,11 +298,25 @@ export default function SettingsPage() {
   );
 }
 
-function Field({ label, value, placeholder, type = "text", onChange }: { label: string; value: string; placeholder: string; type?: string; onChange: (value: string) => void }) {
+function Field({ label, value, placeholder, type = "text", onChange, onBlur }: { label: string; value: string; placeholder: string; type?: string; onChange: (value: string) => void; onBlur?: () => void }) {
   return (
     <label>
       <span className="rh-faint text-[11px] font-bold uppercase tracking-[0.2em]">{label}</span>
-      <input value={value} type={type} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="mt-2 w-full rounded-[12px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-3 py-3 text-[15px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)]" />
+      <input value={value} type={type} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} placeholder={placeholder} className="mt-2 w-full rounded-[12px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-3 py-3 text-[15px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)]" />
+    </label>
+  );
+}
+
+function SecretField({ label, value, saved, placeholder, onChange, onBlur }: { label: string; value: string; saved: boolean; placeholder: string; onChange: (value: string) => void; onBlur: () => void }) {
+  return (
+    <label>
+      <span className="rh-faint text-[11px] font-bold uppercase tracking-[0.2em]">{label}</span>
+      <div className="relative mt-2">
+        <input value={value} type="password" autoComplete="off" spellCheck={false} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} placeholder={placeholder} className="w-full rounded-[12px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-3 py-3 pr-24 text-[15px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)]" />
+        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full border border-[var(--rh-line)] px-2 py-1 text-[11px] font-semibold text-[var(--rh-muted)]">
+          {saved ? "saved" : value ? "hidden" : "empty"}
+        </span>
+      </div>
     </label>
   );
 }

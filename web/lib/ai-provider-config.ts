@@ -3,6 +3,7 @@ export type AiProviderType = "openai" | "anthropic" | "openrouter" | "gemini" | 
 export type AiProviderConfig = {
   type: AiProviderType;
   apiKey?: string;
+  hasApiKey?: boolean;
   baseUrl?: string;
   model: string;
 };
@@ -39,9 +40,14 @@ export function readAiProviderConfig(): AiProviderConfig {
   }
 }
 
+export function publicAiProviderConfig(config: AiProviderConfig): AiProviderConfig {
+  const { apiKey, ...publicConfig } = config;
+  return { ...publicConfig, hasApiKey: Boolean(config.hasApiKey || apiKey?.trim()) };
+}
+
 export function writeAiProviderConfig(config: AiProviderConfig): void {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(AI_PROVIDER_STORAGE_KEY, JSON.stringify(config));
+  window.localStorage.setItem(AI_PROVIDER_STORAGE_KEY, JSON.stringify(publicAiProviderConfig(config)));
 }
 
 type ExtensionConfig = {
@@ -89,7 +95,7 @@ export async function clearExtensionLocalData(): Promise<boolean> {
 export function providerReady(config: AiProviderConfig): boolean {
   const option = providerOption(config.type);
   if (!config.model.trim()) return false;
-  if (option.needsKey && !config.apiKey?.trim()) return false;
+  if (option.needsKey && !config.apiKey?.trim() && !config.hasApiKey) return false;
   if ((config.type === "compatible" || config.type === "lmstudio" || config.type === "ollama") && !config.baseUrl?.trim()) return false;
   return true;
 }
