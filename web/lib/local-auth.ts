@@ -23,8 +23,8 @@ function normalizeSession(session: RabbitSession): RabbitSession {
   if (!email || isFakeEmail(email)) {
     return {
       createdAt: session.createdAt || new Date().toISOString(),
-      displayName: session.displayName || (session.provider === "google" ? "Google profile" : "Local profile"),
-      provider: session.provider || "local",
+      displayName: session.displayName,
+      provider: "local",
     };
   }
 
@@ -46,7 +46,13 @@ export function readRabbitSession(): RabbitSession | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(RABBIT_SESSION_KEY);
-    return raw ? normalizeSession(JSON.parse(raw) as RabbitSession) : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as RabbitSession;
+    if (!parsed.email || isFakeEmail(parsed.email)) {
+      window.localStorage.removeItem(RABBIT_SESSION_KEY);
+      return null;
+    }
+    return normalizeSession(parsed);
   } catch {
     return null;
   }
