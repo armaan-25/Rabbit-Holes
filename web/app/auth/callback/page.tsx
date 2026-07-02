@@ -30,21 +30,23 @@ export default function AuthCallbackPage() {
           return;
         }
 
-        if (!code) {
-          restartLogin("Sign in expired. Please start again.");
-          return;
-        }
-
         const client = getSupabaseClient();
-        const { error: exchangeError } = await client.auth.exchangeCodeForSession(code);
-        if (exchangeError) {
-          restartLogin("Sign in expired. Please start again.");
-          return;
+
+        if (code) {
+          const { error: exchangeError } = await client.auth.exchangeCodeForSession(code);
+          if (exchangeError) {
+            restartLogin("Sign in expired. Please start again.");
+            return;
+          }
         }
 
+        await new Promise((resolve) => window.setTimeout(resolve, 80));
         const { data, error } = await client.auth.getSession();
         if (error) throw error;
-        if (!data.session?.user) throw new Error("No active session returned.");
+        if (!data.session?.user) {
+          restartLogin("Sign in expired. Please start again.");
+          return;
+        }
 
         writeSupabaseUserSession(data.session.user);
         if (!cancelled) router.replace(next);

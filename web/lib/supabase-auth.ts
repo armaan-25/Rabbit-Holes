@@ -30,8 +30,8 @@ export function getSupabaseClient() {
     client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
         autoRefreshToken: true,
-        detectSessionInUrl: false,
-        flowType: "pkce",
+        detectSessionInUrl: true,
+        flowType: "implicit",
         persistSession: true,
         storageKey: "rabbit-holes-supabase-auth",
       },
