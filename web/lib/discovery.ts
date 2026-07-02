@@ -232,7 +232,61 @@ function eventsToCaptured(events: CapturedEvent[]): { pages: CapturedPage[]; sea
   return { pages: Array.from(pagesByUrl.values()), searches: Array.from(searchesByKey.values()) };
 }
 
-function buildLocalHole(pages: CapturedPage[], searches: CapturedSearch[], titleHint?: string): ClusterHole | null {
+const TITLE_NOISE_WORDS = new Set([
+  "best",
+  "chrome",
+  "google",
+  "home",
+  "holes",
+  "new",
+  "page",
+  "rabbit",
+  "rabbitholes",
+  "search",
+  "tab",
+  "userabbitholes",
+  "website",
+  "youtube",
+]);
+
+function humanizeTitle(value: string): string {
+  return value
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => {
+      if (/^[A-Z0-9]{2,}$/.test(word)) return word;
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(" ");
+}
+
+function pageTitleCandidate(title?: string | null): string | null {
+  const clean = cleanRabbitHoleTitle(title, "");
+  if (!clean || /^(new tab|google|youtube|rabbit holes|chrome)$/i.test(clean)) return null;
+  return clean.split(/\s[-–|]\s/)[0]?.trim() || clean;
+}
+
+function deriveContextTitle(topics: string[], domains: string[], pages: CapturedPage[]): string {
+  const terms = topics
+    .map((topic) => topic.toLowerCase())
+    .filter((topic) => topic.length > 2 && !TITLE_NOISE_WORDS.has(topic))
+    .slice(0, 3);
+
+  if (terms.length >= 2) return cleanRabbitHoleTitle(humanizeTitle(terms.join(" ")));
+  if (terms.length === 1) return cleanRabbitHoleTitle(`${humanizeTitle(terms[0])} Research`);
+
+  const pageTitle = pages
+    .map((page) => pageTitleCandidate(page.title))
+    .find((title): title is string => Boolean(title));
+  if (pageTitle) return cleanRabbitHoleTitle(pageTitle);
+
+  const domain = domains.find((item) => !/google|youtube|userabbitholes|localhost/.test(item));
+  if (domain) return cleanRabbitHoleTitle(`${humanizeTitle(domain.split(".")[0] || domain)} Research`);
+
+  return "Current Investigation";
+}
+
+function buildLocalHole(pages: CapturedPage[], searches: CapturedSearch[]): ClusterHole | null {
   if (pages.length < 3 && searches.length < 1) return null;
   const text = [
     ...searches.map((s) => s.query || ""),
@@ -246,12 +300,8 @@ function buildLocalHole(pages: CapturedPage[], searches: CapturedSearch[], title
     .slice(0, 5)
     .map(([word]) => word);
   const domains = [...new Set(pages.map((p) => p.domain || hostnameOf(p.url)).filter(Boolean))];
-  const firstQuery = titleHint || searches[0]?.query?.trim();
-  const title = firstQuery
-    ? firstQuery.replace(/\b\w/g, (c) => c.toUpperCase()).slice(0, 52)
-    : topics.length
-      ? `${topics[0].replace(/\b\w/g, (c) => c.toUpperCase())} Research`
-      : "Current Investigation";
+  const firstQuery = searches[0]?.query?.trim();
+  const title = deriveContextTitle(topics, domains, pages);
   const questions = firstQuery
     ? [`What did I learn about ${firstQuery}?`, `What should I read next?`]
     : [`What connects these ${pages.length} pages?`, "Where should I continue?"];
@@ -294,7 +344,7 @@ function buildLocalHoles(pages: CapturedPage[], searches: CapturedSearch[]): Clu
   }
 
   const holes = groups
-    .map((group) => buildLocalHole(group.pages, [group.search], group.search.query || undefined))
+    .map((group) => buildLocalHole(group.pages, [group.search]))
     .filter(Boolean) as ClusterHole[];
 
   if (holes.length) return holes.slice(0, 6);
@@ -633,7 +683,13 @@ export async function runCluster(): Promise<ClusterResponse> {
   const events = await readExtensionEvents();
   const { pages, searches } = eventsToCaptured(events);
   const providerHoles = await buildProviderHoles(pages, searches);
-  const holes = providerHoles ?? await generateProviderTitles(buildLocalHoles(pages, searches), pages, searches);
+  const baseHoles = providerHoles ?? buildLocalHoles(pages, searches);
+  let holes = baseHoles;
+  try {
+    holes = await generateProviderTitles(baseHoles, pages, searches);
+  } catch {
+    holes = baseHoles;
+  }
   const response: ClusterResponse = {
     holes,
     pages,
