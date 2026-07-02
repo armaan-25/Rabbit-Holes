@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Wordmark } from "@/components/Logo";
-import { getSupabaseClient, safeNextPath, writeSupabaseUserSession } from "@/lib/supabase-auth";
+import { clearSupabaseOAuthFlowState, getSupabaseClient, safeNextPath, writeSupabaseUserSession } from "@/lib/supabase-auth";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -18,13 +18,29 @@ export default function AuthCallbackPage() {
       const code = params.get("code");
       const authError = params.get("error_description") || params.get("error");
 
+      const restartLogin = (message = "Sign in expired. Please try again.") => {
+        clearSupabaseOAuthFlowState();
+        const loginUrl = `/login?next=${encodeURIComponent(next)}&authError=${encodeURIComponent(message)}`;
+        router.replace(loginUrl);
+      };
+
       try {
-        if (authError) throw new Error(authError);
-        if (!code) throw new Error("Missing sign-in code. Please try again.");
+        if (authError) {
+          restartLogin(authError);
+          return;
+        }
+
+        if (!code) {
+          restartLogin("Sign in expired. Please start again.");
+          return;
+        }
 
         const client = getSupabaseClient();
         const { error: exchangeError } = await client.auth.exchangeCodeForSession(code);
-        if (exchangeError) throw exchangeError;
+        if (exchangeError) {
+          restartLogin("Sign in expired. Please start again.");
+          return;
+        }
 
         const { data, error } = await client.auth.getSession();
         if (error) throw error;
@@ -34,8 +50,12 @@ export default function AuthCallbackPage() {
         if (!cancelled) router.replace(next);
       } catch (error) {
         if (!cancelled) {
-          setStatus(error instanceof Error ? error.message : "Sign in failed.");
-          window.setTimeout(() => router.replace("/login"), 1500);
+          clearSupabaseOAuthFlowState();
+          const message = error instanceof Error ? error.message : "Sign in failed.";
+          setStatus("Restarting sign in...");
+          window.setTimeout(() => {
+            router.replace(`/login?next=${encodeURIComponent(next)}&authError=${encodeURIComponent(message)}`);
+          }, 350);
         }
       }
     }
