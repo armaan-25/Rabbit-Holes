@@ -12,14 +12,14 @@ type Row = { id: string; name: string; body: string; default: boolean; tone?: st
 const CAPTURE: Row[] = [
   { id: "auto_cluster", name: "Auto-cluster sessions", body: "Group tabs into rabbit holes automatically as you browse.", default: true },
   { id: "ignore_glances", name: "Ignore quick glances", body: "Only keep pages you spend time reading.", default: true },
-  { id: "pause_idle", name: "Always-on capture", body: "Keep a local trail in the background while privacy filters stay on.", default: true },
+  { id: "pause_idle", name: "Always-on capture", body: "Keep a private trail in the background while privacy filters stay on.", default: true },
   { id: "capture_private", name: "Capture private windows", body: "Off by default. Incognito stays incognito unless you opt in.", default: false },
 ];
 
 const PRIVACY: Row[] = [
-  { id: "local_first", name: "Store locally by default", body: "Investigations, summaries, and settings stay on this machine unless you export or sync later.", default: true, tone: "green" },
+  { id: "local_first", name: "Keep browsing private", body: "Captured page metadata stays in your browser unless you choose to export it.", default: true, tone: "green" },
   { id: "strip_ids", name: "Strip identifiers", body: "Remove tokens and tracking params from captured URLs.", default: true },
-  { id: "cloud_sync", name: "Optional cloud sync", body: "Reserved for a later self-hosted or opt-in sync layer. Off by default.", default: false },
+  { id: "cloud_sync", name: "Hosted inference", body: "Off by default. Rabbit Holes uses the provider you configure instead.", default: false },
 ];
 
 const SOURCES: Row[] = [
@@ -64,12 +64,60 @@ export default function SettingsPage() {
   const [providerStatus, setProviderStatus] = useState<"idle" | "saving" | "validating" | "valid" | "invalid">("idle");
   const selectedProvider = useMemo(() => providerOption(provider.type), [provider.type]);
   const ready = providerReady(provider);
+  const bannerCopy =
+    providerStatus === "invalid"
+      ? {
+          title: "Provider needs attention",
+          body: "Your settings were saved, but the test request failed. Check the key, model, and provider.",
+          pill: "Check key",
+          tone: "error",
+        }
+      : providerStatus === "valid"
+        ? {
+            title: "Rabbit Holes is ready",
+            body: "Your provider passed a live test. You can build rabbit holes with this model.",
+            pill: "Ready",
+            tone: "ready",
+          }
+        : providerStatus === "saving" || providerStatus === "validating"
+          ? {
+              title: "Checking provider",
+              body: "Saving your settings and running a lightweight test request.",
+              pill: "Checking",
+              tone: "pending",
+            }
+          : ready
+            ? {
+                title: "Provider saved",
+                body: "Run a quick test before building rabbit holes with this model.",
+                pill: "Test needed",
+                tone: "pending",
+              }
+            : {
+                title: "Choose an AI provider",
+                body: "Add a provider and API key before building rabbit holes.",
+                pill: "Setup",
+                tone: "setup",
+              };
+  const bannerClass =
+    bannerCopy.tone === "error"
+      ? "border-[#c45f3d55] bg-[#3a1f181f] text-[#d08a6f]"
+      : bannerCopy.tone === "pending"
+        ? "border-[#b08a5a55] bg-[#31271955] text-[#d7bd91]"
+        : "border-[#5f8a5c55] bg-[#27301f] text-[#9bc391]";
+  const savedAtClass =
+    providerStatus === "invalid"
+      ? "text-[#d08a6f]"
+      : providerStatus === "valid"
+        ? "text-[#9bc391]"
+        : "rh-muted";
 
   useEffect(() => {
     const localSettings = readLocalSettings();
     const localProvider = readAiProviderConfig();
+    const publicLocalProvider = publicAiProviderConfig(localProvider);
     setSettings(localSettings);
-    setProvider(localProvider);
+    setProvider(publicLocalProvider);
     readExtensionConfig().then(async (extensionConfig) => {
       if (extensionConfig?.settings) {
         const merged = { ...defaults(), ...extensionConfig.settings };
@@ -80,11 +128,12 @@ export default function SettingsPage() {
       }
 
       if (extensionConfig?.aiProvider) {
-        setProvider(extensionConfig.aiProvider);
-        writeAiProviderConfig(extensionConfig.aiProvider);
+        const publicProvider = publicAiProviderConfig(extensionConfig.aiProvider);
+        setProvider(publicProvider);
+        writeAiProviderConfig(publicProvider);
       } else {
         const saved = await writeExtensionConfig({ aiProvider: localProvider });
-        if (saved) writeAiProviderConfig(localProvider);
+        if (saved) writeAiProviderConfig(publicLocalProvider);
       }
     });
   }, []);
@@ -93,37 +142,41 @@ export default function SettingsPage() {
     setSettings(next);
     window.localStorage.setItem(LOCAL_SETTINGS_KEY, JSON.stringify(next));
     void writeExtensionConfig({ settings: next });
-    setSavedAt("Saved locally");
+    setSavedAt("Settings saved");
   }
 
   function toggle(id: string) {
     persistSettings({ ...settings, [id]: !settings[id] });
   }
 
-  function updateProvider(next: AiProviderConfig) {
+  function updateProvider(next: Partial<AiProviderConfig>) {
     const merged = { ...provider, ...next };
     setProvider(merged);
-    writeAiProviderConfig(merged);
+    writeAiProviderConfig(publicAiProviderConfig(merged));
     setProviderStatus("idle");
-    setSavedAt(merged.apiKey?.trim() ? "Saving API key to extension storage..." : "Provider saved");
+    setSavedAt(merged.apiKey?.trim() ? "Saving API key to extension..." : "Provider saved");
     void writeExtensionConfig({ aiProvider: merged }).then((saved) => {
       if (!saved && merged.apiKey?.trim()) {
         setProviderStatus("invalid");
         setSavedAt("Install or reload the extension to save the API key");
         return;
       }
-      setSavedAt(merged.apiKey?.trim() ? "API key saved to extension storage" : "Provider saved");
+      const publicConfig = publicAiProviderConfig(merged);
+      setProvider(publicConfig);
+      writeAiProviderConfig(publicConfig);
+      setSavedAt(merged.apiKey?.trim() ? "API key saved in extension" : "Provider saved");
     });
   }
 
   async function saveAndValidateProvider(next: AiProviderConfig) {
     const merged = { ...provider, ...next };
     if (!providerReady(merged)) {
-      setProvider(merged);
-      writeAiProviderConfig(merged);
+      const publicConfig = publicAiProviderConfig(merged);
+      setProvider(publicConfig);
+      writeAiProviderConfig(publicConfig);
       void writeExtensionConfig({ aiProvider: merged });
       setProviderStatus("idle");
-      setSavedAt("Add the required model, key, or base URL to finish setup");
+      setSavedAt("Add the required provider fields before testing");
       return;
     }
 
@@ -161,7 +214,7 @@ export default function SettingsPage() {
 
   function exportData() {
     const holes = readHoles();
-    const payload = { exportedAt: new Date().toISOString(), settings, aiProvider: { ...provider, apiKey: provider.apiKey ? "[redacted]" : "" }, holes };
+    const payload = { exportedAt: new Date().toISOString(), settings, aiProvider: { ...publicAiProviderConfig(provider), hasApiKey: false }, holes };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -169,7 +222,7 @@ export default function SettingsPage() {
     a.download = `rabbit-holes-export-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    setDataMsg(`Exported ${holes.length} local hole${holes.length === 1 ? "" : "s"}.`);
+    setDataMsg(`Exported ${holes.length} rabbit hole${holes.length === 1 ? "" : "s"}.`);
   }
 
   function clearDormant() {
@@ -182,7 +235,7 @@ export default function SettingsPage() {
   }
 
   function resetFresh() {
-    if (!window.confirm("Erase local Rabbit Holes data on this device? This cannot be undone.")) return;
+    if (!window.confirm("Erase Rabbit Holes data from this browser? This cannot be undone.")) return;
     window.localStorage.removeItem(LIVE_HOLES_KEY);
     window.localStorage.removeItem(LOCAL_SETTINGS_KEY);
     window.localStorage.removeItem("rabbit-hole-ai-provider");
@@ -190,7 +243,7 @@ export default function SettingsPage() {
     setProvider(DEFAULT_AI_PROVIDER);
     void clearExtensionLocalData();
     void writeExtensionConfig({ settings: defaults() });
-    setDataMsg("Local Rabbit Holes data cleared.");
+    setDataMsg("Rabbit Holes browser data cleared.");
   }
 
   async function importData(file: File | null) {
@@ -203,13 +256,16 @@ export default function SettingsPage() {
         window.localStorage.setItem(LOCAL_SETTINGS_KEY, JSON.stringify(next));
         await writeExtensionConfig({ settings: next });
       }
-      if (payload.aiProvider && payload.aiProvider.apiKey !== "[redacted]") {
-        setProvider(payload.aiProvider);
-        writeAiProviderConfig(payload.aiProvider);
-        await writeExtensionConfig({ aiProvider: payload.aiProvider });
+      if (payload.aiProvider) {
+        const hasRealKey = Boolean(payload.aiProvider.apiKey && payload.aiProvider.apiKey !== "[redacted]");
+        const nextProvider = hasRealKey ? payload.aiProvider : { ...publicAiProviderConfig(payload.aiProvider), hasApiKey: false };
+        const publicProvider = publicAiProviderConfig(nextProvider);
+        setProvider(publicProvider);
+        writeAiProviderConfig(publicProvider);
+        await writeExtensionConfig({ aiProvider: nextProvider });
       }
       if (Array.isArray(payload.holes)) window.localStorage.setItem(LIVE_HOLES_KEY, JSON.stringify(payload.holes));
-      setDataMsg(`Imported ${Array.isArray(payload.holes) ? payload.holes.length : 0} local hole${payload.holes?.length === 1 ? "" : "s"}.`);
+      setDataMsg(`Imported ${Array.isArray(payload.holes) ? payload.holes.length : 0} rabbit hole${payload.holes?.length === 1 ? "" : "s"}.`);
     } catch {
       setDataMsg("Import failed. Choose a Rabbit Holes JSON export.");
     } finally {
@@ -222,25 +278,25 @@ export default function SettingsPage() {
       <main className="mx-auto w-full max-w-[980px]">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <div className="rh-faint mb-7 text-[12px] font-bold uppercase tracking-[0.24em]">Extension & Local Configuration</div>
+            <div className="rh-faint mb-7 text-[12px] font-bold uppercase tracking-[0.24em]">Extension settings</div>
             <h1 className="rh-display rh-ink text-[44px] font-semibold leading-none tracking-[-0.03em]">Settings</h1>
           </div>
-          {savedAt && <span className="rh-muted text-[13px] italic">{savedAt}</span>}
+          {savedAt && <span className={`${savedAtClass} text-[13px] italic`}>{savedAt}</span>}
         </div>
 
-        <section className="mb-8 flex items-center justify-between rounded-[20px] border border-[#5f8a5c42] bg-[color-mix(in_srgb,var(--rh-green)_13%,var(--rh-surface))] px-6 py-5 shadow-[0_8px_30px_rgba(70,45,20,.04)]">
+        <section className={`mb-8 flex items-center justify-between rounded-[20px] border px-6 py-5 shadow-[0_8px_30px_rgba(70,45,20,.04)] ${bannerClass}`}>
           <div className="flex items-center gap-4">
-            <div className="relative grid h-12 w-12 place-items-center rounded-[12px] bg-[var(--rh-surface-3)] text-[30px] leading-none text-[#37502f] shadow-[0_1px_4px_rgba(70,45,20,.12)]">
+            <div className="relative grid h-12 w-12 place-items-center rounded-[12px] bg-[var(--rh-surface-3)] text-[30px] leading-none shadow-[0_1px_4px_rgba(70,45,20,.12)]">
               <BunnyO />
-              <span className="absolute right-[-3px] top-[-3px] h-4 w-4 rounded-full border-2 border-[var(--rh-surface)] bg-[#6a9a66]" />
+              <span className="absolute right-[-3px] top-[-3px] h-4 w-4 rounded-full border-2 border-[var(--rh-surface)] bg-current" />
             </div>
             <div>
-              <h2 className="rh-display text-[22px] font-semibold leading-none text-[#37502f]">Rabbit Holes is ready</h2>
-              <p className="mt-1 text-[14px] text-[#4d7049]">Choose your AI provider and start building rabbit holes.</p>
+              <h2 className="rh-display text-[22px] font-semibold leading-none">{bannerCopy.title}</h2>
+              <p className="mt-1 text-[14px] opacity-90">{bannerCopy.body}</p>
             </div>
           </div>
-          <div className="hidden items-center gap-2 rounded-full bg-[var(--rh-surface)] px-4 py-2 text-[13px] font-semibold text-[#4d7049] sm:flex">
-            <span className="h-2 w-2 rounded-full bg-[#7dae79]" /> Ready
+          <div className="hidden items-center gap-2 rounded-full bg-[var(--rh-surface)] px-4 py-2 text-[13px] font-semibold sm:flex">
+            <span className="h-2 w-2 rounded-full bg-current" /> {bannerCopy.pill}
           </div>
         </section>
 
@@ -280,8 +336,8 @@ export default function SettingsPage() {
                   setProvider({ ...provider, apiKey, hasApiKey: Boolean(apiKey.trim()) || provider.hasApiKey });
                   setProviderStatus("idle");
                 }}
-                onBlur={() => void saveAndValidateProvider(provider)}
-                placeholder={provider.hasApiKey ? "Saved in extension storage" : selectedProvider.needsKey ? "Paste your key" : "Optional"}
+                onBlur={(apiKey) => void saveAndValidateProvider({ ...provider, apiKey, hasApiKey: Boolean(apiKey.trim()) || provider.hasApiKey })}
+                placeholder={provider.hasApiKey ? "Saved in extension" : selectedProvider.needsKey ? "Paste your key" : "Optional"}
               />
               <EndpointSelect
                 label="Base URL"
@@ -291,18 +347,36 @@ export default function SettingsPage() {
                 onBlur={() => void saveAndValidateProvider(provider)}
               />
             </div>
-            <div className={`mt-5 rounded-[14px] border px-4 py-3 text-[14px] ${ready ? "border-[#5f8a5c42] text-[#5f8a5c]" : "border-[#c45f3d55] text-[#b8795f]"}`}>
-              {providerStatus === "validating"
-                ? "Checking the provider with a tiny request..."
+            <div className={`mt-5 rounded-[14px] border px-4 py-3 text-[14px] ${
+              providerStatus === "invalid"
+                ? "border-[#c45f3d66] bg-[#3a1f181f] text-[#d08a6f]"
                 : providerStatus === "valid"
-                  ? "Provider validated. Your key is saved in extension storage, not page storage."
-                : providerStatus === "invalid"
-                  ? "Saved locally, but the provider test failed. Check the key and selected model."
+                  ? "border-[#5f8a5c42] bg-[#22301f55] text-[#9bc391]"
                   : ready
-                    ? "Provider configured in the extension. Rabbit Holes can use your model without storing the key in page storage."
+                    ? "border-[var(--rh-line)] text-[var(--rh-muted)]"
+                    : "border-[#c45f3d55] text-[#b8795f]"
+            }`}>
+              {providerStatus === "validating"
+                ? "Checking the provider with a lightweight request..."
+                : providerStatus === "valid"
+                  ? "Provider validated. Your key stays in the extension."
+                : providerStatus === "invalid"
+                  ? "Saved, but the test request failed. Check the key, model, and provider."
+                  : ready
+                    ? "Provider saved. Test it once before building rabbit holes."
                     : selectedProvider.needsKey && !provider.hasApiKey && !provider.apiKey?.trim()
-                      ? "Add an API key before building rabbit holes. Your key is saved only in extension storage."
+                      ? "Add an API key before building rabbit holes. The key is saved in the extension."
                       : "Add the required model or base URL to finish setup."}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button
+                type="button"
+                disabled={providerStatus === "saving" || providerStatus === "validating"}
+                onClick={() => void saveAndValidateProvider(provider)}
+                className="rounded-full border border-[var(--rh-line)] px-5 py-2 text-[14px] font-semibold text-[var(--rh-ink)] transition hover:border-[var(--rh-line-strong)] hover:bg-[var(--rh-surface-3)] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {providerStatus === "saving" || providerStatus === "validating" ? "Testing..." : "Test provider"}
+              </button>
             </div>
           </div>
         </section>
@@ -314,12 +388,12 @@ export default function SettingsPage() {
         <section className="mt-8">
           <SectionLabel>Your data</SectionLabel>
           <div className="grid gap-4 sm:grid-cols-4">
-            <ActionCard title="Export everything" body="Download local settings and investigations as JSON." onClick={exportData} />
-            <ActionCard title="Import JSON" body="Restore a local Rabbit Holes export on this device." onClick={() => importInputRef.current?.click()} />
+            <ActionCard title="Export everything" body="Download settings and investigations as JSON." onClick={exportData} />
+            <ActionCard title="Import JSON" body="Restore a Rabbit Holes export in this browser." onClick={() => importInputRef.current?.click()} />
             <ActionCard title="Clear dormant holes" body="Tidy away investigations gone quiet for 30+ days." onClick={clearDormant} />
             <button onClick={resetFresh} className="rounded-[16px] border border-[#e5b8ad] bg-[var(--rh-surface)] p-5 text-left transition hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(70,45,20,.08)]">
-              <h3 className="text-[16px] font-bold text-[#b54831]">Reset local data</h3>
-              <p className="mt-1 text-[14px] leading-snug text-[#b05b49]">Erase local rabbit holes on this device.</p>
+              <h3 className="text-[16px] font-bold text-[#b54831]">Reset browser data</h3>
+              <p className="mt-1 text-[14px] leading-snug text-[#b05b49]">Erase rabbit holes and settings in this browser.</p>
             </button>
           </div>
           <input ref={importInputRef} type="file" accept="application/json,.json" className="hidden" onChange={(event) => void importData(event.target.files?.[0] ?? null)} />
@@ -399,7 +473,7 @@ function EndpointSelect({ label, value, endpoints, onChange, onBlur }: { label: 
   );
 }
 
-function SecretField({ label, value, saved, placeholder, onChange, onBlur }: { label: string; value: string; saved: boolean; placeholder: string; onChange: (value: string) => void; onBlur: () => void }) {
+function SecretField({ label, value, saved, placeholder, onChange, onBlur }: { label: string; value: string; saved: boolean; placeholder: string; onChange: (value: string) => void; onBlur: (value: string) => void }) {
   return (
     <label>
       <span className="rh-faint text-[11px] font-bold uppercase tracking-[0.2em]">{label}</span>
@@ -414,7 +488,7 @@ function SecretField({ label, value, saved, placeholder, onChange, onBlur }: { l
           data-form-type="other"
           spellCheck={false}
           onChange={(e) => onChange(e.target.value)}
-          onBlur={onBlur}
+          onBlur={(event) => onBlur(event.currentTarget.value)}
           placeholder={placeholder}
           className="w-full rounded-[12px] border border-[var(--rh-line)] bg-[var(--rh-surface-3)] px-3 py-3 pr-24 text-[15px] text-[var(--rh-ink)] outline-none placeholder:text-[var(--rh-faint)]"
         />
