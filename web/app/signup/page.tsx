@@ -111,8 +111,25 @@ function SignupForm() {
       <Link href={`/login?next=${encodeURIComponent(next)}`} className="rh-muted mt-4 block text-center text-[14px] underline-offset-4 hover:underline">
         Already have an account? Sign in
       </Link>
-      {status && <p className="rh-surface-2 mt-4 rounded-[13px] px-4 py-3 text-[14px]">{status}</p>}
+      {status && <AuthStatus message={status} />}
     </AuthShell>
+  );
+}
+
+function AuthStatus({ message }: { message: string }) {
+  const lower = message.toLowerCase();
+  const isProgress = lower.includes("signing") || lower.includes("creating") || lower.includes("opening") || lower.includes("loading");
+  const isSuccess = lower.includes("check your email") || lower.includes("sent") || lower.includes("created");
+  const tone = isSuccess
+    ? "border-[#5f8f5b]/35 bg-[#5f8f5b]/13 text-[#a9d2a0]"
+    : isProgress
+      ? "border-[#c99a47]/35 bg-[#c99a47]/12 text-[#e0c28b]"
+      : "border-[#c8603f]/40 bg-[#c8603f]/13 text-[#efad95]";
+
+  return (
+    <p className={`mt-4 rounded-[13px] border px-4 py-3 text-[14px] leading-relaxed ${tone}`}>
+      {message}
+    </p>
   );
 }
 

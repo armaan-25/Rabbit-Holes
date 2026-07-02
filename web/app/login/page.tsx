@@ -87,7 +87,6 @@ function LoginForm() {
 
   return (
     <LoginShell>
-      {transitioning && <AuthTransition />}
       <button onClick={google} disabled={transitioning} className="rh-primary flex w-full items-center justify-center gap-3 rounded-[15px] px-5 py-3.5 text-[15px] font-semibold shadow-[0_10px_28px_rgba(42,32,24,.18)] disabled:opacity-70">
         <GoogleMark />
         {transitioning ? "Opening..." : "Continue with Google"}
@@ -106,8 +105,25 @@ function LoginForm() {
       <Link href={`/signup?next=${encodeURIComponent(next)}`} className="rh-muted mt-4 block text-center text-[14px] underline-offset-4 hover:underline">
         Need an account? Create one
       </Link>
-      {status && <p className="rh-surface-2 mt-4 rounded-[13px] px-4 py-3 text-[14px]">{status}</p>}
+      {status && <AuthStatus message={status} />}
     </LoginShell>
+  );
+}
+
+function AuthStatus({ message }: { message: string }) {
+  const lower = message.toLowerCase();
+  const isProgress = lower.includes("signing") || lower.includes("opening") || lower.includes("loading");
+  const isSuccess = lower.includes("check your email") || lower.includes("sent") || lower.includes("saved");
+  const tone = isSuccess
+    ? "border-[#5f8f5b]/35 bg-[#5f8f5b]/13 text-[#a9d2a0]"
+    : isProgress
+      ? "border-[#c99a47]/35 bg-[#c99a47]/12 text-[#e0c28b]"
+      : "border-[#c8603f]/40 bg-[#c8603f]/13 text-[#efad95]";
+
+  return (
+    <p className={`mt-4 rounded-[13px] border px-4 py-3 text-[14px] leading-relaxed ${tone}`}>
+      {message}
+    </p>
   );
 }
 
@@ -119,17 +135,6 @@ function GoogleMark() {
       <path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.15C1.41 8.53 1 10.22 1 12s.41 3.47 1.15 4.94l3.69-2.84z" />
       <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.67 1 3.96 3.47 2.15 7.06l3.69 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
     </svg>
-  );
-}
-
-function AuthTransition() {
-  return (
-    <div className="fixed inset-0 z-[100] grid place-items-center bg-[#15110d] px-6 text-center text-[#f3e8d4]">
-      <div>
-        <Wordmark className="text-[34px] text-[#f3e8d4]" />
-        <div className="mt-4 text-[15px] text-[#cdbd9f]">Opening secure sign in...</div>
-      </div>
-    </div>
   );
 }
 
