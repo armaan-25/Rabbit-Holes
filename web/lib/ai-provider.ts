@@ -124,7 +124,7 @@ async function generateOllama(config: AiProviderConfig, prompt: string, options:
 
 export function activeProvider(): AiProviderConfig | null {
   const config = readAiProviderConfig();
-  if (config.apiKey) return null;
+  if (!config.apiKey) return null;
   return providerReady(config) ? config : null;
 }
 

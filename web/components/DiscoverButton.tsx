@@ -5,7 +5,6 @@ import { useApp } from "@/lib/store";
 import { useState } from "react";
 import { flushExtensionEvents, useSessionStats } from "@/hooks/useSessionStats";
 import { preGenerateHoleBriefs } from "@/lib/api";
-import { RabbitEars } from "@/components/Logo";
 
 const RABBIT_HOLE_IMAGE = "/assets/images/rabbit-hole-hero.png";
 
@@ -114,7 +113,7 @@ export function RabbitHoleLoading() {
             <img
               src={RABBIT_HOLE_IMAGE}
               alt=""
-              className="relative z-30 w-[380px] max-w-[84%] select-none object-contain drop-shadow-[0_24px_54px_rgba(18,11,5,.38)]"
+              className="relative z-30 w-[460px] max-w-[92%] select-none object-contain drop-shadow-[0_24px_54px_rgba(18,11,5,.38)]"
               draggable={false}
             />
           </div>
@@ -173,8 +172,13 @@ export function BuildNotice({ type, stats, errorStatus, onClose }: { readonly ty
                 <span style={{ marginLeft: `${(i * 17) % 56}%` }}>{word}</span>
               </span>
             ))}
-            <div className="absolute inset-x-0 bottom-[68px] mx-auto grid h-[150px] w-[150px] place-items-center rounded-full border border-[#f3e8d438] bg-[#17100b] text-[#f6ecd9] shadow-[0_22px_70px_rgba(18,11,5,.34)]">
-              <RabbitEars className="h-16 w-16" />
+            <div className="absolute inset-x-0 bottom-[42px] mx-auto grid h-[210px] w-[360px] max-w-[82%] place-items-center">
+              <img
+                src={RABBIT_HOLE_IMAGE}
+                alt=""
+                className="h-full w-full select-none object-contain drop-shadow-[0_26px_58px_rgba(18,11,5,.42)]"
+                draggable={false}
+              />
             </div>
           </div>
 

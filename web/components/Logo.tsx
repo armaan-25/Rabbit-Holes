@@ -3,18 +3,26 @@
 export function BunnyO({ className = "" }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 30 42"
+      viewBox="0 0 36 48"
       aria-hidden="true"
-      className={`inline-block ${className}`}
-      style={{ height: "1.02em", width: "0.72em", verticalAlign: "-0.14em", margin: "0 0.015em" }}
+      className={`inline-block overflow-visible ${className}`}
+      style={{ height: "1.04em", width: "0.78em", verticalAlign: "-0.15em", margin: "0 0.025em" }}
     >
-      {/* ears */}
-      <g fill="currentColor">
-        <ellipse cx="11" cy="12.5" rx="3" ry="9.5" transform="rotate(-15 11 12.5)" />
-        <ellipse cx="19" cy="12.5" rx="3" ry="9.5" transform="rotate(15 19 12.5)" />
-      </g>
-      {/* head — an open ring so it still reads as the letter o */}
-      <circle cx="15" cy="29.5" r="9.5" fill="none" stroke="currentColor" strokeWidth="3.8" />
+      <path
+        d="M13.1 21.2C9.9 15.6 9.1 8.4 11.1 4.7c1.6-3 4.9 1 5.9 6.7.7 4.3.3 8.5-.7 11.4"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="5.2"
+      />
+      <path
+        d="M22.9 21.2c3.2-5.6 4-12.8 2-16.5-1.6-3-4.9 1-5.9 6.7-.7 4.3-.3 8.5.7 11.4"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="5.2"
+      />
+      <circle cx="18" cy="33" r="10.5" fill="none" stroke="currentColor" strokeWidth="5.2" />
     </svg>
   );
 }
@@ -22,16 +30,14 @@ export function BunnyO({ className = "" }: { className?: string }) {
 export function RabbitEars({ className = "" }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 30 42"
+      viewBox="0 0 36 48"
       aria-hidden="true"
-      className={`inline-block ${className}`}
+      className={`inline-block overflow-visible ${className}`}
       fill="none"
     >
-      <g fill="currentColor">
-        <ellipse cx="11" cy="12.5" rx="3" ry="9.5" transform="rotate(-15 11 12.5)" />
-        <ellipse cx="19" cy="12.5" rx="3" ry="9.5" transform="rotate(15 19 12.5)" />
-      </g>
-      <circle cx="15" cy="29.5" r="9.5" stroke="currentColor" strokeWidth="3.8" />
+      <path d="M13.1 21.2C9.9 15.6 9.1 8.4 11.1 4.7c1.6-3 4.9 1 5.9 6.7.7 4.3.3 8.5-.7 11.4" stroke="currentColor" strokeLinecap="round" strokeWidth="5.2" />
+      <path d="M22.9 21.2c3.2-5.6 4-12.8 2-16.5-1.6-3-4.9 1-5.9 6.7-.7 4.3-.3 8.5.7 11.4" stroke="currentColor" strokeLinecap="round" strokeWidth="5.2" />
+      <circle cx="18" cy="33" r="10.5" stroke="currentColor" strokeWidth="5.2" />
     </svg>
   );
 }

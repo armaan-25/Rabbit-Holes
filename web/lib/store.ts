@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { RabbitHole } from "./types";
+import { cleanRabbitHoleTitle } from "./title";
 
 export interface Discovery {
   id: string;
@@ -31,11 +32,20 @@ interface AppState {
 
 const LIVE_HOLES_KEY = "rabbit-hole-live-holes";
 
+function normalizeLiveHole(hole: RabbitHole): RabbitHole {
+  const title = cleanRabbitHoleTitle(hole.title);
+  return title === hole.title ? hole : { ...hole, title };
+}
+
 function readLiveHoles(): RabbitHole[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(LIVE_HOLES_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const holes = JSON.parse(raw) as RabbitHole[];
+    const normalized = holes.map(normalizeLiveHole);
+    if (normalized.some((hole, index) => hole !== holes[index])) writeLiveHoles(normalized);
+    return normalized;
   } catch {
     return [];
   }
@@ -53,11 +63,12 @@ export const useApp = create<AppState>((set) => ({
 
   liveHoles: readLiveHoles(),
   setLiveHoles: (holes) => {
-    writeLiveHoles(holes);
-    set({ liveHoles: holes });
+    const normalized = holes.map(normalizeLiveHole);
+    writeLiveHoles(normalized);
+    set({ liveHoles: normalized });
   },
   updateHole: (id, patch) => set((s) => {
-    const holes = s.liveHoles.map((h) => (h.id === id ? { ...h, ...patch } : h));
+    const holes = s.liveHoles.map((h) => (h.id === id ? normalizeLiveHole({ ...h, ...patch }) : h));
     writeLiveHoles(holes);
     return { liveHoles: holes };
   }),

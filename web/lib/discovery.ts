@@ -2,6 +2,7 @@ import type { RabbitHole } from "./types";
 import type { Discovery } from "./store";
 import { RABBIT_HOLES } from "./data";
 import { generateJson } from "./ai-provider";
+import { cleanRabbitHoleTitle, isGenericRabbitHoleTitle } from "./title";
 
 export interface ClusterEntity {
   id: string;
@@ -97,10 +98,11 @@ export function pickAccent(seed: string): RabbitHole["accent"] {
 }
 
 export function holeToDiscovery(hole: ClusterHole): Discovery {
-  const id = hole.client_id ?? buildHoleId(hole.title, hole.page_ids);
+  const title = cleanRabbitHoleTitle(hole.title);
+  const id = hole.client_id ?? buildHoleId(title, hole.page_ids);
   return {
     id,
-    title: hole.title,
+    title,
     accent: pickAccent(id),
     pages: hole.page_ids.length,
     searches: hole.topics.length,
@@ -300,6 +302,93 @@ function buildLocalHoles(pages: CapturedPage[], searches: CapturedSearch[]): Clu
   return fallback ? [fallback] : [];
 }
 
+type ProviderTitleResponse = {
+  titles?: Array<{
+    client_id?: string;
+    title?: string;
+  }>;
+};
+
+function cleanGeneratedTitle(title?: string | null): string {
+  return cleanRabbitHoleTitle(title, "");
+}
+
+function isUsableGeneratedTitle(title?: string | null): title is string {
+  const clean = cleanGeneratedTitle(title);
+  if (clean.length < 3) return false;
+  if (isGenericRabbitHoleTitle(clean)) return false;
+  return true;
+}
+
+async function generateProviderTitles(holes: ClusterHole[], pages: CapturedPage[], searches: CapturedSearch[]): Promise<ClusterHole[]> {
+  if (!holes.length) return holes;
+  const byClientId = new Map(holes.map((hole) => [hole.client_id || buildHoleId(hole.title, hole.page_ids), hole]));
+  const pageById = new Map(pages.map((page) => [page.id, page]));
+  const payload = {
+    searches: dedupeSearches(searches).slice(0, 12).map((search) => ({
+      query: search.query,
+      engine: search.engine,
+      at: search.at,
+    })),
+    holes: holes.map((hole, index) => ({
+      client_id: hole.client_id || buildHoleId(hole.title, hole.page_ids),
+      current_title: hole.title,
+      topics: hole.topics,
+      questions: hole.questions,
+      pages: hole.page_ids.slice(0, 12).map((id) => {
+        const page = pageById.get(id);
+        return {
+          title: page?.title,
+          domain: page?.domain,
+          url: page?.url,
+        };
+      }),
+      fallback_index: index + 1,
+    })),
+  };
+
+  const generated = await generateJson<ProviderTitleResponse>(
+    `Name these browser investigations.
+
+Captured context:
+${JSON.stringify(payload, null, 2)}
+
+Rules:
+- Return a specific human title for each investigation.
+- The title should describe what the user was actually trying to understand.
+- Use 2-5 words.
+- Prefer concrete topics, repos, papers, products, or questions from the pages.
+- Do not use generic titles like "Rabbit Research", "Research Tool", or "Current Investigation".
+- Do not simply copy a raw query unless it is already the best concise title.
+
+Return JSON:
+{
+  "titles": [
+    {"client_id": "same-client-id", "title": "vLLM Scheduling"}
+  ]
+}`,
+    { temperature: 0.2, maxTokens: 600 },
+  );
+
+  if (!Array.isArray(generated?.titles)) return holes;
+  const titlesById = new Map(
+    generated.titles
+      .map((item) => [String(item.client_id || ""), cleanGeneratedTitle(item.title)] as const)
+      .filter(([id, title]) => byClientId.has(id) && isUsableGeneratedTitle(title)),
+  );
+
+  return holes.map((hole) => {
+    const key = hole.client_id || buildHoleId(hole.title, hole.page_ids);
+    const title = titlesById.get(key);
+    if (!title) return hole;
+    return {
+      ...hole,
+      client_id: buildHoleId(title, hole.page_ids),
+      title,
+    };
+  });
+}
+
 type ProviderCluster = {
   holes?: Array<{
     title?: string;
@@ -337,7 +426,11 @@ Rules:
 - Prefer 1-4 high quality clusters over many tiny clusters.
 - Use only page ids that appear above.
 - Do not include repeated duplicate topics.
-- Titles should be short and human, not generic.
+- Generate a specific title for every rabbit hole.
+- Titles should describe what the user was actually trying to understand.
+- Titles should be 2-5 words, human, and concrete.
+- Do not use generic titles like "Rabbit Research", "Research Tool", "Current Investigation", or "Investigation 1".
+- Do not simply copy a raw search query unless it is already the best concise title.
 
 Return JSON:
 {
@@ -362,7 +455,8 @@ Return JSON:
     .map((hole, index): ClusterHole | null => {
       const ids = (hole.page_ids || []).filter((id) => pageIds.has(id));
       if (ids.length < 2) return null;
-      const title = (hole.title || `Investigation ${index + 1}`).trim().slice(0, 64);
+      const title = cleanGeneratedTitle(hole.title);
+      if (!isUsableGeneratedTitle(title)) return null;
       const entities: ClusterEntity[] = (hole.entities || [])
         .filter((entity) => entity.name)
         .slice(0, 12)
@@ -389,7 +483,8 @@ Return JSON:
 }
 
 export function clusterHoleToRabbitHole(hole: ClusterHole, capturedPages: CapturedPage[] = [], capturedSearches: CapturedSearch[] = []): RabbitHole {
-  const id = hole.client_id ?? buildHoleId(hole.title, hole.page_ids);
+  const title = cleanRabbitHoleTitle(hole.title);
+  const id = hole.client_id ?? buildHoleId(title, hole.page_ids);
   const now = new Date().toISOString();
   const capturedById = new Map(capturedPages.map((p) => [p.id, p]));
   const selectedPages = (hole.page_ids.length ? hole.page_ids : capturedPages.map((p) => p.id)).map((pid) => capturedById.get(pid)).filter(Boolean) as CapturedPage[];
@@ -413,7 +508,7 @@ export function clusterHoleToRabbitHole(hole: ClusterHole, capturedPages: Captur
 
   return {
     id,
-    title: hole.title,
+    title,
     description: hole.description,
     status: "active",
     confidence: hole.confidence,
@@ -537,7 +632,8 @@ export function forgetClusterContext() {
 export async function runCluster(): Promise<ClusterResponse> {
   const events = await readExtensionEvents();
   const { pages, searches } = eventsToCaptured(events);
-  const holes = (await buildProviderHoles(pages, searches)) ?? buildLocalHoles(pages, searches);
+  const providerHoles = await buildProviderHoles(pages, searches);
+  const holes = providerHoles ?? await generateProviderTitles(buildLocalHoles(pages, searches), pages, searches);
   const response: ClusterResponse = {
     holes,
     pages,

@@ -37,7 +37,7 @@ export function RabbitDive() {
                 src={RABBIT_HOLE_IMAGE}
                 alt=""
                 draggable={false}
-                className="absolute inset-x-0 bottom-[42px] mx-auto w-[430px] max-w-[78%] select-none object-contain drop-shadow-[0_24px_60px_rgba(18,11,5,.42)]"
+                className="absolute inset-x-0 bottom-[34px] mx-auto w-[500px] max-w-[86%] select-none object-contain drop-shadow-[0_24px_60px_rgba(18,11,5,.42)]"
                 initial={{ y: 18, scale: 0.94, opacity: 0 }}
                 animate={{ y: 0, scale: 1, opacity: 1 }}
                 transition={{ delay: 0.12, duration: 0.72, ease: [0.22, 1, 0.36, 1] }}

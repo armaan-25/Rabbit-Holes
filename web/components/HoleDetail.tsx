@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { RabbitHole, PageVisit } from "@/lib/types";
 import { ACCENTS, KIND_META, STATUS_META, faviconFor } from "@/lib/ui";
 import { clockTime, relativeTime } from "@/lib/format";
+import { cleanRabbitHoleTitle } from "@/lib/title";
+import { useApp } from "@/lib/store";
 import { EntityChip } from "./atoms";
 import { RestoreModal } from "./RestoreModal";
 import { AskHole } from "./AskHole";
@@ -44,7 +46,7 @@ export function HoleDetail({ hole }: { hole: RabbitHole }) {
               <span className="h-2 w-2 rounded-full" style={{ background: status.dot }} />
               <span className="text-[12.5px] font-semibold text-[#4d7049]">{status.label} · {relativeTime(hole.lastActive)}</span>
             </div>
-            <h1 className="rh-display rh-ink max-w-[14ch] break-words text-[46px] font-semibold leading-[1.02]">{hole.title}</h1>
+            <EditableHoleTitle hole={hole} />
             <p className="rh-muted mt-4 max-w-[62ch] text-[18px] leading-[1.55]">{hole.description}</p>
           </div>
           <button onClick={() => setRestoreOpen(true)} className="rh-primary rounded-[12px] px-5 py-3 text-[15px] font-medium shadow-[0_8px_24px_rgba(42,32,24,.18)] transition hover:-translate-y-0.5">
@@ -143,6 +145,67 @@ export function HoleDetail({ hole }: { hole: RabbitHole }) {
       </div>
 
       <RestoreModal hole={hole} open={restoreOpen} onClose={() => setRestoreOpen(false)} />
+    </div>
+  );
+}
+
+function EditableHoleTitle({ hole }: { hole: RabbitHole }) {
+  const updateHole = useApp((s) => s.updateHole);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(hole.title);
+
+  useEffect(() => {
+    if (!editing) setDraft(hole.title);
+  }, [editing, hole.title]);
+
+  function save() {
+    const nextTitle = cleanRabbitHoleTitle(draft, hole.title);
+    if (nextTitle !== hole.title) updateHole(hole.id, { title: nextTitle });
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <div className="flex max-w-[760px] flex-wrap items-center gap-3">
+        <input
+          autoFocus
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          onBlur={save}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") save();
+            if (event.key === "Escape") {
+              setDraft(hole.title);
+              setEditing(false);
+            }
+          }}
+          className="rh-display rh-ink min-w-0 max-w-full flex-1 rounded-[16px] border border-[var(--rh-line-strong)] bg-[var(--rh-surface)] px-4 py-2 text-[42px] font-semibold leading-[1.02] outline-none transition focus:border-[#b89b6f]"
+        />
+        <button
+          type="button"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={save}
+          className="rh-primary rounded-full px-4 py-2 text-[13px] font-semibold"
+        >
+          Save
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="group flex max-w-[760px] flex-wrap items-center gap-3">
+      <h1 className="rh-display rh-ink max-w-[14ch] break-words text-[46px] font-semibold leading-[1.02]">
+        {hole.title}
+      </h1>
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        className="rounded-full border border-[var(--rh-line)] px-3 py-1.5 text-[12px] font-semibold text-[var(--rh-muted)] opacity-80 transition hover:border-[var(--rh-line-strong)] hover:text-[var(--rh-ink)] group-hover:opacity-100"
+        aria-label="Rename rabbit hole"
+      >
+        Rename
+      </button>
     </div>
   );
 }

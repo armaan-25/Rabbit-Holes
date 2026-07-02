@@ -86,9 +86,13 @@ function setProviderUI(ready) {
   providerReady = ready;
   const warning = document.getElementById("provider-warning");
   const cluster = document.getElementById("cluster");
+  const account = document.getElementById("account");
+  const accountLabel = document.getElementById("account-email");
   warning.classList.toggle("visible", !ready);
   cluster.classList.toggle("needs-key", !ready);
-  if (!ready) setClusterLabel("Set API key in settings");
+  account.classList.toggle("hidden", ready);
+  accountLabel.textContent = ready ? "" : "API key needed";
+  setClusterLabel(ready ? "Build rabbit holes" : "Add API key");
 }
 
 function escapeHtml(value) {
@@ -190,7 +194,7 @@ async function setCaptureState(state) {
   }
 }
 
-// state: "in" (local capture panel), "out" (provider setup), "expired" (provider setup).
+// state: "in" (capture panel), "out" (provider setup), "expired" (provider setup).
 function setAuthView(state) {
   const signedOut = state !== "in";
   document.getElementById("auth-panel").classList.toggle("signed-out", signedOut);
@@ -205,7 +209,6 @@ function setAuthView(state) {
 
 async function render() {
   setAuthView("in");
-  document.getElementById("account-email").textContent = "AI provider";
 
   const {
     events = [],

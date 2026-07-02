@@ -12,13 +12,43 @@ export function RestoreModal({ hole, open, onClose }: { hole: RabbitHole; open: 
     () => [...hole.pages].sort((a, b) => +new Date(a.visitedAt) - +new Date(b.visitedAt)),
     [hole.pages]
   );
+  const urlsToOpen = useMemo(() => {
+    const seen = new Set<string>();
+
+    return ordered
+      .map((page) => page.url?.trim())
+      .filter((url): url is string => {
+        if (!url || url === "#") return false;
+
+        try {
+          const parsed = new URL(url);
+          if (!["http:", "https:"].includes(parsed.protocol)) return false;
+          if (seen.has(parsed.href)) return false;
+          seen.add(parsed.href);
+          return true;
+        } catch {
+          return false;
+        }
+      });
+  }, [ordered]);
 
   const lastSearch = hole.searches[hole.searches.length - 1]?.query;
   const openQuestion = hole.summary.questions[0];
   const whereYouLeftOff = `${hole.description} You last touched this ${relativeTime(hole.lastActive)}, after pulling ${hole.searches.length} thread${hole.searches.length === 1 ? "" : "s"} across ${hole.pages.length} pages and ${hole.domains.length} domains${lastSearch ? ` — the last thing you searched was “${lastSearch}.”` : "."}`;
 
   function openAll() {
-    ordered.forEach((p) => window.open(p.url, "_blank", "noopener"));
+    if (!urlsToOpen.length) return;
+
+    const [first, ...rest] = urlsToOpen;
+    window.open(first, "_blank", "noopener,noreferrer");
+
+    rest.forEach((url, index) => {
+      window.setTimeout(() => {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }, 120 * (index + 1));
+    });
+
+    onClose();
   }
 
   return (
@@ -91,9 +121,10 @@ export function RestoreModal({ hole, open, onClose }: { hole: RabbitHole; open: 
               <button onClick={onClose} className="text-[14px] font-medium text-[var(--rh-muted)] transition hover:text-[var(--rh-ink)]">Cancel</button>
               <button
                 onClick={openAll}
-                className="rh-primary rounded-[12px] px-5 py-3 text-[14.5px] font-semibold shadow-[0_10px_28px_rgba(42,32,24,.2)] transition hover:-translate-y-0.5"
+                disabled={!urlsToOpen.length}
+                className="rh-primary rounded-[12px] px-5 py-3 text-[14.5px] font-semibold shadow-[0_10px_28px_rgba(42,32,24,.2)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Open all {ordered.length} in order ↗
+                Open {urlsToOpen.length} tab{urlsToOpen.length === 1 ? "" : "s"} in order ↗
               </button>
             </div>
           </motion.div>
