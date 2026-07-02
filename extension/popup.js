@@ -10,6 +10,14 @@ function setClusterLabel(text) {
   document.getElementById("cluster").innerHTML = `<span>${text}</span>`;
 }
 
+function isRabbitHolesPage(url) {
+  try {
+    return new URL(url).origin === new URL(WEB_URL).origin;
+  } catch {
+    return false;
+  }
+}
+
 function formatElapsed(ms) {
   const total = Math.max(0, Math.floor(ms / 1000));
   const h = Math.floor(total / 3600);
@@ -272,7 +280,15 @@ document.getElementById("cluster").addEventListener("click", async (e) => {
   btn.disabled = true;
   setClusterLabel("Opening builder…");
   try {
-    chrome.tabs.create({ url: `${WEB_URL}/dashboard?cluster=1` }, () => window.close());
+    const buildUrl = `${WEB_URL}/dashboard?cluster=1`;
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tab = tabs && tabs[0];
+      if (tab && tab.id && tab.url && isRabbitHolesPage(tab.url)) {
+        chrome.tabs.update(tab.id, { url: buildUrl }, () => window.close());
+        return;
+      }
+      chrome.tabs.create({ url: buildUrl }, () => window.close());
+    });
   } catch {
     setClusterLabel("Could not open");
     window.setTimeout(() => setClusterLabel("Build rabbit holes"), 1600);

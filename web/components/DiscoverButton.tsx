@@ -7,6 +7,8 @@ import { flushExtensionEvents, useSessionStats } from "@/hooks/useSessionStats";
 import { preGenerateHoleBriefs } from "@/lib/api";
 import { RabbitEars } from "@/components/Logo";
 
+const RABBIT_HOLE_IMAGE = "/assets/images/rabbit-hole-hero.png";
+
 /** Triggers the discovery overlay from a real /cluster response. */
 export function DiscoverButton({
   className = "",
@@ -103,34 +105,18 @@ export function RabbitHoleLoading() {
           52% { transform: translateX(-18%); }
           100% { transform: translateX(100%); }
         }
-        @keyframes rh-word-flow {
-          0% { transform: translate3d(-130%, 16px, 0); opacity: 0; }
-          16% { opacity: .42; }
-          58% { opacity: .34; }
-          100% { transform: translate3d(130%, -16px, 0); opacity: 0; }
-        }
       `}</style>
 
       <div className="relative flex max-h-[88vh] w-full max-w-[760px] flex-col overflow-hidden rounded-[34px] border border-[#f3e8d442] bg-[#17100b] shadow-[0_40px_130px_rgba(18,11,5,.58)]">
         <div className="relative flex min-h-[330px] flex-1 items-center justify-center overflow-hidden bg-[#21170f] px-6 py-8">
-          {["searches", "tabs", "papers", "repos", "questions", "notes", "links", "patterns"].map((word, i) => (
-            <span
-              key={word}
-              className="pointer-events-none absolute left-0 rh-display select-none text-[20px] italic tracking-wide text-[#d7c3a1]/45"
-              style={{
-                top: `${12 + (i % 4) * 22}%`,
-                width: "100%",
-                animation: `rh-word-flow ${5.6 + (i % 3) * 0.7}s ease-in-out ${i * 0.42}s infinite`,
-              }}
-            >
-              <span style={{ marginLeft: `${(i * 13) % 46}%` }}>{word}</span>
-            </span>
-          ))}
           <div className="relative grid h-[280px] w-full max-w-[560px] place-items-center overflow-hidden rounded-[28px]">
             <div className="absolute inset-x-20 bottom-8 top-8 z-0 rounded-full bg-[#17100b]/18 blur-3xl" />
-            <div className="relative z-30 grid h-[132px] w-[132px] place-items-center rounded-full border border-[#f3e8d42b] bg-[#17100b]/92 text-[#f6ecd9] shadow-[0_18px_58px_rgba(18,11,5,.36)]">
-              <RabbitEars className="h-16 w-16" />
-            </div>
+            <img
+              src={RABBIT_HOLE_IMAGE}
+              alt=""
+              className="relative z-30 w-[380px] max-w-[84%] select-none object-contain drop-shadow-[0_24px_54px_rgba(18,11,5,.38)]"
+              draggable={false}
+            />
           </div>
         </div>
 

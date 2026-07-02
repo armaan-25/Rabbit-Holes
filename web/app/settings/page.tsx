@@ -104,9 +104,16 @@ export default function SettingsPage() {
     const merged = { ...provider, ...next };
     setProvider(merged);
     writeAiProviderConfig(merged);
-    void writeExtensionConfig({ aiProvider: merged });
     setProviderStatus("idle");
-    setSavedAt("Provider saved locally");
+    setSavedAt(merged.apiKey?.trim() ? "Saving API key to extension storage..." : "Provider saved");
+    void writeExtensionConfig({ aiProvider: merged }).then((saved) => {
+      if (!saved && merged.apiKey?.trim()) {
+        setProviderStatus("invalid");
+        setSavedAt("Install or reload the extension to save the API key");
+        return;
+      }
+      setSavedAt(merged.apiKey?.trim() ? "API key saved to extension storage" : "Provider saved");
+    });
   }
 
   async function saveAndValidateProvider(next: AiProviderConfig) {
@@ -116,7 +123,7 @@ export default function SettingsPage() {
       writeAiProviderConfig(merged);
       void writeExtensionConfig({ aiProvider: merged });
       setProviderStatus("idle");
-      setSavedAt("Provider saved locally");
+      setSavedAt("Add the required model, key, or base URL to finish setup");
       return;
     }
 

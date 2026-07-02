@@ -3,9 +3,8 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useApp } from "@/lib/store";
 import { ACCENTS } from "@/lib/ui";
-import { RabbitEars } from "@/components/Logo";
 
-const RESULT_WORDS = ["tabs", "questions", "links", "notes", "context", "patterns"];
+const RABBIT_HOLE_IMAGE = "/assets/images/rabbit-hole-hero.png";
 
 export function RabbitDive() {
   const discovery = useApp((s) => s.discovery);
@@ -34,33 +33,15 @@ export function RabbitDive() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative h-[390px] overflow-hidden border-b border-[#f3e8d41f] bg-[#2b2117]">
-
-              {RESULT_WORDS.map((word, i) => (
-                <motion.span
-                  key={word}
-                  className="absolute rh-display select-none text-[24px] italic tracking-wide text-[#d7c3a1]/58"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{
-                    opacity: [0, 0.62, 0],
-                    x: [i % 2 === 0 ? -96 : 96, 0],
-                    y: [i < 3 ? -56 : 56, 8],
-                    scale: [1, 0.34],
-                  }}
-                  transition={{ duration: 2.6, delay: i * 0.18, repeat: Infinity, repeatDelay: 0.8, ease: "easeInOut" }}
-                  style={{ left: `${24 + (i % 3) * 25}%`, top: `${28 + Math.floor(i / 3) * 34}%` }}
-                >
-                  {word}
-                </motion.span>
-              ))}
-
-              <motion.div
-                className="absolute inset-x-0 bottom-[86px] mx-auto grid h-[150px] w-[150px] place-items-center rounded-full border border-[#f3e8d438] bg-[#17100b] text-[#f6ecd9] shadow-[0_22px_70px_rgba(18,11,5,.34)]"
+              <motion.img
+                src={RABBIT_HOLE_IMAGE}
+                alt=""
+                draggable={false}
+                className="absolute inset-x-0 bottom-[42px] mx-auto w-[430px] max-w-[78%] select-none object-contain drop-shadow-[0_24px_60px_rgba(18,11,5,.42)]"
                 initial={{ y: 18, scale: 0.94, opacity: 0 }}
                 animate={{ y: 0, scale: 1, opacity: 1 }}
                 transition={{ delay: 0.12, duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <RabbitEars className="h-16 w-16" />
-              </motion.div>
+              />
             </div>
 
             <div className="relative bg-[#17100b] px-9 py-8 text-[#f3e8d4]">

@@ -14,21 +14,13 @@ export function PageTransition({ children }: { children: ReactNode }) {
 
   return (
     <AnimatePresence mode="wait" initial={false}>
-      <motion.div key={pathname} className="relative min-h-screen">
-        <motion.div
-          aria-hidden="true"
-          className="pointer-events-none fixed left-0 right-0 top-0 z-[80] h-px origin-left bg-[var(--rh-primary)]"
-          initial={{ scaleX: 0, opacity: 0.55 }}
-          animate={{ scaleX: [0, 0.82, 1], opacity: [0.55, 0.42, 0] }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.42, times: [0, 0.78, 1], ease: [0.22, 1, 0.36, 1] }}
-        />
+      <motion.div key={pathname} className="min-h-screen">
         <motion.div
           className="min-h-screen"
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6 }}
-          transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
         >
           {children}
         </motion.div>
