@@ -147,38 +147,32 @@ export function BuildNotice({ type, stats, errorStatus, onClose }: { readonly ty
       : duplicate
         ? "Your current browsing trail has already been clustered. Browse a few new related pages or searches, then build again."
         : "Rabbit Holes found browsing activity, but it was too scattered to form one clean investigation. Keep going on one thread, then try again.";
+    const hasStats = stats.pages + stats.searches + stats.tabs > 0;
     return (
       <div className="fixed inset-0 z-[75] grid place-items-center bg-[#140d08]/76 px-4 backdrop-blur-[10px]">
-        <style>{`
-          @keyframes soft-word-drift {
-            0% { transform: translate3d(-125%, 18px, 0); opacity: 0; }
-            18% { opacity: .5; }
-            62% { opacity: .36; }
-            100% { transform: translate3d(125%, -18px, 0); opacity: 0; }
-          }
-        `}</style>
         <div className="relative w-full max-w-[720px] overflow-hidden rounded-[34px] border border-[#f3e8d426] bg-[#17100b] shadow-[0_34px_110px_rgba(18,11,5,.48)]">
-          <div className="relative h-[360px] overflow-hidden border-b border-[#f3e8d41f] bg-[#2b2117]">
-            {["searches", "pages", "links", "tabs", "notes", "questions", "patterns", "sources"].map((word, i) => (
-              <span
-                key={word}
-                className="absolute left-0 rh-display select-none text-[23px] italic tracking-wide text-[#d7c3a1]/58"
-                style={{
-                  top: `${12 + (i % 4) * 20}%`,
-                  width: "100%",
-                  animation: `soft-word-drift ${5.2 + (i % 3) * 0.7}s ease-in-out ${i * 0.38}s infinite`,
-                }}
-              >
-                <span style={{ marginLeft: `${(i * 17) % 56}%` }}>{word}</span>
-              </span>
-            ))}
-            <div className="absolute inset-x-0 bottom-[42px] mx-auto grid h-[210px] w-[360px] max-w-[82%] place-items-center">
-              <img
-                src={RABBIT_HOLE_IMAGE}
-                alt=""
-                className="h-full w-full select-none object-contain drop-shadow-[0_26px_58px_rgba(18,11,5,.42)]"
-                draggable={false}
-              />
+          <div className="relative h-[250px] overflow-hidden border-b border-[#f3e8d41f] bg-[#2b2117]">
+            <div className="absolute inset-0 opacity-[0.12] [background-image:radial-gradient(#b69b77_1px,transparent_1px)] [background-size:26px_26px]" />
+            <div className="absolute inset-0 grid place-items-center">
+              <div className="grid h-[150px] w-[150px] place-items-center rounded-full border border-[#f3e8d42e] bg-[#120c08] shadow-[0_24px_70px_rgba(18,11,5,.42)]">
+                <svg viewBox="0 0 64 64" className="h-16 w-16 text-[#f8ecd6]" aria-hidden="true">
+                  <path
+                    d="M25.5 31.5C20.5 20.5 20 9.5 23.2 7.2c4.7-3.4 9.3 9.6 9.2 25.4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeWidth="5.8"
+                  />
+                  <path
+                    d="M38.5 31.5C43.5 20.5 44 9.5 40.8 7.2c-4.7-3.4-9.3 9.6-9.2 25.4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeWidth="5.8"
+                  />
+                  <circle cx="32" cy="39.5" r="13.5" fill="none" stroke="currentColor" strokeWidth="5.8" />
+                </svg>
+              </div>
             </div>
           </div>
 
@@ -193,11 +187,13 @@ export function BuildNotice({ type, stats, errorStatus, onClose }: { readonly ty
             <p className="mt-4 max-w-[560px] text-[18px] leading-7 text-[#d8c8ad]">
               {body}
             </p>
-            <div className="mt-7 grid max-w-[520px] grid-cols-3 divide-x divide-[#f3e8d426] rounded-[18px] border border-[#f3e8d426] bg-[#21170f] px-3 py-4">
-              <MiniBuildStat label="pages" value={stats.pages} />
-              <MiniBuildStat label="searches" value={stats.searches} />
-              <MiniBuildStat label="tabs" value={stats.tabs} />
-            </div>
+            {hasStats ? (
+              <div className="mt-7 grid max-w-[520px] grid-cols-3 divide-x divide-[#f3e8d426] rounded-[18px] border border-[#f3e8d426] bg-[#21170f] px-3 py-4">
+                <MiniBuildStat label="pages" value={stats.pages} />
+                <MiniBuildStat label="searches" value={stats.searches} />
+                <MiniBuildStat label="tabs" value={stats.tabs} />
+              </div>
+            ) : null}
             <div className="mt-8 flex flex-wrap gap-4">
               <button
                 onClick={onClose}
@@ -206,7 +202,7 @@ export function BuildNotice({ type, stats, errorStatus, onClose }: { readonly ty
                 Keep browsing
               </button>
               <a
-                href="/install"
+                href="/settings"
                 className="rounded-[16px] border border-[#f3e8d426] bg-transparent px-7 py-4 text-[17px] font-semibold text-[#cdbd9f] no-underline transition hover:bg-[#f3e8d40d]"
               >
                 Check extension setup
