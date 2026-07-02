@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Wordmark } from "@/components/Logo";
 import { LandingDemo } from "@/components/LandingDemo";
+import { clearSupabaseOAuthFlowState } from "@/lib/supabase-auth";
 
 export default function Landing() {
   const [installOpen, setInstallOpen] = useState(false);
@@ -12,6 +13,18 @@ export default function Landing() {
   useEffect(() => {
     const saved = window.localStorage.getItem("rabbit-hole-theme");
     document.documentElement.classList.toggle("rabbit-dark", saved !== "light");
+
+    const params = new URLSearchParams(window.location.search);
+    const authError = params.get("error_description") || params.get("error_code") || params.get("error");
+    if (authError) {
+      clearSupabaseOAuthFlowState();
+      window.history.replaceState(null, "", window.location.pathname);
+      const message =
+        authError === "State has already been used" || authError === "flow_state_already_used"
+          ? "That sign-in link was already used. Start a fresh Google sign-in."
+          : authError;
+      window.location.assign(`/login?next=${encodeURIComponent("/dashboard")}&authError=${encodeURIComponent(message)}`);
+    }
   }, []);
 
   return (

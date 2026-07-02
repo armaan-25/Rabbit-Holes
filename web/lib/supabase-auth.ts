@@ -70,6 +70,30 @@ export async function signOutSupabase() {
   clearRabbitSession();
 }
 
+export function clearSupabaseOAuthFlowState() {
+  if (typeof window === "undefined") return;
+
+  const exactKeys = [
+    "rabbit-holes-supabase-auth-code-verifier",
+    "rabbit-holes-supabase-auth-provider-token",
+  ];
+
+  exactKeys.forEach((key) => window.localStorage.removeItem(key));
+
+  for (let i = window.localStorage.length - 1; i >= 0; i -= 1) {
+    const key = window.localStorage.key(i);
+    if (!key) continue;
+    const normalized = key.toLowerCase();
+    if (
+      normalized.includes("code-verifier") ||
+      normalized.includes("flow-state") ||
+      normalized.includes("oauth")
+    ) {
+      window.localStorage.removeItem(key);
+    }
+  }
+}
+
 export function safeNextPath(value: string | null | undefined) {
   return value && value.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
 }

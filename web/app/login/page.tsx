@@ -4,7 +4,7 @@ import { FormEvent, Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Wordmark } from "@/components/Logo";
-import { getAuthCallbackUrl, getSupabaseClient, isSupabaseConfigured, safeNextPath, writeSupabaseUserSession } from "@/lib/supabase-auth";
+import { clearSupabaseOAuthFlowState, getAuthCallbackUrl, getSupabaseClient, isSupabaseConfigured, safeNextPath, writeSupabaseUserSession } from "@/lib/supabase-auth";
 
 export default function LoginPage() {
   return (
@@ -18,9 +18,10 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = safeNextPath(searchParams.get("next"));
+  const authError = searchParams.get("authError");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState(authError ? decodeURIComponent(authError) : "");
   const [transitioning, setTransitioning] = useState(false);
 
   async function submit(e: FormEvent) {
@@ -56,6 +57,7 @@ function LoginForm() {
 
     setTransitioning(true);
     setStatus("Signing in with Google...");
+    clearSupabaseOAuthFlowState();
     const redirectTo = getAuthCallbackUrl(next);
     const { data, error } = await getSupabaseClient().auth.signInWithOAuth({
       provider: "google",
