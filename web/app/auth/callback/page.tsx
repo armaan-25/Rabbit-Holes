@@ -16,13 +16,15 @@ export default function AuthCallbackPage() {
       const params = new URLSearchParams(window.location.search);
       const next = safeNextPath(params.get("next"));
       const code = params.get("code");
+      const authError = params.get("error_description") || params.get("error");
 
       try {
+        if (authError) throw new Error(authError);
+        if (!code) throw new Error("Missing sign-in code. Please try again.");
+
         const client = getSupabaseClient();
-        if (code) {
-          const { error } = await client.auth.exchangeCodeForSession(code);
-          if (error) throw error;
-        }
+        const { error: exchangeError } = await client.auth.exchangeCodeForSession(code);
+        if (exchangeError) throw exchangeError;
 
         const { data, error } = await client.auth.getSession();
         if (error) throw error;
