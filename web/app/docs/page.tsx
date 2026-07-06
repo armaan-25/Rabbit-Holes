@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Wordmark } from "@/components/Logo";
+import { FadeIn, Stagger, StaggerItem } from "@/lib/motion";
 
 const INSTALL_STEPS = [
   ["Download", "Download the extension zip from Rabbit Holes."],
@@ -26,7 +27,7 @@ export default function DocsPage() {
           <Wordmark className="text-[24px]" />
         </Link>
 
-        <section className="pt-14">
+        <FadeIn className="pt-14">
           <div className="rh-faint text-[12px] font-bold uppercase tracking-[0.24em]">Docs</div>
           <h1 className="rh-display mt-3 max-w-[11ch] text-[clamp(52px,8vw,86px)] font-semibold leading-[0.95] tracking-[-0.045em]">
             Install. Browse. Continue.
@@ -42,22 +43,22 @@ export default function DocsPage() {
               Configure provider
             </Link>
           </div>
-        </section>
+        </FadeIn>
 
         <section className="mt-14">
           <div className="rh-faint mb-4 text-[12px] font-bold uppercase tracking-[0.24em]">Manual install</div>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <Stagger className="grid gap-3 sm:grid-cols-2">
             {INSTALL_STEPS.map(([title, body], index) => (
-              <div key={title} className="rh-surface rounded-[18px] border p-5">
+              <StaggerItem key={title} className="rh-surface rounded-[18px] border p-5">
                 <div className="rh-faint text-[12px] font-bold uppercase tracking-[0.2em]">{String(index + 1).padStart(2, "0")}</div>
                 <h2 className="rh-display mt-3 text-[25px] font-semibold leading-tight">{title}</h2>
                 <p className="rh-muted mt-2 text-[15px] leading-7">{body}</p>
-              </div>
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
         </section>
 
-        <section className="mt-14">
+        <FadeIn className="mt-14">
           <div className="rh-faint mb-4 text-[12px] font-bold uppercase tracking-[0.24em]">FAQ</div>
           <div className="rh-surface divide-y divide-[var(--rh-line)] rounded-[22px] border">
             {FAQ.map(([question, answer]) => (
@@ -67,7 +68,7 @@ export default function DocsPage() {
               </section>
             ))}
           </div>
-        </section>
+        </FadeIn>
       </div>
     </main>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import type { PageVisit, RabbitHole } from "@/lib/types";
 import { KIND_META, faviconFor } from "@/lib/ui";
 import { getNavigationPath, getSourceSearch } from "@/utils/holeAnalytics";

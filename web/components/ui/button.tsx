@@ -18,7 +18,7 @@ const sizeClass: Record<ButtonSize, string> = {
   icon: "h-9 w-9 p-0 text-[13px]",
 };
 
-const base = "inline-flex shrink-0 items-center justify-center rounded-full font-semibold no-underline outline-none transition disabled:pointer-events-none disabled:opacity-50";
+const base = "inline-flex shrink-0 items-center justify-center rounded-full font-semibold no-underline outline-none transition duration-200 ease-out active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50";
 
 type SharedProps = {
   variant?: ButtonVariant;

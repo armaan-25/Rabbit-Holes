@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import { clusterHoleToRabbitHole, hasMeaningfulNewContext, markDiscoveriesSeen, rememberClusterContext, runCluster, unseenDiscoveries } from "@/lib/discovery";
 import { preGenerateHoleBriefs } from "@/lib/api";
 import { ACCENTS } from "@/lib/ui";

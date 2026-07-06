@@ -6,6 +6,7 @@ import type { RabbitHole } from "@/lib/types";
 import { BunnyO } from "@/components/Logo";
 import { validateCurrentProvider } from "@/lib/ai-provider";
 import { AI_PROVIDER_OPTIONS, DEFAULT_AI_PROVIDER, clearExtensionLocalData, providerOption, providerReady, publicAiProviderConfig, readAiProviderConfig, readExtensionConfig, writeAiProviderConfig, writeExtensionConfig, type AiProviderConfig, type AiProviderType } from "@/lib/ai-provider-config";
+import { Stagger, StaggerItem } from "@/lib/motion";
 
 type Row = { id: string; name: string; body: string; default: boolean; tone?: string };
 
@@ -275,16 +276,16 @@ export default function SettingsPage() {
 
   return (
     <div className="rh-paper min-h-screen px-6 py-12 text-[var(--rh-ink)]">
-      <main className="mx-auto w-full max-w-[980px]">
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+      <Stagger className="mx-auto w-full max-w-[980px]">
+        <StaggerItem className="mb-8 flex flex-wrap items-end justify-between gap-3">
           <div>
             <div className="rh-faint mb-7 text-[12px] font-bold uppercase tracking-[0.24em]">Extension settings</div>
             <h1 className="rh-display rh-ink text-[44px] font-semibold leading-none tracking-[-0.03em]">Settings</h1>
           </div>
           {savedAt && <span className={`${savedAtClass} text-[13px] italic`}>{savedAt}</span>}
-        </div>
+        </StaggerItem>
 
-        <section className={`mb-8 flex items-center justify-between rounded-[20px] border px-6 py-5 shadow-[0_8px_30px_rgba(70,45,20,.04)] ${bannerClass}`}>
+        <StaggerItem className={`mb-8 flex items-center justify-between rounded-[20px] border px-6 py-5 shadow-[0_8px_30px_rgba(70,45,20,.04)] ${bannerClass}`}>
           <div className="flex items-center gap-4">
             <div className="relative grid h-12 w-12 place-items-center rounded-[12px] bg-[var(--rh-surface-3)] text-[30px] leading-none shadow-[0_1px_4px_rgba(70,45,20,.12)]">
               <BunnyO />
@@ -298,9 +299,9 @@ export default function SettingsPage() {
           <div className="hidden items-center gap-2 rounded-full bg-[var(--rh-surface)] px-4 py-2 text-[13px] font-semibold sm:flex">
             <span className="h-2 w-2 rounded-full bg-current" /> {bannerCopy.pill}
           </div>
-        </section>
+        </StaggerItem>
 
-        <section className="mt-8">
+        <StaggerItem className="mt-8">
           <SectionLabel>AI Provider</SectionLabel>
           <div className="rh-surface rounded-[18px] border p-6 shadow-[0_8px_24px_rgba(70,45,20,.04)]">
             <div className="grid gap-5 md:grid-cols-[240px_1fr]">
@@ -379,13 +380,13 @@ export default function SettingsPage() {
               </button>
             </div>
           </div>
-        </section>
+        </StaggerItem>
 
-        <SettingsGroup title="Capture" rows={CAPTURE} settings={settings} onToggle={toggle} />
-        <SettingsGroup title="Privacy" rows={PRIVACY} settings={settings} onToggle={toggle} />
-        <SettingsGroup title="Data sources" rows={SOURCES} settings={settings} onToggle={toggle} />
+        <StaggerItem><SettingsGroup title="Capture" rows={CAPTURE} settings={settings} onToggle={toggle} /></StaggerItem>
+        <StaggerItem><SettingsGroup title="Privacy" rows={PRIVACY} settings={settings} onToggle={toggle} /></StaggerItem>
+        <StaggerItem><SettingsGroup title="Data sources" rows={SOURCES} settings={settings} onToggle={toggle} /></StaggerItem>
 
-        <section className="mt-8">
+        <StaggerItem className="mt-8">
           <SectionLabel>Your data</SectionLabel>
           <div className="grid gap-4 sm:grid-cols-4">
             <ActionCard title="Export everything" body="Download settings and investigations as JSON." onClick={exportData} />
@@ -398,8 +399,8 @@ export default function SettingsPage() {
           </div>
           <input ref={importInputRef} type="file" accept="application/json,.json" className="hidden" onChange={(event) => void importData(event.target.files?.[0] ?? null)} />
           {dataMsg && <p className="rh-muted mt-4 text-[14px]">{dataMsg}</p>}
-        </section>
-      </main>
+        </StaggerItem>
+      </Stagger>
     </div>
   );
 }

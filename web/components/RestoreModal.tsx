@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import type { RabbitHole } from "@/lib/types";
 import { KIND_META, faviconFor } from "@/lib/ui";
 import { relativeTime } from "@/lib/format";
@@ -65,7 +65,7 @@ export function RestoreModal({ hole, open, onClose }: { hole: RabbitHole; open: 
             initial={{ opacity: 0, y: 16, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.98 }}
-            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] as const }}
             className="rh-surface relative z-10 flex max-h-[86vh] w-full max-w-[620px] flex-col overflow-hidden rounded-[22px] border shadow-[0_30px_80px_rgba(42,32,24,.34)]"
           >
             <div className="flex items-start justify-between gap-4 border-b border-[var(--rh-line)] px-7 pb-5 pt-6">

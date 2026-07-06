@@ -3,6 +3,7 @@
 import { CuriosityHeatmap } from "@/components/heatmaps/CuriosityHeatmap";
 import { EmptyHolesPage } from "@/components/EmptyHoles";
 import { useHoles } from "@/hooks/useHoles";
+import { FadeIn } from "@/lib/motion";
 
 export default function HeatmapPage() {
   const holes = useHoles();
@@ -12,12 +13,14 @@ export default function HeatmapPage() {
   return (
     <div className="rh-paper min-h-screen px-5 py-8 sm:px-8 xl:px-12">
       <div className="mx-auto w-full max-w-[1320px]">
-        <div className="mb-7">
+        <FadeIn className="mb-7">
           <div className="rh-faint mb-2 text-[12px] font-semibold uppercase tracking-[0.22em]">Habits</div>
           <h1 className="rh-display rh-ink text-[44px] font-semibold leading-none">Curiosity heatmap</h1>
           <p className="rh-muted mt-3 max-w-2xl text-[16px] leading-relaxed">Intensity, topics, and rhythm across your recent exploration sessions.</p>
-        </div>
-        <CuriosityHeatmap holes={holes} />
+        </FadeIn>
+        <FadeIn delay={0.1}>
+          <CuriosityHeatmap holes={holes} />
+        </FadeIn>
       </div>
     </div>
   );

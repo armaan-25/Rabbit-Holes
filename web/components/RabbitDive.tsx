@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import { useApp } from "@/lib/store";
 import { ACCENTS } from "@/lib/ui";
 
@@ -40,7 +40,7 @@ export function RabbitDive() {
                 className="absolute inset-x-0 bottom-[34px] mx-auto w-[500px] max-w-[86%] select-none object-contain drop-shadow-[0_24px_60px_rgba(18,11,5,.42)]"
                 initial={{ y: 18, scale: 0.94, opacity: 0 }}
                 animate={{ y: 0, scale: 1, opacity: 1 }}
-                transition={{ delay: 0.12, duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ delay: 0.12, duration: 0.72, ease: [0.22, 1, 0.36, 1] as const }}
               />
             </div>
 

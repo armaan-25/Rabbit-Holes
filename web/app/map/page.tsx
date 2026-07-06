@@ -15,6 +15,7 @@ import ReactFlow, {
 import { EmptyHolesPage } from "@/components/EmptyHoles";
 import { useHoles } from "@/hooks/useHoles";
 import { useDark } from "@/lib/useDark";
+import { FadeIn } from "@/lib/motion";
 import type { GraphEdge, GraphNode, NodeKind, RabbitHole } from "@/lib/types";
 
 type FlowNodeData = {
@@ -228,7 +229,7 @@ export default function MapPage() {
   return (
     <div className="rh-app-bg min-h-screen px-5 py-7 sm:px-8 xl:px-12">
       <div className="mx-auto w-full max-w-[1720px]">
-        <div className="flex flex-wrap items-end justify-between gap-5">
+        <FadeIn className="flex flex-wrap items-end justify-between gap-5">
           <div>
             <div className="rh-faint mb-2 text-[12px] font-semibold uppercase tracking-[0.22em]">Map</div>
             <h1 className="rh-display rh-ink text-[46px] font-semibold leading-none">See the thread</h1>
@@ -259,9 +260,9 @@ export default function MapPage() {
               );
             })}
           </div>
-        </div>
+        </FadeIn>
 
-        <div className="mt-7">
+        <FadeIn delay={0.1} className="mt-7">
           <div className="rh-map-shell h-[820px] overflow-hidden rounded-[28px] border">
             <ReactFlow
               nodes={nodes}
@@ -280,7 +281,7 @@ export default function MapPage() {
               <Controls showInteractive={false} className="!border-[var(--rh-map-line)] !bg-[var(--rh-surface)] !shadow-none" />
             </ReactFlow>
           </div>
-        </div>
+        </FadeIn>
       </div>
     </div>
   );

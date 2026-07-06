@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import ReactFlow, { Background, Handle, MarkerType, Position, type Edge, type Node, type NodeProps } from "reactflow";
 import { RabbitEars } from "@/components/Logo";
 
@@ -59,7 +59,7 @@ export function LandingDemo() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
               className="absolute inset-0 p-5 sm:p-7"
             >
               {SCENES[i]()}

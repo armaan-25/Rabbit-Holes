@@ -14,6 +14,7 @@ import { Card } from "@/components/ui/card";
 import { AppFrame, ToolbarFrame } from "@/components/ui/frame";
 import { Input, Select } from "@/components/ui/input";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Stagger, StaggerItem, HoverCard } from "@/lib/motion";
 
 export default function Dashboard() {
   const setLiveHoles = useApp((s) => s.setLiveHoles);
@@ -226,19 +227,22 @@ export default function Dashboard() {
                 </Button>
               </Card>
             ) : (
-              <div className="mt-4 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(340px,1fr))] xl:[grid-template-columns:repeat(auto-fit,minmax(372px,1fr))]">
+              <Stagger className="mt-4 grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(340px,1fr))] xl:[grid-template-columns:repeat(auto-fit,minmax(372px,1fr))]">
                 {visibleHoles.map((h) => (
-                  <HoleCard
-                    key={h.id}
-                    hole={h}
-                    selected={selectedIds.includes(h.id)}
-                    onSelect={updateSelection}
-                    onFavorite={favoriteOne}
-                    onArchive={archiveOne}
-                    onDelete={deleteOne}
-                  />
+                  <StaggerItem key={h.id}>
+                    <HoverCard>
+                      <HoleCard
+                        hole={h}
+                        selected={selectedIds.includes(h.id)}
+                        onSelect={updateSelection}
+                        onFavorite={favoriteOne}
+                        onArchive={archiveOne}
+                        onDelete={deleteOne}
+                      />
+                    </HoverCard>
+                  </StaggerItem>
                 ))}
-              </div>
+              </Stagger>
             )}
 
             <p className="rh-muted mt-8 text-center text-[13px] italic">

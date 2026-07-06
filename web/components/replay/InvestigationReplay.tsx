@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import type { RabbitHole } from "@/lib/types";
 import { KIND_META } from "@/lib/ui";
 import { clockTime } from "@/lib/format";
