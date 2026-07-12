@@ -31,6 +31,7 @@ jobs:
           python <<'PY'
           import json
           import os
+          from pathlib import Path
           import subprocess
           import urllib.request
 
@@ -40,6 +41,9 @@ jobs:
           changed_files = command(
               "git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]
           ).splitlines()
+          unified_diff = command(
+              "git", "diff", "--unified=3", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]
+          )[:40000]
           diff_lines = 0
           for row in command(
               "git", "diff", "--numstat", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]
@@ -69,12 +73,33 @@ jobs:
               "approved" if approved_by else "pending"
           )
 
+          with open(os.environ["GITHUB_EVENT_PATH"]) as event_file:
+              pull_request = json.load(event_file)["pull_request"]
+
+          context_paths = [Path("README.md"), Path("package.json"), Path("web/package.json")]
+          context_paths.extend(sorted(Path("docs").glob("*.md"))[:5])
+          project_context = []
+          context_chars = 0
+          for path in context_paths:
+              if not path.is_file() or context_chars >= 24000:
+                  continue
+              text = path.read_text(errors="replace")[:8000]
+              entry = f"### {path}\n{text}"
+              project_context.append(entry)
+              context_chars += len(entry)
+
           payload = {
               "feature_prefix": f"{os.environ['REPOSITORY']}::pr-{os.environ['PR_NUMBER']}",
               "github_ref": f"pr:{os.environ['PR_NUMBER']}",
               "github_type": "pr",
               "changed_files": changed_files,
               "diff_lines": diff_lines,
+              "diff_text": unified_diff,
+              "project_context": project_context,
+              "goal": pull_request.get("title"),
+              "extra_text": pull_request.get("body") or "",
+              "initial_prompt": pull_request.get("body") or None,
+              "generated_code_summary": "Unified diff captured from the pull request head against its base commit.",
               "actor": os.environ["PR_AUTHOR"],
               "reviewer_context": {
                   "approvals_count": len(approved_by),
