@@ -1,0 +1,138 @@
+name: Journal
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  journal:
+    name: Journal governance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Analyze pull request
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          JOURNAL_URL: ${{ secrets.JOURNAL_URL }}
+          JOURNAL_API_TOKEN: ${{ secrets.JOURNAL_API_TOKEN }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          python <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+          import urllib.request
+
+          def command(*args):
+              return subprocess.check_output(args, text=True).strip()
+
+          changed_files = command(
+              "git", "diff", "--name-only", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]
+          ).splitlines()
+          unified_diff = command(
+              "git", "diff", "--unified=3", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]
+          )[:40000]
+          diff_lines = 0
+          for row in command(
+              "git", "diff", "--numstat", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]
+          ).splitlines():
+              additions, deletions, _ = row.split("\t", 2)
+              diff_lines += int(additions) if additions.isdigit() else 0
+              diff_lines += int(deletions) if deletions.isdigit() else 0
+
+          reviews_request = urllib.request.Request(
+              f"https://api.github.com/repos/{os.environ['REPOSITORY']}/pulls/{os.environ['PR_NUMBER']}/reviews",
+              headers={
+                  "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
+                  "Accept": "application/vnd.github+json",
+              },
+          )
+          with urllib.request.urlopen(reviews_request) as response:
+              reviews = json.load(response)
+
+          latest = {}
+          for review in sorted(reviews, key=lambda item: item.get("submitted_at") or ""):
+              actor = (review.get("user") or {}).get("login")
+              state = (review.get("state") or "").upper()
+              if actor and state in {"APPROVED", "CHANGES_REQUESTED", "DISMISSED"}:
+                  latest[actor] = state
+          approved_by = sorted(actor for actor, state in latest.items() if state == "APPROVED")
+          review_state = "changes_requested" if "CHANGES_REQUESTED" in latest.values() else (
+              "approved" if approved_by else "pending"
+          )
+
+          with open(os.environ["GITHUB_EVENT_PATH"]) as event_file:
+              pull_request = json.load(event_file)["pull_request"]
+
+          context_paths = [Path("README.md"), Path("package.json"), Path("web/package.json")]
+          context_paths.extend(sorted(Path("docs").glob("*.md"))[:5])
+          project_context = []
+          context_chars = 0
+          for path in context_paths:
+              if not path.is_file() or context_chars >= 24000:
+                  continue
+              text = path.read_text(errors="replace")[:8000]
+              entry = f"### {path}\n{text}"
+              project_context.append(entry)
+              context_chars += len(entry)
+
+          payload = {
+              "feature_prefix": f"{os.environ['REPOSITORY']}::pr-{os.environ['PR_NUMBER']}",
+              "github_ref": f"pr:{os.environ['PR_NUMBER']}",
+              "github_type": "pr",
+              "changed_files": changed_files,
+              "diff_lines": diff_lines,
+              "diff_text": unified_diff,
+              "project_context": project_context,
+              "goal": pull_request.get("title"),
+              "extra_text": pull_request.get("body") or "",
+              "initial_prompt": pull_request.get("body") or None,
+              "generated_code_summary": "Unified diff captured from the pull request head against its base commit.",
+              "actor": os.environ["PR_AUTHOR"],
+              "reviewer_context": {
+                  "approvals_count": len(approved_by),
+                  "approved_by": approved_by,
+                  "review_state": review_state,
+                  "changed_file_count": len(changed_files),
+              },
+          }
+          request = urllib.request.Request(
+              os.environ["JOURNAL_URL"].rstrip("/") + "/analyze",
+              data=json.dumps(payload).encode(),
+              method="POST",
+              headers={
+                  "Authorization": f"Bearer {os.environ['JOURNAL_API_TOKEN']}",
+                  "Content-Type": "application/json",
+              },
+          )
+          with urllib.request.urlopen(request) as response:
+              result = json.load(response)
+
+          report = result["report"]
+          governance = report.get("governance") or {}
+          decision = governance.get("decision", "unknown")
+          completeness = (governance.get("passport_completeness") or {}).get("score", 0)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as output:
+              output.write(
+                  f"# Journal\n\n"
+                  f"- Node: `{result['node_id']}`\n"
+                  f"- Risk: **{report['risk_level']}**\n"
+                  f"- Policy: **{decision}**\n"
+                  f"- Evidence completeness: **{completeness:.0%}**\n\n"
+                  f"{report['summary']}\n"
+              )
+          if decision == "failure":
+              raise SystemExit("Journal governance policy failed")
+          PY
